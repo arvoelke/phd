@@ -1,0 +1,181 @@
+% For hyperlinked PDF, suitable for viewing on a computer, use this:
+\documentclass[letterpaper,12pt,titlepage,oneside,final]{book}
+
+% For PDF suitable for double-sided printing, use this:
+%\documentclass[letterpaper,12pt,titlepage,openright,twoside,final]{book}
+
+\newcommand{\package}[1]{\textbf{#1}} % package names in bold text
+\newcommand{\cmmd}[1]{\textbackslash\texttt{#1}} % command name in tt font
+\newcommand{\href}[1]{#1}
+
+% This package allows if-then-else control structures.
+\usepackage{xifthen}
+\newboolean{PrintVersion}
+\setboolean{PrintVersion}{false}
+
+\usepackage{amsmath,amssymb,amstext}
+\usepackage[pdftex]{graphicx}
+\usepackage[dvipsnames,hyperref]{xcolor}
+\usepackage{microtype}
+\usepackage[round]{natbib}
+\usepackage{rotating}
+\usepackage{multicol}
+\usepackage{booktabs}
+\usepackage{tipa}
+\let\ipa\textipa
+
+% Set figure directories
+\graphicspath{{../figures/}}
+
+% Custom hyphenation
+\hyphenation{re-arranged}
+
+% Includes a figure. Usage:
+%
+% \fig{filename}{width}{caption}{shortcaption}
+%
+% - Filename will be used as label
+% - Width is in proportion of column width
+% - Shortcaption is optional
+\newcommand{\fig}[4]{
+  \begin{figure}[ht!]
+    \centering
+    \includegraphics[width=#2\columnwidth]{#1}
+    \ifthenelse{\isempty{#4}}{\caption{#3}}{\caption[#3]{#4}}
+    \label{fig:#1}
+  \end{figure}}
+
+% Font stuff
+\usepackage{inconsolata}
+\usepackage{fourier}
+\usepackage[T1]{fontenc}
+
+% argmin and argmax aren't normal?
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand*{\bigoh}{O}
+% typing mathbf over and over again is garbage
+\newcommand*{\V}[1]{\mathbf{#1}}%
+% binding
+\newcommand*{\bind}{\circledast}
+% We got room; big summations please!
+\everymath{\displaystyle}
+
+% For fancy boxes
+\usepackage{tikz}
+\usetikzlibrary{shapes,decorations}
+\tikzstyle{roundbox}=[draw=black!80, very thick,
+    rectangle, rounded corners, inner sep=10pt, inner ysep=20pt]
+\tikzstyle{fancytitle}=[fill=black!80, text=white]
+\newcommand{\probbox}[1]{%
+  \begin{center}
+    \begin{tikzpicture}
+      \node [roundbox] (box){%
+        \begin{minipage}{0.8\textwidth}
+          #1
+        \end{minipage}
+      };
+      \node[fancytitle, right=10pt, rounded corners] at (box.north west) {%
+        \textbf{Problem statement}
+      };
+    \end{tikzpicture}
+\end{center}}
+\newcommand{\inoutbox}[2]{%
+  \begin{center}
+    \begin{tikzpicture}
+      \node [roundbox] (box){%
+        \begin{minipage}{0.9\textwidth}
+          \begin{multicols}{2}
+            \begin{center}
+              #1
+              \vfill
+              \columnbreak
+
+              #2
+            \end{center}
+          \end{multicols}
+        \end{minipage}
+      };
+      \node[fancytitle, right=8.4em, rounded corners] at (box.north west) {%
+        \textbf{Inputs}
+      };
+      \node[fancytitle, left=8.2em, rounded corners] at (box.north east) {%
+        \textbf{Outputs}
+      };
+      \draw[very thick] (box.north) -- (box.south);
+    \end{tikzpicture}
+\end{center}}
+
+% Fix error using \copyright with T1 fontenc
+\renewcommand*\copyright{{\usefont{OT1}{lmr}{m}{n}\textcopyright}}
+
+% Do this last
+\usepackage[pdftex,pagebackref=false]{hyperref}
+\hypersetup{
+    plainpages=false,
+    unicode=false,
+    pdftoolbar=true,
+    pdfmenubar=true,
+    pdffitwindow=false,
+    pdfstartview={FitH},
+    pdftitle={Dynamical systems in spiking neuromorphic hardware},
+    pdfauthor={Aaron R. Voelker},
+    pdfsubject={Dynamical Neuromorphic Systems},
+    pdfkeywords={nef} {nengo} {spiking neural networks} {dynamical systems}
+                {computational neuroscience} {neuromorphics},
+    pdfnewwindow=true,
+    colorlinks=true,
+    linkcolor=BrickRed,
+    citecolor=PineGreen,
+    urlcolor=cyan
+}
+\ifthenelse{\boolean{PrintVersion}}{
+  \hypersetup{
+    citecolor=black,
+    filecolor=black,
+    linkcolor=black,
+    urlcolor=black}
+}{}
+
+\setlength{\marginparwidth}{0pt} % width of margin notes
+% N.B. If margin notes are used, you must adjust \textwidth, \marginparwidth
+% and \marginparsep so that the space left between the margin notes and page
+% edge is less than 15 mm (0.6 in.)
+\setlength{\marginparsep}{0pt} % width of space between body text and margin notes
+\setlength{\evensidemargin}{0.125in} % Adds 1/8 in. to binding side of all
+% even-numbered pages when the "twoside" printing option is selected
+\setlength{\oddsidemargin}{0.125in} % Adds 1/8 in. to the left of all pages
+% when "oneside" printing is selected, and to the left of all odd-numbered
+% pages when "twoside" printing is selected
+\setlength{\textwidth}{6.375in} % assuming US letter paper (8.5 in. x 11 in.) and
+% side margins as above
+\raggedbottom
+
+% The following statement specifies the amount of space between
+% paragraphs. Other reasonable specifications are \bigskipamount and \smallskipamount.
+\setlength{\parskip}{\medskipamount}
+
+% The following statement controls the line spacing.  The default
+% spacing corresponds to good typographic conventions and only slight
+% changes (e.g., perhaps "1.2"), if any, should be made.
+\renewcommand{\baselinestretch}{1}
+
+% Force each section of the front pages to start on a recto page.
+% Also ensure a page number is not printed on an otherwise blank verso page.
+\let\origdoublepage\cleardoublepage
+\newcommand{\clearemptydoublepage}{%
+  \clearpage{\pagestyle{empty}\origdoublepage}}
+\let\cleardoublepage\clearemptydoublepage
+
+\begin{document}
+
+\input{phd-title}
+\input{phd-abstract}
+\input{phd-acknowledgements}
+\input{phd-dedication}
+\input{phd-lists}
+\input{phd-introduction}
+\input{phd-background}
+\input{phd-principles}
+
+\end{document}

@@ -1,0 +1,41 @@
+# For LaTeX
+*.aux
+*.glo
+*.idx
+*.log
+*.toc
+*.ist
+*.acn
+*.acr
+*.alg
+*.bbl
+*.blg
+*.dvi
+*.glg
+*.gls
+*.ilg
+*.ind
+*.lof
+*.lot
+*.maf
+*.mtc
+*.mtc1
+*.out
+*.synctex.gz
+
+# For Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# For doit
+.doit.db
+
+# For vim
+*.swp
+
+# Outputs
+paper/phd.pdf
+
+# Jupyter stuff
+.ipynb_checkpoints/
