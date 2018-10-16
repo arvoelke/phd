@@ -1,0 +1,50 @@
+\chapter{Methodology}
+\label{chapt:methodology}
+
+
+\section{Software}
+
+\subsection{Nengo}
+
+Summarize key constructs.
+
+\subsection{Backends}
+
+nengo\_dl, nengo\_ocl, nengo\_fpga, nengo\_brainstorm, nengo\_loihi
+
+\subsection{NengoLib}
+
+Summarize main contributions.
+ - ZOH LIF
+ - Multi-spiking LIF
+ - RK45
+ - Dynamic extensions
+ - Geometric extensions
+ - Temporal learning (offline), RLS (online alternative to PES)
+ - FORCE, Reservoir Computing
+
+
+\section{Recurrent Architecture}
+
+Resummarize Principle 3 with a focus on architecture / diagrams / pseudo-code.
+
+
+\section{Optimization and Learning}
+
+Some of this is going to be repetitive / overlapping with stuff from before, but I think they are the kind of things that are important to repeat...
+
+We'll use this as an opportunity to point out the default scenario.
+
+\subsection{Online versus Offline}
+
+Online rules (PES, RLS), versus their offline analogs (stochastic gradient descent, least-squares)
+
+\subsection{Explicit versus Implicit}
+
+Using closed-form equations to generate the data (implicit), versus numerically simulating (explicit)
+
+\subsection{Spikes versus Rates}
+
+Learning from spikes versus learning from rates. And their equivalence in limiting conditions.
+
+

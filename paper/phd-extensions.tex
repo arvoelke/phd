@@ -1,0 +1,104 @@
+\chapter{Extensions to the Neural Engineering Framework}
+\label{chapt:nef-extensions}
+
+
+\section{Challenges Posed by Neuromorphic Hardware}
+
+Some of these are already solved to some extent by standard NEF. Others require more careful consideration / theoretical extensions.
+
+\subsection{Discretization}
+
+\subsection{Quantization}
+
+\subsection{Connectivity}
+
+\subsection{Memory}
+
+Weight factorization on SpiNNaker, Braindrop, and Loihi
+
+\subsection{Spike Traffic}
+
+Amount of internal traffic.
+
+\subsection{External Input-Output}
+
+Amount of external traffic. Also encoding the inputs as spikes, and decoding the outputs.
+
+\subsection{Thermal Variation}
+
+\subsection{Transistor Mismatch}
+
+\subsection{Digital to Analog Conversion}
+
+Pulse-extender
+
+\subsection{Higher-Order Dynamics}
+
+Special case of transistor mismatch
+
+
+\section{Arbitrary Linear Synapses}
+
+Insert patent here.
+
+\subsection{Linear Transfer Function Characterization}
+
+\subsection{Nonlinear State-Space Characterization}
+
+\subsection{Time-Constant Mismatch}
+
+\subsection{Encoding Filters}
+
+\subsection{Decoding Filter Optimization}
+
+Include method of simultaneously solving for decoders and linear filter in a single least-squares problem
+
+\subsection{Dale's Principle}
+
+Compare my DalesSolver to Parisian Transform
+
+\section{Conductance-Based Synapses}
+
+Summarize Andreas' research
+
+
+\section{Biologically-Detailed Neurons}
+
+\subsection{Adaptation}
+
+Eric's system itendification
+Subtractive adaptation and perfect cancellation
+Divisive adaptation (adaptive threshold) and modelling it by the latter
+Interpretation in terms of PSC code / objective function, and dimensionality
+
+\subsection{Wilson Neurons}
+
+Peter's work
+
+\subsection{Baal Neurons}
+
+Peter's work
+
+
+\section{Energy Minimization}
+
+``Differential encoding'' (adaptation)?
+
+Spike-thinning (accumulator on BrainDrop)
+
+Improving scaling by spreading out the spikes (inspired by Den\`eve)
+
+Interneurons on Loihi
+
+Other ideas: attentional routing (inhibition to the source). Dynamically adjusting firing rates from feedback error. Better automated selection of tuning curves (e.g., finding thresholds latent within the decomposition of functions)
+
+
+\section{Dynamics of Learning}
+
+Characterizing PES as a dynamical system
+
+
+\section{Dynamics of Representational Error}
+
+Writing down the dynamical system arising from the error term. e.g., oscillator error. Paying attention to saturation and making its effect precise.
+
