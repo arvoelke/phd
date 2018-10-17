@@ -40,30 +40,18 @@ The idea that the most amount of ``information'' is present within the low-frequ
 
 Maybe additional biological detail can get around this limitation, or maybe the time-constants are this way for this very reason.
 
-\subsection{Vector Representations}
 
-All of the high-dimensional functions that we currently use in the SPA are really just one-dimensional nonlinearities applied to linear transformations of the state-space.
-The product, which is a squaring of the $x + y$ and $x - y$ transformations. Binding, which is a product layer with linear transforms. Association, which is a linear transformation + 1D threshold.
-
-Thus we think of our models as a union of low-dimensional vector spaces, coupled together by linear transformations, with low-order nonlinearities in between.
-
-The term low-dimensional is relative to the number of neurons.
-Anectodally (e.g., personal conversation with Sophie Den\`eve, experience with Nengo, and averages in Spaun), we say 50-100 neurons per dimension achieves tolerable levels of noise.
-For a fixed amount of noise in a represention implemented by an ensemble of $n$ neurons, the current best-known lower-bound predicts the dimensionality $d$ scales as $\Omega \left( n^{\frac{2}{3}} \right)$ for $n$ neurons~citep[][p.~60]{jgosmann2018}.
-Although we don't know the upper-bound, we conjecture that it is $\bigoh \left( n \right)$.
-That is, the dimensionality should not be able to scale faster than the neuron count.
-If it could, then each neuron would represent $\omega(1)$ dimensions, which seems physically implausible given access to only $\bigoh (1)$ state variables.
-This limitation could be broken by dendritic computation, for instance if each neuron had access to $\bigoh (n)$ variables distributed along the dendritic tree.
-
-
-\section{Post-Synaptic Current Coding}
+\subsection{Post-Synaptic Current Coding}
 
 The NEF's state variable is linearly mapped onto the post-synaptic current.
 Contrast this with rate code and spike-time code and rank-order coding (simon thorpe) and Bryan Tripp (2007).
 We further step outside this paradigm for conductance-based synapses, and adaptive LIF neurons.
 
 
-\section{Optimality of the NEF}
+\section{Suitability for Neuromorphic Hardware}
+
+
+\subsection{Optimality of the NEF}
 
 Include derivation that spiking LIF + lowpass == rate LIF + lowpass, in the sense of expectation, assuming initial membrane voltages are uniformly distributed.
 Also Appendix from NEF text on synaptic versus somatic dynamics.
@@ -74,12 +62,13 @@ Mention the spike-time decoder optimization (Temporal Solver) for more detailed 
 Low-rank factorization is optimal in space and time assuming linear weights (there is no advantage to factoring it any further by linearity).
 
 
-\section{Taming Chaos}
+\subsection{Robustness of the NEF}
 
-Conjecture: Den\`eve doesn't work in chaotic settings. NEF does (voltage vector is chaotic). NEF and FORCE are doing the same thing -- the latter just adds extra chaos in because Reservoir Computing.
+Robustness to noise.
+
+Also Conjecture: Den\`eve doesn't work in chaotic settings. NEF does (voltage vector is chaotic). NEF and FORCE are doing the same thing -- the latter just adds extra chaos in because Reservoir Computing.
 
 
-\section{Suitability for Neuromorphic Hardware}
 
 Expose the general ideas about mapping NEF networks onto neuromorphic hardware, and what makes it better than other frameworks.
 

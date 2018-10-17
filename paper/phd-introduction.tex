@@ -1,6 +1,6 @@
 \chapter{Introduction}
 
-Computation cannot exist without time.
+Computation cannot be physically realized without time.
 Whether we consider the discrete switching of voltage states across transistors in a
 digital computer,
 or the continuous flow of charges across ion channels within the brain -- 
@@ -32,11 +32,12 @@ how the same dynamical computations can be mapped onto distinct spiking neuromor
 
 The primary goal of this thesis is to unpack the above statements through the exploration of fundamental problems and their theoretical solutions, validated by practical results that include functional SNNs deployed on state-of-the-art neuromorphic chips: Braindrop and Loihi.
 We have already learned a great deal through the mutually interacting processes of bottom-up neuromorphic hardware design and top-down SNN construction.
-Theoretical frameworks help guide decisions in hardware design, while hardware constraints determine relevant extensions to theoretical frameworks -- both processes coexist in a dynamic feedback loop.
+Theoretical frameworks help guide decisions in hardware design, while hardware constraints demand relevant extensions to theoretical frameworks -- both processes coexist in a dynamic feedback loop.
 Our general approach consists of a software stack, and nonlinear dynamical systems framework,
 for describing computations within a language of low-frequency vector spaces.
-This approach is also known as the Neural Engineering Framework~(NEF), together with
-its Python package, Nengo, and its novel extensions detailed within this thesis.
+This approach is known as the Neural Engineering Framework~(NEF).
+The NEF is implemented by the Python package, Nengo, and is extended by the methods
+described in this thesis.
 The ultimate goal of this approach is to develop a unified set of tools for constructing
 artificially intelligent agents, that scale to the same kinds of tasks that
 humans can perform, while running on neuromorphic hardware consuming far less
@@ -48,7 +49,7 @@ When confronted with ambitious goals such as replicating human intelligence, com
 the popularity of deep learning and its recent successes such as AlphaGo.
 First and foremost, we seek to embrace the approaches of deep learning, by incorporating its architectures and training methodoligies into our toolbox.
 This is in fact the mandate of Nengo DL, a Python package combining Nengo and Tensorflow into a hybridized framework that automates backpropagation across both spiking, non-spiking, and NEF-style recurrent neural networks -- broadly referred to as the class of Artificial Neural Networks~(ANNs).
-However, we do not believe that deeper networks, better training heuristics, or larger datasets, will be enough to achieve our aforementioned goal.
+However, we do not believe that deeper networks, better training heuristics, nor larger datasets, will be enough to achieve our aforementioned goal.
 Concerns for conventional deep learning approaches include: the amount of power required to scale traditional ANNs to the size of the human brain, the difficulties tuning hyperparameters at scale, and the existence of adversarial attacks on networks trained via backpropagation.
 But even more fundamentally, the majority of ANNs in use today, including AlphaGo, are applied to \emph{static} inputs to produce \emph{static} outputs.
 For a board game such as Go, this is forgiveable, as the entire state of the game is encapsulated by the current state of the board itself, and so there is technically no need to consider any context nor history in order to optimize across future states.\footnote{
@@ -57,7 +58,8 @@ Nevertheless, this points towards a broader underlying concern: time is not bein
 For instance, human vision is a continuous-time process, while convolutional ANNs are deployed in visual processing tasks to classify objects in single frames, without internal awareness of how these objects might move or behave.
 Specifically, when processing video, frames are typically sampled at some arbitrary interval and then processed independently from one another.
 We will discuss some exceptions later that we embrace.
-But at large, most ANNs do not begin with {\it time} as a physical dimension intrinsic to the dynamics of the system's input, output, or processing units; time is usually incorporated later at another level of abstraction.
+But at large, most ANNs do not begin with {\it time} as a physical dimension intrinsic to the dynamics of the system's input, output, or processing units;
+time is neither a variable in their neuron models nor synapse models.
 % Consequently, training these networks becomes an art-form than a science, 
 % This pattern is beginning to reverse, with examples such as deep LSTMs and qRNNs for machine translation and speech synthesis.
 % However, we argue that we can do even better, by arming ourselves with tools for better understanding the role of time, and being able to engineer specific dynamic computations into RNNs.
@@ -82,12 +84,13 @@ Each neuron locally processes some signal by encoding its input current into spi
 These action potentials evoke post-synaptic currents~(PSCs) that decay exponentially on the order of milliseconds.
 The time-scales over which these mechanisms interface with the world, and interact with each other, determines, and constrains, literally everything that we can do.
 The collection of approximately one-hundred billion of these signal processing units, connected by over one-hundred trillion synapses, adapt and communicate sparsely across space and time, to perform all computations that we rely upon to function.
+
 This ``signal processing view'' of computation is fundamentally different from conventional views of computation targeted for conventional computers.
 In the former view, time is intrinsic to the state of all physical ``devices'' performing the computation~(i.e.,~neurons and synapses), which are themselves necessarily tied to the timing and dynamics of the overall function.
 In the latter view, the time that a computation takes is an implementation detail that has no effect on the actual function.
 As such, there is currently an important distinction between the computational approaches taken by the deep learning community and those taken by the neuromorphic community.
 This is not simply a matter of biological detail, but more crucially a matter of thinking of the system that is actually solving these problems as a collection of signal processors whose dynamics are coupled to the task at hand.
-If our aim is to build artificial system that are as robust, capable, and scalable as the human brain, then we should strive to understand computation in such terms.
+If our aim is to build artificial systems that are as robust, capable, and scalable as the human brain, then we should strive to understand computation in such terms.
 
 The approach we take considers time as a fundamental starting point, and thus situates dynamics front-and-center; we bridge the time-scales of the entire system, down from the level of spikes and post-synaptic currents, up to the level of human reaction times and behaviours. 
 We validate this model of computation by deploying these SNNs on low-power neuromorphic hardware emulating core biological principles.
