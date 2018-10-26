@@ -50,7 +50,201 @@ Everything can be specified at a high-level as a high-dimensional nonlinear dyna
 
 \subsection{Dynamics of Learning}
 
-Characterizing PES as a dynamical system
+This report is taken from \citep{voelker2015}.
+
+Prescribed Error Sensitivity (PES) is a biologically plausible supervised learning rule that is frequently used with the Neural Engineering Framework (NEF). PES modifies the connection weights between populations of neurons to minimize an external error signal. We solve the discrete dynamical system for the case of constant inputs and no noise, to show that the decoding vectors given by the NEF have a simple closed-form expression in terms of the number of simulation timesteps. Moreover, with $\gamma = (1 - \kappa \|\V{a}\|^2) < 1$, where $\kappa$ is the learning rate and $\V{a}$ is the vector of firing rates, the error at timestep $k$ is the initial error times $\gamma^k$. Thus, $\gamma > - 1$ implies exponential convergence to a unique stable solution, $\gamma < 0 $ results in oscillatory weight changes, and $\gamma \le -1$ implies instability.
+
+The Neural Engineering Framework (NEF), proposed by \citet{eliasmith2003a}, is a method of constructing biologically plausible spiking networks. To build and simulate such models, the Centre for Theoretical Neuroscience makes extensive use of the open-source software, Nengo \citep{bekolay2014}. 
+
+The NEF typically learns its connection weights offline, but Nengo also supports a number of biologically plausible supervised and unsupervised learning rules to learn these weights online. By far, the most commonly used learning rule in Nengo is the Prescribed Error Sensitivity (PES) rule, which learns a function by minimizing an external error signal \citep{bekolay2013}. This learning rule has been used to model episodic memory \citep{trujillo2014}, hierarchical reinforcement learning \citep{rasmussen2014b}, adaptive motor control \citep{komer2015}, and many other tasks. 
+
+While the usage and overall ``effect'' of the learning rule is intuitively clear, several questions have not been explicitly addressed to date:
+
+\begin{itemize}
+\item Under what conditions is the rule guaranteed to converge to a unique optimal solution?
+\item How does the learning rate affect the rate of convergence?
+\item Can we be precise about the form of the weights as a function of time, and the form of the optimal solution, if one exists?
+\end{itemize}
+
+This work aims to address all of these questions under the restricted setting of constant inputs and no noise.
+
+\subsubsection{Prescribed Error Sensitivity}
+
+For the analysis, we setup a network in Nengo containing an ensemble of $n$ neurons, inject a constant scalar input $x$, and minimize an error signal $e = y^* - y$ using the PES rule, where $y$ is the scalar output of the ensemble, and $y^*$ is the ideal output (see Fig.~\ref{fig:pes-dynamics-network}). The connection weights then learn to represent $y^*$ when presented with $x$. This work naturally extends to the case where $x$ is a vector, and so we only consider the scalar case for simplicity.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.6\textwidth]{pes-dynamics-network}
+\caption{\label{fig:pes-dynamics-network} Network diagram used to analyze the PES rule. A connection from $x$ to $y$ learns to output $y^*$ by minimizing $|y^* - y|$. The error signal forms a modulatory connection to modify the weights between $x$ and $y$.}
+\end{figure}
+
+Let $\V{a} \in \mathbb{R}^n$ be the rate activity of each neuron without noise. This is given by the first principle of the NEF, and depends only on $x$. From here on we assume that $\V{a} \ne \V{0}$, otherwise our ensemble is not properly encoding $x$, in which case PES will have no effect. The PES rule then applies the following update rule at each timestep:
+\begin{equation}
+\label{eq:pes}
+\Delta{\V{d}} = \kappa e \V{a}
+\end{equation}
+where $\kappa > 0$ is the learning rate, and $\V{d} \in \mathbb{R}^n$ is the decoding vector for the connection weight matrix such that, by the first principle of the NEF,
+\begin{equation}
+\label{eq:decoding}
+y = \V{d}^T \V{a} .
+\end{equation}
+
+Now, to formulate the problem, let $\V{d}[k] \in \mathbb{R}^n$ be the value of the decoding vector $\V{d}$ at the $k^{th}$ timestep of the Nengo simulation, for all $k \in \mathbb{N}$. Our goal is to give a closed-form expression for $\V{d}[k]$ and its convergent solution. For notational convenience, the use of $\infty$ will imply a limit (e.g. $\V{d}[\infty] := \lim_{k \rightarrow \infty} \V{d}[k]$). Therefore, we will answer the following: given $\kappa$, $\V{a}$, $y^*$, and $\V{d}[0]$, what is $\V{d}[k]$ for $k \in \mathbb{N}$ and $\V{d}[\infty]$?
+
+\begin{theorem}
+\label{thm:pes-dynamics}
+
+Let $\gamma = (1 - \kappa \|\V{a}\|^2) < 1$, and $e_0 = y^* - \V{d}[0]^T \V{a}$ be the initial error, then
+\begin{align}
+\label{eq:dk}
+\V{d}[k] &= \V{d}[0] + e_0\frac{\V{a}}{\|\V{a}\|^2} (1 - \gamma^k)\text{, \quad $k \in \mathbb{N}$}
+\end{align}
+and so the error at timestep $k$ is $y^* - \V{d}[k]^T \V{a} = e_0\gamma^k$. In particular, if $\gamma > - 1$, then $\V{d}[\infty]$ exists and is given by the unique solution,
+\begin{align}
+\label{eq:dinf}
+\V{d}[\infty] &= \V{d}[0] + e_0\frac{\V{a}}{\|\V{a}\|^2} .
+\end{align}
+
+On the other hand, if $\gamma \le -1$ then the system is unstable.
+\end{theorem}
+
+\paragraph{Discussion}
+
+An immediate consequence is that the error $y^* - y$ goes to 0 exponentially with rate $\gamma$. When $\gamma < 0$, this results in oscillations around the optimal solution. When $\gamma > - 1$, the limit exists and is given by the stable optimum (\ref{eq:dinf}). 
+
+The error given by (\ref{eq:dk}) implies that if we desire an approximation factor of $\epsilon$ times the initial error in $k$ timesteps, then set the learning rate to $$\kappa = (1 - \epsilon^{1/k}) / \|a\|^2.$$
+
+The theorem essentially states that the optimal solution is achieved by increasing the decoders by the normalized activity vector scaled by the initial error. In hindsight, this should be somewhat intuitive. If we look at (\ref{eq:pes}), only a scaled version of $\V{a}$ is ever added to the decoders, and so it makes sense that the final difference could only be some multiple of $\V{a}$. If we suppose that $\V{d}[\infty]$ converges, and furthermore $\V{d}[\infty]^T \V{a} = y^*$, then we may indeed solve $\V{d}[\infty]^T \V{a} = \V{d}[0]^T \V{a} + \alpha \V{a}^T \V{a}$ for the required scaling factor $\alpha = \frac{e_0}{\V{a}^T \V{a}}$. Conversely, we can verify that indeed the above $\V{d}[\infty]$ decodes $y^*$ by evaluating $\V{d}[\infty]^T \V{a} = \V{d}[0]^T \V{a} + e_0 \frac{\V{a}^T\V{a}}{\V{a}^T\V{a}} = y^*$.
+
+However, this is not a proof, since we have supposed that the optimal solution exists and is unique, while there are infinitely many solutions to $\V{u}^T \V{a} = y^*$. Specifically, $\V{u} = \V{d}[\infty] + \V{v}$, where $\V{v}^T \V{a} = 0$, all of which are stable since they have zero error. We must therefore show that only one of these solutions is reachable (namely $\V{v} = \V{0}$), and that $\gamma$ gives the exponential rate of convergence.
+
+\paragraph{Proof of Theorem~\ref{thm:pes-dynamics}}
+
+The first step is to formulate the equation for $\V{d}[k]$ using linear algebra. Let $k \in \mathbb{N}$. Combining (\ref{eq:pes}) and (\ref{eq:decoding}) with $e = y^* - y$, gives us:
+\begin{align*}
+\V{d}[k+1]^T &= \V{d}[k]^T + \kappa(y^* - \V{d}[k]^T \V{a})\V{a}^T \\ 
+         &= \V{d}[k]^T\underbrace{(I - \kappa \V{a}\V{a}^T)}_{A} + \underbrace{\kappa y^* \V{a}^T}_{\V{c}^T} .
+\end{align*}
+
+The last two components are labeled by the matrix $A \in \mathbb{R}^{n,n}$ and the vector $\V{c} \in \mathbb{R}^{n}$, since they will appear frequently throughout the analysis. This also allows us to express the above relationship compactly as:
+\begin{equation}
+\label{eq:statespace}
+\V{d}[k+1]^T = \V{d}[k]^T A + \V{c}^T.
+\end{equation}
+
+It is important to note that neither $A$ nor $\V{c}$ depend on $\V{d}[k]$. $A$ depends solely on $\V{a}$, which is fixed for a given $x$ by the first principle of the NEF. $\V{c}$ depends only on $\V{a}$ and $y^*$, which are again also fixed. Therefore, $\V{d}[k]$, and thus $\V{d}[\infty]$, can be found inductively:
+\begin{equation}
+\label{eq:dksum}
+\V{d}[k]^T = \V{d}[0]^T A^k + \sum_{i=0}^{k-1} \V{c}^T A^i.
+\end{equation}
+
+In order to find a closed-form expression for (\ref{eq:dksum}) we must essentially characterize the effect of repeated multiplication and addition by using the eigendecomposition of the system. This is done by interpreting (\ref{eq:statespace}) as the {\it state-space representation} of a discrete linear control system with constant input, where the ``state'' is given by the current decoders. Since $A$ is symmetric, this is also equivalent to $\V{d}[k+1] = A \V{d}[k] + \V{c}$, but it turns out that the eigendecomposition of the former system has a nicer interpretation.
+
+We proceed with some basic results on $A = I - \kappa \V{a}\V{a}^T$, and then move toward a construction that reveals the eigenvectors of the whole system, which in turn proves the main theorem.
+
+Since $A$ is symmetric, by the spectral theorem it can be diagonalized to $A = VWV^T$, where $V$ is orthonormal ($V^{-1} = V^T$), and $W$ is diagonal. Moreover, the columns of $V$ are the unit eigenvectors of $A$ (giving us an $n$-dimensional eigenbasis), and their corresponding eigenvalues are on the respective diagonals in $W$. Now, since $A$ differs only from $I$ by an outer product, it has very specific structure.
+
+\begin{lemma}\label{lemma:1} $\V{a}$ is an eigenvector of $A$ with eigenvalue $\gamma < 1$.\end{lemma}
+
+\begin{proof} Recalling that $\gamma = 1 - \kappa \|\V{a}\|^2$,
+\begin{align*}
+A\V{a} &= (I - \kappa \V{a}\V{a}^T)\V{a} \\
+   &= (\V{a} - \V{a} \kappa \V{a}^T\V{a}) \\
+   &= \gamma \V{a}
+\end{align*}
+
+Since $\V{a} \ne 0$ is non-negative, we know $\|\V{a}\|^2 > 0$ (and $\kappa > 0$), thus $\gamma < 1$.
+\end{proof}
+
+\begin{lemma}\label{lemma:2} The remaining $n-1$ eigenvectors of $A$ are orthogonal to $\V{a}$ with eigenvalue 1.\end{lemma}
+
+\begin{proof} The first part follows trivially from the fact that $A$ can be diagonalized and so the remaining $n-1$ dimensions must span a subspace that is orthogonal to $\V{a}$ (by lemma \ref{lemma:1}). To be precise, the remaining eigenvectors form an orthonormal basis for the nullspace of $\V{a}^T$, with eigenvalue 1, because
+$A\V{u} = \V{u} \IFF ( I - \V{a}\V{a}^T ) \V{u} = \V{u} \IFF \V{0} = \V{a}\V{a}^T\V{u} \IFF \V{a}^T \V{u} = 0$, since $\V{a} \ne 0$.
+\end{proof}
+
+Geometrically, this means that the mapping $A$ modifies a single dimension of the vector, namely the line spanning $\V{a}$ with eigenvalue $\gamma < 1$. The remaining portion, in the hyperplane orthogonal to $\V{a}$, remains untouched. Given conditions on $\kappa$ so that $\gamma > -1$, in the limit $A^\infty$ will zero out the dimension spanned by $\V{a}$. In fact, these two lemmas are enough to diagonalize $A$, which we use to show that $A^\infty = I - \frac{\V{a}\V{a}^T}{\|\V{a}\|^2}$ (below). This makes intuitive sense since $P_\V{a} = \frac{\V{a}\V{a}^T}{\|\V{a}\|^2}$ is a projection onto $\V{a}$, and so $A^\infty \V{u} = \V{u} - P_\V{a} \V{u}$ gives us the portion of $\V{u}$ that is orthogonal to $\V{a}$. To see this more rigorously, let $V_0$ be equal to $V$ with all but its first column ($\frac{\V{a}}{\|\V{a}\|}$) set to zero. That is, $V = V_0 + \begin{pmatrix}0 & V_1\end{pmatrix}$. Then since the first diagonal of $W^\infty$ goes to zero,
+\begin{align*}
+A^\infty &= VW^\infty V^T \\
+         &= (V - V_0)V^T \\
+         % (&= V_1 V^T = V_1 V_1^T) \\
+         &= I - V_0 V^T \\
+         &= I - \frac{\V{a}}{\|\V{a}\|}\frac{\V{a}^T}{\|\V{a}\|} \\
+         &= I - \frac{\V{a}\V{a}^T}{\|\V{a}\|^2} .
+\end{align*}
+
+Of course, this is only half the story, since we have not yet involved $\V{c}$, which is the sole bearer of $y^*$. To this end, we use the following construction:
+\begin{equation*}
+\tilde{A} = \begin{pmatrix}
+A & \V{0} \\
+\V{c}^T & 1
+\end{pmatrix} \in \mathbb{R}^{n+1,n+1}, \quad \V{\tilde{d}}[k] = \begin{pmatrix}\V{d}[k] \\ 1\end{pmatrix} \in \mathbb{R}^{n+1}.
+\end{equation*}
+It is easy to see that $\V{\tilde{d}}[k]^T \tilde{A}$ will multiply $\V{d}[k]^T$ by $A$ and add $\V{c}^T$, so by induction this allows us to rewrite (\ref{eq:statespace}) as a single matrix multiply:
+\begin{equation}
+\label{eq:system}
+\V{\tilde{d}}[k]^T = \V{\tilde{d}}[0]^T \tilde{A}^k .
+\end{equation}
+
+%We now show that $\tilde{A}$ can be diagonalized using the eigendecomposition of $A$.
+
+\begin{lemma}\label{lemma:3} Let $\beta = \frac{\V{c}^T \V{a}}{(\gamma - 1)\|\V{a}\|}$, then $\V{\tilde{a}} = \begin{pmatrix}\frac{\V{a}}{\|\V{a}\|} \\ \beta \end{pmatrix}$ is an eigenvector of $\tilde{A}$ with eigenvalue $\gamma$.\end{lemma}
+
+\begin{proof}$\V{\tilde{a}}$ is well-defined since $\gamma < 1$.
+ 
+$\tilde{A}\V{\tilde{a}} = \begin{pmatrix}\frac{A\V{a}}{\|\V{a}\|} \\ \V{c}^T\frac{\V{a}}{\|\V{a}\|} + \beta\end{pmatrix} = \begin{pmatrix}\frac{\gamma \V{a}}{\|\V{a}\|} \\ \frac{\V{c}^T \V{a} \gamma}{(\gamma - 1)\|\V{a}\|}\end{pmatrix} = \gamma \V{\tilde{a}}$, by lemma \ref{lemma:1}.\end{proof}
+
+We remark that the last component of $\V{\tilde{a}}$ can be simplified to: $$\beta = \frac{\V{c}^T \V{a}}{(\gamma - 1)\|\V{a}\|} = \frac{\kappa y^* \V{a}^T \V{a}}{- \kappa \|\V{a}\|^2 \|\V{a}\|} = -\frac{y^*}{\|\V{a}\|}.$$
+
+\begin{lemma}\label{lemma:4} Suppose $\V{u}$ is an eigenvector of $A$ such that $A\V{u} = \V{u}$, then $\V{\tilde{u}} = \begin{pmatrix}\V{u} \\ 0\end{pmatrix}$ similarly satisfies $\tilde{A}\V{\tilde{u}} = \V{\tilde{u}}$.\end{lemma}
+
+\begin{proof}$$\tilde{A}\V{\tilde{u}} = \begin{pmatrix}A\V{u} \\ \V{c}^T \V{u} \end{pmatrix} = \begin{pmatrix}\V{u} \\ \kappa y^* \V{a}^T \V{u} \end{pmatrix} = \begin{pmatrix}\V{u} \\ 0 \end{pmatrix} = \V{\tilde{u}}$$ since $\V{a}^T \V{u} = 0$ from lemma \ref{lemma:2}.\end{proof}
+
+Now observe that $(0, 0, \ldots, 1)^T \in \mathbb{R}^{n+1}$ is an eigenvector for $\tilde{A}$ with eigenvalue 1, and so we have found $n+1$ eigenvectors for $\tilde{A}$. Recall that $A = VWV^T$. Without loss of generality, suppose the columns of $V$ are arranged so that $\frac{\V{a}}{\|\V{a}\|}$ is the first column (using lemma \ref{lemma:1}). Then, construct $\V{b} = (\beta, 0, \ldots, 0)^T \in \mathbb{R}^{n+1}$, and place all $n+1$ eigenvectors in a square matrix,
+$$\tilde{V} = \begin{pmatrix} V & \V{0} \\ \V{b}^T & 1\end{pmatrix}$$
+with corresponding eigenvalues
+$$\tilde{W} = \begin{pmatrix} W & \V{0} \\ \V{0}^T & 1\end{pmatrix}.$$
+
+Then $\tilde{A}\tilde{V} = \tilde{V}\tilde{W}$ by lemmas \ref{lemma:3} and \ref{lemma:4}. To complete the diagonalization, we must show that $\tilde{V}$ is invertible by arguing that the eigenvectors we found are linearly independent, or better yet by explicitly constructing the inverse:
+$$\tilde{V}^{-1} = \begin{pmatrix}V^T & \V{0} \\- \V{b}^T V^T & 1\end{pmatrix} = \begin{pmatrix}V^T & \V{0} \\ - \beta \frac{\V{a}^T}{\|\V{a}\|} & 1\end{pmatrix}.$$ 
+
+Finally, we are ready to diagonalize $\tilde{A}$:
+\begin{lemma}\label{lemma:5} $\tilde{A} = \tilde{V}\tilde{W}\tilde{V}^{-1} = \begin{pmatrix} V & \V{0} \\ \V{b}^T & 1\end{pmatrix} \begin{pmatrix} W & \V{0} \\ \V{0}^T & 1\end{pmatrix} \begin{pmatrix}V^T & \V{0} \\- \V{b}^T V^T & 1\end{pmatrix}$.\end{lemma}
+
+\begin{proof}$$\tilde{V}\tilde{V}^{-1} = \begin{pmatrix} 
+V & \V{0} \\ 
+\V{b}^T & 1\end{pmatrix} \begin{pmatrix}
+V^T & \V{0} \\
+- \V{b}^T V^T & 1\end{pmatrix} = \begin{pmatrix}
+VV^T & \V{0} \\
+\V{b}^TV^T - \V{b}^T V^T & 1\end{pmatrix} = I$$\end{proof}
+
+We are now ready to prove the main theorem. The purpose of obtaining the above diagonalization is that it enables us to give a closed-form solution for $\V{\tilde{d}}[k]$ via (\ref{eq:system}) and lemma \ref{lemma:5}. Let $V_1 \in \mathbb{R}^{n,n-1}$ be equal to $V$ without its first column, such that $V = \begin{pmatrix}\frac{\V{a}}{\|\V{a}\|} & V_1\end{pmatrix}$.
+\begin{align*}
+\label{eq:diag}
+\V{d}[k]^T &= \begin{pmatrix}\V{d}[0] \\ 1\end{pmatrix}^T \begin{pmatrix} \frac{\V{a}}{\|\V{a}\|} & V_1 & 0 \\ \beta & \V{0}^T & 1\end{pmatrix} \begin{pmatrix} \gamma^k & & & \\ & 1 & & \\ & & \ddots & \\ & & & 1 \end{pmatrix} \begin{pmatrix}\frac{\V{a}^T}{\|\V{a}\|} \\ V_1^T \\- \beta \frac{\V{a}^T}{\|\V{a}\|} \end{pmatrix} \\
+       &= \begin{pmatrix}\V{d}[0]^T\frac{\V{a}}{\|\V{a}\|} + \beta & \V{d}[0]^T V_1 & 1\end{pmatrix} \begin{pmatrix} \gamma^k & & & \\ & 1 & & \\ & & \ddots & \\ & & & 1 \end{pmatrix} \begin{pmatrix}\frac{\V{a}^T}{\|\V{a}\|} \\ V_1^T \\- \beta \frac{\V{a}^T}{\|\V{a}\|} \end{pmatrix} \\
+       &= \begin{pmatrix}\gamma^k(\V{d}[0]^T\frac{\V{a}}{\|\V{a}\|} + \beta) & \V{d}[0]^T V_1 & 1\end{pmatrix} \begin{pmatrix}\frac{\V{a}^T}{\|\V{a}\|} \\ V_1^T \\- \beta \frac{\V{a}^T}{\|\V{a}\|} \end{pmatrix} \\
+       &= \gamma^k(\V{d}[0]^T\frac{\V{a}}{\|\V{a}\|} + \beta) \frac{\V{a}^T}{\|\V{a}\|} + \V{d}[0]^T V_1 V_1^T - \beta \frac{\V{a}^T}{\|\V{a}\|} \\
+       &= \V{d}[0]^T (I - \frac{\V{a}\V{a}^T}{\|\V{a}\|^2}) + \frac{y^*}{\|\V{a}\|^2} \V{a}^T - \gamma^k(y^* - \V{d}[0]^T \V{a}) \frac{\V{a}^T}{\|\V{a}\|^2} \\
+       &= \V{d}[0]^T + e_0 \frac{\V{a}^T}{\|\V{a}\|^2} (1 - \gamma^k)       
+\end{align*}
+
+To find the limit as $k \rightarrow \infty$, recall from lemmas \ref{lemma:3} and \ref{lemma:4} that the spectrum of the system is $sp(\tilde{A}) = sp(A) = \{\gamma, 1, 1, ...\}$, by lemma \ref{lemma:1}. Thus, (\ref{eq:system}) requires that $|\gamma| < 1$ in order for $\V{d}[\infty]$ to exist. Since $\gamma < 1$, $\V{d}[\infty]$ converges $\IFF \gamma > -1$. If $\gamma \le -1$, then the state explodes. In the stable condition,
+\begin{equation*}
+\V{d}[\infty]^T = \V{d}[0]^T\underbrace{(I - \frac{\V{a}\V{a}^T}{\|\V{a}\|^2})}_{A^\infty} + \underbrace{\frac{y^*}{\|\V{a}\|^2} \V{a}^T}_{\sum_{i=0}^{\infty} \V{c}^T A^i}
+\end{equation*}
+
+To get the error at timestep $k$, we use (\ref{eq:decoding}) to obtain
+\begin{equation*}(\V{d}[\infty]^T - \V{d}[k]^T)\V{a} = e_0 \gamma^k \frac{\V{a}^T \V{a}}{\|\V{a}\|^2} = e_0 \gamma^k\end{equation*}
+which concludes the proof. \hfill $\square$
+
+\begin{figure}
+\centering
+\includegraphics[width=1.0\textwidth]{pes-dynamics-validation}
+\caption{\label{fig:pes-dynamics-validation} Comparison of the analytical error given by the theorem to the simulated error in Nengo. Each line indicates the error $y^* - y$ over time for a single trial, for a random number of rate neurons (noiseless) from the range $
+[10, 200]$, a random learning rate from $[10^{-6}, 5 \times 10^{-4}]$, a random $x$ from $[-1, 1]$, and a random $y^*$ from $[-1, 1]$. In all trials, the analytical error is shown with a dashed line, with a root-mean-square error of less than $10^{-14}$.}
+\end{figure}
+
 
 \subsection{Dynamics of Saturation}
 

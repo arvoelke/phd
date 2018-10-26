@@ -13,7 +13,7 @@
 \newboolean{PrintVersion}
 \setboolean{PrintVersion}{false}
 
-\usepackage{amsmath,amssymb,amstext}
+\usepackage{amsmath,amssymb,amstext,amsthm}
 \usepackage[pdftex]{graphicx}
 \usepackage[dvipsnames,hyperref]{xcolor}
 \usepackage{microtype}
@@ -55,11 +55,18 @@
 \DeclareMathOperator*{\argmax}{arg\,max}
 \newcommand*{\bigoh}{O}
 % typing mathbf over and over again is garbage
-\newcommand*{\V}[1]{\mathbf{#1}}%
+\newcommand*{\V}[1]{\mathbf{#1}}
+\newcommand*{\IFF}{\ \iff{}\ }
 % binding
 \newcommand*{\bind}{\circledast}
 % We got room; big summations please!
 \everymath{\displaystyle}
+
+\newcommand{\block}[1]{\begin{adjustwidth}{0.6cm}{}{#1}\end{adjustwidth}}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
 
 % For fancy boxes
 \usepackage{tikz}
