@@ -34,6 +34,12 @@ For example, if $B \rightarrow B$ is a delay network, we can then use what we kn
 The idea that both continuous-time and discrete-time dynamics play important roles at different time-scales, both in terms of the dominant dynamics and in terms of the desired computation.
 It is also important to consider both for neuromorphic hardware.
 
+\subsection{Post-Synaptic Current Coding}
+
+The NEF's state variable is linearly mapped onto the post-synaptic current.
+Contrast this with rate code and spike-time code and rank-order coding (simon thorpe) and Bryan Tripp (2007).
+We further step outside this paradigm for conductance-based synapses, and adaptive LIF neurons.
+
 \subsection{Low-Frequency Representations}
 
 The idea that the most amount of ``information'' is present within the low-frequency range of the signals, relative to the firing rates of neurons and time-constants of synapses.
@@ -41,17 +47,10 @@ The idea that the most amount of ``information'' is present within the low-frequ
 Maybe additional biological detail can get around this limitation, or maybe the time-constants are this way for this very reason.
 
 
-\subsection{Post-Synaptic Current Coding}
-
-The NEF's state variable is linearly mapped onto the post-synaptic current.
-Contrast this with rate code and spike-time code and rank-order coding (simon thorpe) and Bryan Tripp (2007).
-We further step outside this paradigm for conductance-based synapses, and adaptive LIF neurons.
-
-
 \section{Suitability for Neuromorphic Hardware}
 
 
-\subsection{Optimality of the NEF}
+\subsection{Optimality}
 
 Include derivation that spiking LIF + lowpass == rate LIF + lowpass, in the sense of expectation, assuming initial membrane voltages are uniformly distributed.
 Also Appendix from NEF text on synaptic versus somatic dynamics.
@@ -62,7 +61,7 @@ Mention the spike-time decoder optimization (Temporal Solver) for more detailed 
 Low-rank factorization is optimal in space and time assuming linear weights (there is no advantage to factoring it any further by linearity).
 
 
-\subsection{Robustness of the NEF}
+\subsection{Robustness}
 
 Robustness to noise.
 
@@ -72,3 +71,7 @@ Also Conjecture: Den\`eve doesn't work in chaotic settings. NEF does (voltage ve
 
 Expose the general ideas about mapping NEF networks onto neuromorphic hardware, and what makes it better than other frameworks.
 
+
+\subsection{Extensibility}
+
+Section~\ref{chapt:nef-extensions}.
