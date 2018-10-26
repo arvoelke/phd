@@ -21,8 +21,10 @@
 \usepackage{rotating}
 \usepackage{multicol}
 \usepackage{booktabs}
-\usepackage{tipa}
-\let\ipa\textipa
+
+\usepackage{listings}
+\usepackage{color}
+\usepackage{numprint}
 
 % Set figure directories
 \graphicspath{{../figures/}}
@@ -54,15 +56,41 @@
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\argmax}{arg\,max}
 \newcommand*{\bigoh}{O}
-% typing mathbf over and over again is garbage
+
 \newcommand*{\V}[1]{\mathbf{#1}}
 \newcommand*{\IFF}{\ \iff{}\ }
+\newcommand*{\transpose}[1]{{#1}^\mathsf{T}}
+
 % binding
 \newcommand*{\bind}{\circledast}
 % We got room; big summations please!
 \everymath{\displaystyle}
 
 \newcommand{\block}[1]{\begin{adjustwidth}{0.6cm}{}{#1}\end{adjustwidth}}
+
+% https://tex.stackexchange.com/questions/199375/problem-with-listings-package-for-python-syntax-coloring
+\DeclareFixedFont{\ttb}{T1}{txtt}{bx}{n}{9} % for bold
+\DeclareFixedFont{\ttm}{T1}{txtt}{m}{n}{9}  % for normal
+\definecolor{deepblue}{rgb}{0,0,0.5}
+\definecolor{deepred}{rgb}{0.6,0,0}
+\definecolor{deepgreen}{rgb}{0,0.5,0}
+\newcommand\pythonstyle{\lstset{
+  language=Python,
+  backgroundcolor=\color{white}, %%%%%%%
+  basicstyle=\ttm,
+  otherkeywords={self},            
+  keywordstyle=\ttb\color{deepblue},
+  emph={MyClass,__init__},          
+  emphstyle=\ttb\color{deepred},    
+  stringstyle=\color{deepgreen},
+  commentstyle=\color{red},  %%%%%%%%
+  frame=tb,                         
+  showstringspaces=false            
+}}
+\lstnewenvironment{python}[1][]{
+  \pythonstyle
+  \lstset{#1}
+}{}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{corollary}{Corollary}[theorem]
