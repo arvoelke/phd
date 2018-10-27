@@ -70,7 +70,40 @@ Learning from spikes versus learning from rates. And their equivalence in limiti
 
 Everything can be specified at a high-level as a high-dimensional nonlinear dynamical system.
 
-\subsection{Dynamics of Learning}
+\subsection{Dynamics of Optimization Problems}
+
+Mention nonlinear gradient-based algorithms 
+ Compressed Sensing (LASSO / LCA)
+ Expectation-Maximization
+ PCA / SVD / ICA / NNMF
+
+\subsection{Dynamics of WTA Circuits}
+
+\subsection{Dynamics of Unsupervised Learning}
+
+This section is taken from \citet{voelker2014a}. Also see \citet{trujillo2014a} and \citet{aubin2016a} and \citet{knight2016}.
+
+Given a learning rate $\eta$, an input vector $x$ encoded by the activity of the input layer, the filtered activity $a(t)$ of  neurons in the middle layer, and the matrix $E$ whose rows are the ``preferred direction'' vectors of the middle layer neurons, we modify the preferred direction vectors of the middle layer neurons according to the equation:
+
+\begin{align} \label{voja}
+    \Delta{E} = \eta(a(t) x^T - a(t)E) = \eta a(t) (\begin{pmatrix}x^T \\ \vdots \\ x^T\end{pmatrix} - E)
+\end{align}
+
+Setting $\Delta{E_i} = 0$ gives $a_i(t)x = a_i(t)E_i$, and thus for a particular $x$, stability is characterized by
+
+\begin{align} \label{stability}
+    [\Delta{E_i} = 0]  \iff  [a_i(t) > 0  \implies  E_i = x]
+\end{align}
+
+Thus the effect of this rule is to make a subset of the middle layer neurons fire only when $x$ or a noisy version of it, is presented. The preferred direction vectors of the middle layer neurons are encoded in the synaptic weights between the first and middle layer neurons. Consequently, changing the preferred direction vectors corresponds to changing the connection weights using a local learning rule which we will outline in detail in the finished version.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{voja-encoders}
+    \caption{Input vector clustering of a 3-dimensional ensemble, presented with 6 evenly spaced $x$. (a) The initial clustering, before any input has been given. (b) Each input vector has been shown for 2 seconds of simulation time, with intercepts set to $cos(\frac{\pi}{6})$. Gray plates show the area of attraction for each input vector. (c) Same as b, with intercepts chosen to give $p_i = \frac{1}{6}$. (d) Same as b, with intercepts set to $cos(\frac{\pi}{3})$. \label{e3d}}
+\end{figure}
+
+\subsection{Dynamics of Supervised Learning}
 
 This report is taken from \citep{voelker2015}.
 
