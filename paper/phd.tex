@@ -8,6 +8,8 @@
 \newcommand{\cmmd}[1]{\textbackslash\texttt{#1}} % command name in tt font
 \newcommand{\href}[1]{#1}
 
+\pdfminorversion=7  % required to convert some EPS graphics
+
 % This package allows if-then-else control structures.
 \usepackage{xifthen}
 \newboolean{PrintVersion}
@@ -24,7 +26,15 @@
 
 \usepackage{listings}
 \usepackage{color}
-\usepackage{numprint}
+\usepackage{numprint}  % for comma separators in numbers
+\npthousandsep{,}
+\npthousandthpartsep{}
+\npdecimalsign{.}
+
+\usepackage{textcomp} % for degree
+\usepackage{multirow} % for results table
+\usepackage{siunitx} % for si units
+\usepackage{epstopdf} % for EPS graphics
 
 % Set figure directories
 \graphicspath{{../figures/}}

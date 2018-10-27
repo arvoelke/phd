@@ -36,6 +36,7 @@ __pycache__/
 
 # Outputs
 paper/phd.pdf
+figures/*-eps-converted-to.pdf
 
 # Jupyter stuff
 .ipynb_checkpoints/
