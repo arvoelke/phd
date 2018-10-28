@@ -77,11 +77,19 @@ Mention nonlinear gradient-based algorithms
  Expectation-Maximization
  PCA / SVD / ICA / NNMF
 
-\subsection{Dynamics of WTA Circuits}
+\subsection{Dynamics of Winner-Take-All Circuits}
 
-\subsection{Dynamics of Unsupervised Learning}
+Peak detector and paper with Jan.
+
+\subsection{Dynamics of Working Memory}
+
+Integrator and similar circuits used by Spaun.
+
+\subsection{Dynamics of Long-Term Memory Formation}
 
 This section is taken from \citet{voelker2014a}. Also see \citet{trujillo2014a} and \citet{aubin2016a} and \citet{knight2016}.
+
+Associative memories have been an active area of research over the last forty years \citep{willshaw1969nonholographic, kohonen1972, hopfield1982} because they form a central component of many cognitive architectures \citep{Pollack1988, Anderson1998}. We focus specifically on associative memories that store associations between arbitrary pairs of neural states. When a noisy version of an input state vector is presented to the network, it must output a ``clean'' version of the associated state vector. We describe a method for building large-scale networks for online learning of associations using spiking neurons, which works by exploiting the techniques of the Neural Engineering Framework \citep{eliasmith2003a}. This framework has previously been used by \citet{stewart2011biologically} to create memories that possess a number of desirable properties including high accuracy, a fast, feedforward recall process, and efficient scaling, requiring a number of neurons linear in the number of stored associations. These memories have played a central role in several recent neural cognitive models including Spaun, the world's largest functional brain model \citep{eliasmith2012}, as well as a proposal for human-scale, biologically plausible knowledge representation \citep{crawford2013biologically}. However, these memories are constructed using an offline optimization method that is not biologically plausible.  Here we demonstrate how a similar set of connection weights can be arrived at through a biologically plausible, online learning process featuring a novel synaptic learning rule inspired in part by the well-known Oja learning rule \citep{oja1989neural}. We present the details of our method and report the results of simulations exploring the storage capacity of these networks. We show that our technique scales up to large numbers of associations, and that recall performance degrades gracefully as the theoretical capacity is exceeded. 
 
 Given a learning rate $\eta$, an input vector $x$ encoded by the activity of the input layer, the filtered activity $a(t)$ of  neurons in the middle layer, and the matrix $E$ whose rows are the ``preferred direction'' vectors of the middle layer neurons, we modify the preferred direction vectors of the middle layer neurons according to the equation:
 

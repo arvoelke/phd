@@ -494,11 +494,11 @@ INPUT ../figures/voja-encoders.png
 INPUT /usr/share/texlive/texmf-dist/tex/latex/fourier/ts1futs.fd
 INPUT /usr/share/texlive/texmf-dist/tex/latex/fourier/ts1futs.fd
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/fourier/futr8c.tfm
+INPUT ../figures/pes-dynamics-network.png
+INPUT ../figures/pes-dynamics-network.png
+INPUT ../figures/pes-dynamics-network.png
 INPUT /usr/share/texlive/texmf-dist/fonts/vf/public/fourier/futr8c.vf
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/fourier/fourier-orns.tfm
-INPUT ../figures/pes-dynamics-network.png
-INPUT ../figures/pes-dynamics-network.png
-INPUT ../figures/pes-dynamics-network.png
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/fourier/futri8t.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/fourier/futri8t.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/fourier/futr8t.tfm

@@ -1,4 +1,9 @@
+% https://tex.stackexchange.com/questions/65544/how-to-link-table-of-contents-in-thesis-pdf
+\cleardoublepage
+\phantomsection
 \renewcommand\contentsname{Table of Contents}
+%\pdfbookmark[section]{\contentsname}{Table of Contents}
+\addcontentsline{toc}{chapter}{Table of Contents}
 \tableofcontents
 \cleardoublepage
 \phantomsection
