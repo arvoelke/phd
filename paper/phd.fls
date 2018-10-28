@@ -488,6 +488,11 @@ INPUT phd-analysis.tex
 INPUT phd-analysis.tex
 INPUT phd-methodology.tex
 INPUT phd-methodology.tex
+INPUT ../figures/wta-peak-detector.pdf
+INPUT ../figures/wta-peak-detector.pdf
+INPUT ../figures/wta-peak-detector.pdf
+INPUT /usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
+INPUT /usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
 INPUT ../figures/voja-encoders.png
 INPUT ../figures/voja-encoders.png
 INPUT ../figures/voja-encoders.png
@@ -497,11 +502,11 @@ INPUT ../figures/voja-spinnaker.pdf
 INPUT /usr/share/texlive/texmf-dist/tex/latex/fourier/ts1futs.fd
 INPUT /usr/share/texlive/texmf-dist/tex/latex/fourier/ts1futs.fd
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/fourier/futr8c.tfm
+INPUT ../figures/pes-dynamics-network.png
+INPUT ../figures/pes-dynamics-network.png
+INPUT ../figures/pes-dynamics-network.png
 INPUT /usr/share/texlive/texmf-dist/fonts/vf/public/fourier/futr8c.vf
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/fourier/fourier-orns.tfm
-INPUT ../figures/pes-dynamics-network.png
-INPUT ../figures/pes-dynamics-network.png
-INPUT ../figures/pes-dynamics-network.png
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/fourier/futri8t.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/fourier/futri8t.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/fourier/futr8t.tfm
@@ -542,8 +547,6 @@ INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/fourier/futri8r.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/vf/public/fourier/futsy.vf
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/fourier/fourier-ms.tfm
 INPUT /usr/share/texlive/texmf-dist/fonts/tfm/public/fourier/fourier-mcl.tfm
-INPUT /usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
-INPUT /usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
 INPUT ../figures/pes-error.pdf
 INPUT ../figures/pes-error.pdf
 INPUT ../figures/pes-error.pdf

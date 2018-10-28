@@ -70,21 +70,58 @@ Learning from spikes versus learning from rates. And their equivalence in limiti
 
 Everything can be specified at a high-level as a high-dimensional nonlinear dynamical system.
 
-\subsection{Dynamics of Optimization Problems}
+\subsection{Dynamics of Working Memory}
 
-Mention nonlinear gradient-based algorithms 
- Compressed Sensing (LASSO / LCA)
- Expectation-Maximization
- PCA / SVD / ICA / NNMF
- PES as stochastic gradient descent
+Integrator and similar circuits used by Spaun.
 
 \subsection{Dynamics of Winner-Take-All Circuits}
 
 Peak detector and paper with Jan.
 
-\subsection{Dynamics of Working Memory}
+\subsubsection{Peak Detector}
 
-Integrator and similar circuits used by Spaun.
+\begin{figure}
+\centering
+\includegraphics[width=0.5\textwidth]{wta-peak-detector}
+\caption{ \label{fig:wta-peak-detector}
+  An ideal ``peak detector'' implemented as a discrete-time dynamical system.
+}
+\end{figure}
+
+To consider a very different kind of WTA mechanism, here we suppose the input vector, $\V{u} \in \mathbb{R}^m$, is supplied online, one dimension at a time, such that:
+$$\V{u}[k] = \transpose{\left( u[k] \text{,}\, u[k-1] \text{,}\, \ldots \text{,}\, u[k-m] \right)}$$
+for some (possibly infinite) number of samples, $m \ge 1$.
+In this context, the task is to track the peak of the discrete-time signal, $u[k]$ (see Fig.~\ref{fig:wta-peak-detector}), at a sampling interval of $\dt{}$.
+In other words, the problem of tracking the maximum across time, is equivalent to a WTA mechanism where the input dimensions are provided sequentially, as opposed to being provided all at the same moment in time (as in the standard case from the above subsection).
+
+In the limit of $\dt{} \rightarrow 0$, the desired continuous-time dynamical system is:
+\begin{equation}
+\label{eq:peak-detector-continuous}
+\dot{x}(t) = f(x(t), u(t)), \quad f(x, u) = \kappa \left[u - x \right]_+
+\end{equation}
+where $\left[ \cdot \right]_+$ denotes positive half-wave rectification. $\kappa > 0$ is a time-constant that determines how quickly the state should adjust to the positive difference. Note that in a purely continuous-time system, assuming no noise, $\kappa$ can be made arbitrarily large, in order to track the peak arbitrary quickly. 
+However, since we have a discrete sampling time, our desired dynamical system is:
+\begin{equation}
+\label{eq:peak-detector-discrete}
+x[k + 1] = \bar{f}(x[k], u[k]), \quad \bar{f}(x, u) = \bar{\kappa} \left[u - x \right]_+ + x
+\end{equation}
+where $0 < \bar{\kappa} \le 1$ is a (dimensionless) discrete time-constant.
+Equation~\ref{eq:peak-detector-discrete} is related to equation~\ref{eq:peak-detector-continuous} by $\bar{\kappa} = \left( \dt{} \right) \kappa$, assuming Euler integration.
+Note that $\bar{\kappa} = 1$ will give a perfect peak detector, assuming no noise.
+
+In Fig.~\ref{fig:wta-peak-detector}, we implement a peak detector by using Nengo directly as a dynamical systems simulator. This does not use any neurons, but rather directly implements equation~\ref{eq:peak-detector-discrete} with $\bar{\kappa} = 1$:
+
+\begin{python}
+with nengo.Network() as model:
+    u = nengo.Node(stim)  # stim defines the test input signal
+    peak = nengo.Ensemble(1, dimensions=2, neuron_type=nengo.Direct())
+    nengo.Connection(u, peak[1], synapse=None)
+    function = lambda x: (x[1] - x[0]).clip(min=0) + x[0]
+    nengo.Connection(peak, peak[0], synapse=~z, function=function)
+\end{python}
+
+This illustrates the utility of discrete-time dynamical systems, the flexibility of this type of framework for describing useful computations, and the versatility of Nengo as a programming tool for simulating such systems.
+In chapter~\ref{chapt:nef-extensions} we will address the implementation of such systems using neural populations in both analog and digital hardware.
 
 \subsection{Dynamics of Long-Term Memory Formation}
 
@@ -606,3 +643,10 @@ Characterizing saturation as a dynamical system
 
 Writing down the dynamical system arising from the error term. e.g., oscillator error.
 
+\subsection{Dynamics of Optimization Problems}
+
+Mention nonlinear gradient-based algorithms 
+ Compressed Sensing (LASSO / LCA)
+ Expectation-Maximization
+ PCA / SVD / ICA / NNMF
+ PES as stochastic gradient descent
