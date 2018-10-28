@@ -76,6 +76,7 @@ Mention nonlinear gradient-based algorithms
  Compressed Sensing (LASSO / LCA)
  Expectation-Maximization
  PCA / SVD / ICA / NNMF
+ PES as stochastic gradient descent
 
 \subsection{Dynamics of Winner-Take-All Circuits}
 
@@ -89,7 +90,7 @@ Integrator and similar circuits used by Spaun.
 
 This section is taken from \citet{voelker2014a}. Also see \citet{trujillo2014a} and \citet{aubin2016a} and \citet{knight2016}.
 
-Associative memories have been an active area of research over the last forty years \citep{willshaw1969nonholographic, kohonen1972, hopfield1982} because they form a central component of many cognitive architectures \citep{Pollack1988, Anderson1998}. We focus specifically on associative memories that store associations between arbitrary pairs of neural states. When a noisy version of an input state vector is presented to the network, it must output a ``clean'' version of the associated state vector. We describe a method for building large-scale networks for online learning of associations using spiking neurons, which works by exploiting the techniques of the Neural Engineering Framework \citep{eliasmith2003a}. This framework has previously been used by \citet{stewart2011biologically} to create memories that possess a number of desirable properties including high accuracy, a fast, feedforward recall process, and efficient scaling, requiring a number of neurons linear in the number of stored associations. These memories have played a central role in several recent neural cognitive models including Spaun, the world's largest functional brain model \citep{eliasmith2012}, as well as a proposal for human-scale, biologically plausible knowledge representation \citep{crawford2013biologically}. However, these memories are constructed using an offline optimization method that is not biologically plausible.  Here we demonstrate how a similar set of connection weights can be arrived at through a biologically plausible, online learning process featuring a novel synaptic learning rule inspired in part by the well-known Oja learning rule \citep{oja1989neural}. We present the details of our method and report the results of simulations exploring the storage capacity of these networks. We show that our technique scales up to large numbers of associations, and that recall performance degrades gracefully as the theoretical capacity is exceeded. 
+Associative memories have been an active area of research over the last forty years \citep{willshaw1969nonholographic, kohonen1972, hopfield1982} because they form a central component of many cognitive architectures \citep{Pollack1988, Anderson1998}. We focus specifically on associative memories that store associations between arbitrary pairs of neural states. When a noisy version of an input state vector is presented to the network, it must output a ``clean'' version of the associated state vector. We describe a method for building large-scale networks for online learning of associations using spiking neurons, which works by exploiting the techniques of the Neural Engineering Framework \citep{eliasmith2003a}. This framework has previously been used by \citet{stewart2011biologically} to create memories that possess a number of desirable properties including high accuracy, a fast, feedforward recall process, and efficient scaling, requiring a number of neurons linear in the number of stored associations. These memories have played a central role in several recent neural cognitive models including Spaun, the world's largest functional brain model \citep{eliasmith2012}, as well as a proposal for human-scale, biologically plausible knowledge representation \citep{crawford2015}. However, these memories are constructed using an offline optimization method that is not biologically plausible.  Here we demonstrate how a similar set of connection weights can be arrived at through a biologically plausible, online learning process featuring a novel synaptic learning rule inspired in part by the well-known Oja learning rule \citep{oja1989neural}. We present the details of our method and report the results of simulations exploring the storage capacity of these networks. We show that our technique scales up to large numbers of associations, and that recall performance degrades gracefully as the theoretical capacity is exceeded. 
 
 Given a learning rate $\eta$, an input vector $x$ encoded by the activity of the input layer, the filtered activity $a(t)$ of  neurons in the middle layer, and the matrix $E$ whose rows are the ``preferred direction'' vectors of the middle layer neurons, we modify the preferred direction vectors of the middle layer neurons according to the equation:
 
@@ -110,6 +111,64 @@ Thus the effect of this rule is to make a subset of the middle layer neurons fir
     \includegraphics[width=0.8\textwidth]{voja-encoders}
     \caption{Input vector clustering of a 3-dimensional ensemble, presented with 6 evenly spaced $x$. (a) The initial clustering, before any input has been given. (b) Each input vector has been shown for 2 seconds of simulation time, with intercepts set to $cos(\frac{\pi}{6})$. Gray plates show the area of attraction for each input vector. (c) Same as b, with intercepts chosen to give $p_i = \frac{1}{6}$. (d) Same as b, with intercepts set to $cos(\frac{\pi}{3})$. \label{e3d}}
 \end{figure}
+
+This section has been taken from \citep{knight2016}.
+
+Previous work on using unsupervised learning rules including BCM~\citep{bekolay2013} and Oja's rule~\citep{trujillo2014} within the NEF have found that it is difficult to characterize the effect of these rules in terms of the vector represented by the population of neurons and, as such, neither have been used within any large-scale NEF models.
+Moreover, as these rules are formulated in terms of individual synaptic weight changes, they preclude the efficiency gained from using factored connection weight matrices~\citep{mundy2015}.
+%
+To solve these problems, we utilize an unsupervised learning rule similar to Oja's rule, but which operates within the vector space represented by a population, that we call {\it Voja}~\citep{voelker2014a}:
+%
+\begin{equation}
+  \label{eq:voja}
+  \Delta \V{e}_j = \eta \, a_j (\V{x} - \V{e}_j) .
+\end{equation}
+%
+Here, $\V{x}$ refers to the input vector encoded by the $j^\mathrm{th}$ neuron according to (\ref{eq:encoding}), or equivalently the estimate decoded from the population of presynaptic neurons  according to (\ref{eq:decoding}).
+
+This rule may be understood in terms of its effect on each encoder in isolation.
+Whenever the $j^\mathrm{th}$ neuron responds to $\V{x}$, its encoder $\V{e}_j$ will move towards this input.
+This rule converges to the stationary point $\V{e}_j = \V{x}$, which from (\ref{eq:encoding}) results in a firing rate that is now maximal for this same input.
+The end result is a population of neurons that are tuned to fire most strongly in response to its previously observed inputs~\citep{voelker2014a}.
+% Noting that by (???) a neuron fires whenever $\V{e}_j \cdot \V{x}$ exceeds a fixed threshold, this  ... say something about intercepts now? Or leave to the subsection?
+%
+Taking the dot product of (\ref{eq:voja}) with the decoding vector for the $i^\mathrm{th}$ presynaptic neuron yields the effect of the rule on the underlying connection weight matrix from (\ref{eq:weights}).
+%
+\begin{align}
+  \label{eq:voja-weights}
+  \Delta \omega_{ij} = \Delta \V{e}_j \cdot \V{d}_i = \eta \, a_j (\V{d}_i \cdot \V{x} - \omega_{ij})
+\end{align}
+%
+This reveals that our learning rule is a Hebbian rule, similar to Oja's rule, but without $a_j$ used to normalize $\omega_{ij}$, and with $\V{d}_i \cdot \V{x}$ substituted for $a_i$.
+% In fact, it is the best linear approximation for a_i (using x) assuming the decoders are a scaled version of its own pseudoinverse, but in general this is not the case (although this isn't so terrible, similar to using encoders as decoders)... may be interesting in future to use the decoder pseudoinverse to drive the encoder error (analogous to PES), effectively making it the best possible approximation of Oja (but then it won't be doing the same thing anymore)
+Normalization is omitted since the NEF methods already ensure that $\|\V{x}\|$ is bounded and as the values required by (\ref{eq:voja}) are local to each neuron and its synapses, this rule is biologically plausible.
+%This method also guarantees stability, given a sufficiently small time-step, since each encoder will converge to a vector with bounded magnitude.
+% footnote to explain?
+%\todo{citation or further justification required? cite evidence for increased firing rate or sparse coding?}
+% assuming each neuron "knows" its own encoder, or can compute the relevant quantity (a_j dot(d_i, x)) at each of its synapses every time it fires (this could also plausibly be done with a separate connection?)
+%We also observe that by summing over all updates with respect to a single postsynaptic neuron, as with Oja's rule, any neuron's total afferent weight is expected to remain constant.
+%\todo{Actually I don't believe this is true for Oja's rule... Where did you find this or how did you decide this?}
+% I think this may be unnecessary detailed
+%\begin{align}
+%  \label{eq:weight-conservation}
+%  \mathds{E} \left[ \sum_{i} \Delta \omega_{ij} \bigg| j \right] = \Delta \V{e}_j \cdot \sum_{i} \mathds{E} \left[ %\V{d}_i \right] = 0 .
+%\end{align}
+%
+%Note that $\mathds{E} \left[ \V{d}_i \right] = \V{0}$, since the components of $\V{d}_i$ are normally distributed %least squares parameters.
+%Property (\ref{eq:weight-conservation}) is consistent with experimental evidence that synaptic plasticity maintains balance %across time for individual hippocampal neurons~\citep{Bourne2011}.
+%
+\begin{figure*}[!htb]
+  \centering
+  \includegraphics[width=\textwidth]{voja-spinnaker}
+  \caption{
+The effect of Voja on the encoders of a 2-dimensional population, over time.
+Each point corresponds to the encoder of one of \num{100} neurons.
+Four input vectors are chosen of the form $(\pm 1 / \sqrt{2}, \, \pm 1 / \sqrt{2})$, and their areas of attraction within the unit circle are indicated by shaded regions ($c = 0.6$).
+As the simulation progresses, from left to right, each encoder converges to one of the possible inputs.
+% note we are cycling through the inputs rapidly
+}
+  \label{fig:plasticity_nef/voja_encoders}
+\end{figure*}
 
 \subsection{Dynamics of Supervised Learning}
 
