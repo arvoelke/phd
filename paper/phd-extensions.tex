@@ -49,6 +49,40 @@ Insert patent here.
 
 \subsection{Encoding Filters}
 
+Here we consider ensembles of neurons where the $i^{th}$ neuron has a distinct filter applied to its input current, referred to as an `encoding filter' $h^e_i(t)$, in addition to a distinct filter applied to its output spike train, referred to as a `decoding filter' $h^d_i(t)$. 
+By linearity of encoding and decoding, the synapse connecting the $j^{th}$ pre-synaptic neuron to the $i^{th}$ post-synaptic neuron becomes:
+\begin{equation} \label{eq:syn-factored}
+h_{ij}(t) = (h^e_i \ast h^d_j)(t) .
+\end{equation}
+
+If, for example, $h^e_i$ and $h^d_j$ are lowpass filters, then $h_{ij}$ will be the double-exponential synapse. If further  they are identical, then this is the alpha synapse.
+
+This can be interpreted as a generalization of Principle~II from the NEF, which normally supposes $h_{ij}(t) = h(t)$ for all $i$ and $j$ within the same ensemble.
+This can be used to model the synaptic heterogeneity that arises in real biological systems, or in neuromorphic hardware resulting from transistor mismatch. 
+
+Furthermore (\ref{eq:syn-factored}) can be interpreted as a factorization of the synapses, analogous to the factorization of connection weights \mbox{$w_{ij} = \vec{e}_i \, \cdot \, \vec{d}_j$}.
+We thus use the term `filter' throughout to distinguish the abstract factors of the synapse from their correspondingly realized synapse.
+We will also interpret the tuple $(\vec{e}_i, h^e_i)$ as the neuron's `temporal encoder', and $(\vec{d}_i, h^d_i)$ as the `temporal decoder'.
+
+To be clear, the input current to the $i^{th}$ neuron is now:
+\begin{align}
+J_i(t) &= \left( \left[ \vec{e}_i \cdot \left( \sum_j ( a_j \ast h^d_j) \, \vec{d}_j \right) \right] \ast h^e_i \right)(t) \label{eq:factored} \\
+       &= \sum_j w_{ij} (a_j \ast h_{ij})(t) . \label{eq:unfactored}
+\end{align}
+Importantly (\ref{eq:factored}) is more space- and time-efficient to implement than (\ref{eq:unfactored}) for low-dimensional encoders and decoders, since the inner summation (which is also the decoded vector being represented) does not depend on $i$.
+
+We view such an architecture as approximating functions of the form:
+\begin{equation} \label{eq:temporal-function}
+\hat{f}(\vec{x} \ast \hat{h}^e) \ast \hat{h}^d
+\end{equation}
+where $\hat{f}$ is an approximation of some desired $f$, and $\hat{h}^e$ and $\hat{h}^d$ are approximations of some desired filters $h^e$ and $h^d$.
+This is in contrast to the functions that we normally approximate, $\hat{f}(x) \ast h$, which are strictly less computationally powerful.
+
+In order to solve for the decoders $\vec{d}$ which approximate this function, it suffices to explicitly simulate the ensemble on some training signal $\vec{x}(t)$, determine the corresponding target signal using (\ref{eq:temporal-function}), and then solve for the linear decoders which minimize the root mean-square-error (RMSE) -- also known as least-squares optimization -- between the two signals as per usual in the NEF.
+The simulation involves encoding $\vec{x}(t)$ through the encoding filters $h_i^e(t)$ and encoding vectors $\vec{e}_i$, simulating the neuron models, and finally applying the decoding filters $h_i^d(t)$ to each spike train.
+
+This technique was used in \citet{voelker2016a} and found to be primarily responsible for the performance of the touch classifier overviewed below.
+
 This section is taken from \citep{voelker2016a}.
 
 Giving robots the ability to classify surface textures requires appropriate sensors and algorithms. Inspired by the biology of human tactile perception, we implement a neurorobotic texture classifier with a recurrent spiking neural network, using a novel semi-supervised approach for classifying dynamic stimuli. Input to the network is supplied by accelerometers mounted on a robotic arm. The sensor data is encoded by a heterogeneous population of neurons, modeled to match the spiking activity of mechanoreceptor cells. This activity is convolved by a hidden layer using bandpass filters to extract nonlinear frequency information from the spike trains. The resulting high-dimensional feature representation is then continuously classified using a neurally implemented support vector machine. We demonstrate that our system classifies 18 metal surface textures scanned in two opposite directions at a constant velocity. %In particular, the system correctly classifies 65.6\% of all 1 second test recordings. 
@@ -257,5 +291,3 @@ Peter's work
 \subsection{Baal Neurons}
 
 Peter's work
-
-
