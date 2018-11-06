@@ -21,6 +21,7 @@
 *.mtc
 *.mtc1
 *.out
+*.tdo
 *.synctex.gz
 
 # For Python
