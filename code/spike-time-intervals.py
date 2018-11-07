@@ -2,6 +2,8 @@ from phd import *
 
 from nengolib.compat import get_activities
 
+from scipy.stats import kstest
+
 
 def go(freq, n_neurons=100, n_steps=10000, dt=0.001, sample_every=0.001, seed=0):
     with nengo.Network(seed=seed) as model:
@@ -30,6 +32,7 @@ def go(freq, n_neurons=100, n_steps=10000, dt=0.001, sample_every=0.001, seed=0)
     r = (sim.data[p_r].flatten()[sl] - dt).clip(0)
 
     s = (x.neuron_type.tau_rc * np.log1p((1 - v) / (j - 1)) + r) * a
+    print(freq, kstest(s, 'uniform'))
 
     return s
 
@@ -47,7 +50,7 @@ for i, freq in enumerate(freqs):
     #             hist_kws={'cumulative': True},
     #             kde_kws={'cumulative': True})
 plt.plot(line, line, label="Ideal Uniform", linestyle='--')
-plt.xlabel("Spike Time Interval")
+plt.xlabel("ISI Position")
 plt.ylabel("Cumulative Distribution Function (CDF)")
 plt.xlim(0, 1)
 plt.legend()
