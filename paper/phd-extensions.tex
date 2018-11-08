@@ -60,26 +60,26 @@ If, for example, $h^e_i$ and $h^d_j$ are lowpass filters, then $h_{ij}$ will be 
 This can be interpreted as a generalization of Principle~II from the NEF, which normally supposes $h_{ij}(t) = h(t)$ for all $i$ and $j$ within the same ensemble.
 This can be used to model the synaptic heterogeneity that arises in real biological systems, or in neuromorphic hardware resulting from transistor mismatch. 
 
-Furthermore (\ref{eq:syn-factored}) can be interpreted as a factorization of the synapses, analogous to the factorization of connection weights \mbox{$w_{ij} = \vec{e}_i \, \cdot \, \vec{d}_j$}.
+Furthermore (\ref{eq:syn-factored}) can be interpreted as a factorization of the synapses, analogous to the factorization of connection weights \mbox{$w_{ij} = \V{e}_i \, \cdot \, \V{d}_j$}.
 We thus use the term `filter' throughout to distinguish the abstract factors of the synapse from their correspondingly realized synapse.
-We will also interpret the tuple $(\vec{e}_i, h^e_i)$ as the neuron's `temporal encoder', and $(\vec{d}_i, h^d_i)$ as the `temporal decoder'.
+We will also interpret the tuple $(\V{e}_i, h^e_i)$ as the neuron's `temporal encoder', and $(\V{d}_i, h^d_i)$ as the `temporal decoder'.
 
 To be clear, the input current to the $i^{th}$ neuron is now:
 \begin{align}
-J_i(t) &= \left( \left[ \vec{e}_i \cdot \left( \sum_j ( a_j \ast h^d_j) \, \vec{d}_j \right) \right] \ast h^e_i \right)(t) \label{eq:factored} \\
+J_i(t) &= \left( \left[ \V{e}_i \cdot \left( \sum_j ( a_j \ast h^d_j) \, \V{d}_j \right) \right] \ast h^e_i \right)(t) \label{eq:factored} \\
        &= \sum_j w_{ij} (a_j \ast h_{ij})(t) . \label{eq:unfactored}
 \end{align}
 Importantly (\ref{eq:factored}) is more space- and time-efficient to implement than (\ref{eq:unfactored}) for low-dimensional encoders and decoders, since the inner summation (which is also the decoded vector being represented) does not depend on $i$.
 
 We view such an architecture as approximating functions of the form:
 \begin{equation} \label{eq:temporal-function}
-\hat{f}(\vec{x} \ast \hat{h}^e) \ast \hat{h}^d
+\hat{f}(\V{x} \ast \hat{h}^e) \ast \hat{h}^d
 \end{equation}
 where $\hat{f}$ is an approximation of some desired $f$, and $\hat{h}^e$ and $\hat{h}^d$ are approximations of some desired filters $h^e$ and $h^d$.
 This is in contrast to the functions that we normally approximate, $\hat{f}(x) \ast h$, which are strictly less computationally powerful.
 
-In order to solve for the decoders $\vec{d}$ which approximate this function, it suffices to explicitly simulate the ensemble on some training signal $\vec{x}(t)$, determine the corresponding target signal using (\ref{eq:temporal-function}), and then solve for the linear decoders which minimize the root mean-square-error (RMSE) -- also known as least-squares optimization -- between the two signals as per usual in the NEF.
-The simulation involves encoding $\vec{x}(t)$ through the encoding filters $h_i^e(t)$ and encoding vectors $\vec{e}_i$, simulating the neuron models, and finally applying the decoding filters $h_i^d(t)$ to each spike train.
+In order to solve for the decoders $\V{d}$ which approximate this function, it suffices to explicitly simulate the ensemble on some training signal $\V{x}(t)$, determine the corresponding target signal using (\ref{eq:temporal-function}), and then solve for the linear decoders which minimize the root mean-square-error (RMSE) -- also known as least-squares optimization -- between the two signals as per usual in the NEF.
+The simulation involves encoding $\V{x}(t)$ through the encoding filters $h_i^e(t)$ and encoding vectors $\V{e}_i$, simulating the neuron models, and finally applying the decoding filters $h_i^d(t)$ to each spike train.
 
 This technique was used in \citet{voelker2016a} and found to be primarily responsible for the performance of the touch classifier overviewed below.
 
@@ -262,9 +262,64 @@ Likewise, features of the input stimulus are learned and classified using genera
 The test results indicate how often each texture is confused with another. 
 In general, it should be possible to design a simple psychophysical experiment to compare our system to human performance. However, our system is at a fundamental disadvantage since it does not  alter its position or pressure to gather more evidence when unsure of its prediction. We are considering future extensions that solve this issue with a closed-loop system that can actively control its motor movements, with a range of velocities,  based on feedback from the accumulated features.
 
-\subsection{Decoding Filter Optimization}
+\subsection{Decoding Filters}
 
-Include method of simultaneously solving for decoders and linear filter in a single least-squares problem
+\begin{figure}
+\centering
+\tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=3em]
+\tikzstyle{sum} = [draw, circle, node distance=1cm]
+\tikzstyle{input} = [coordinate]
+\tikzstyle{output} = [coordinate]
+\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+\begin{tikzpicture}[auto, node distance=2cm,>=latex']
+  \node [input, name=input] {};
+  \node [coordinate, name=fanin, right of=input] {};
+  \node [block, right of=fanin, node distance=1cm] (b) {${b}$};
+  \node [sum, right of=b, node distance=2cm] (sum) {};
+  \node [block, right of=sum, node distance=2cm] (integ) {$H(s)$};
+  \node [below of=integ, name=decoded] {$\sum_{i=1}^n a_i(t) {d}_i$};
+  \node [output, right of=integ] (output) {};
+
+  \draw [-] (input) -- node {${u}(t)$} (fanin);
+  \draw [->] (fanin) -- node {} (b);
+  \draw [->] (b) -- node {} (sum);
+  \draw [->] (sum) -- node {${w}(t)$} (integ);
+  \draw [->] (integ) -- node [name=fanout] {${x}(t)$} (output);
+  \draw [->] (decoded) -| node[pos=0.98] {$+$} node [near end] {} (sum);
+\end{tikzpicture}
+\caption{\label{fig:decoding-filter} Architecture used to formulate an optimization problem that combines the decoding vector with the decoding filter.}
+\end{figure}
+
+Here we consider the problem of solving for the optimal linear filter, together with the optimal linear decoders, in the same least-squares optimization problem.
+This is useful in the situation where we have freedom over the form of the synaptic filter (e.g., Loihi) and would like to find the best synapse for representing some particular target signal (either feed-forward or recurrently).
+We begin by considering the architecture from Fig.~\ref{fig:decoding-filter}.
+Beginning with the scalar case, ${x}(t)$ is the known target representation, which here we interpret as the PSC without loss of generality, by moving the filtering to occur before the encoding vector, gain, and bias, by linearity.
+$a_i(t)$ is the spike-train of the $i^\text{th}$ neuron encoding ${x}(t)$. ${b}$ is a free parameter scaling the input signal ${u}(t)$. ${d}_i$ are free parameters decoding the activities. Lastly, we'll suppose the synapse has the form:
+\begin{equation}
+H(s) = \frac{1}{1 + \sum_{i=1}^k c_i s^i} \text{,}
+\end{equation}
+where $k \in \mathbb{N}_{\ge 1}$ is fixed and $c_i$ ($1 \le i \le k$) are free parameters for the chosen recurrent synapse.
+We fix $c_0 = 1$ so that $H(0) = 1 \iff$ its impulse response has an integral of $1$.
+\TODO{Reference results on coordinate transformation.}
+
+We define ${w}(t)$ as the signal driving the synapse. Our goal is to satisfy:
+\begin{align*}
+    && \frac{{X}(s)}{{W}(s)} &= H(s) \\
+    \iff && {x}(t) + \sum_{i=1}^k c_i {x}^{(i)}(t) &= {b} \cdot {u}(t) + \sum_{i=1}^n a_i(t) {d}_i \\
+    \iff && {b} \cdot {u}(t) + \sum_{i=1}^k c_i \left(-{x}^{(i)}(t)\right) + \sum_{i=1}^n a_i(t) {d}_i &= {x}(t)
+\end{align*}
+
+We then rewrite this problem in matrix form $AD = Y$, where:
+$$A = \left[ \begin{matrix} {u}(t) & -{x}^{(1)}(t) & \ldots & -{x}^{(k)}(t) & a_1(t) & \ldots & a_n(t)  \end{matrix} \right] \text{,} \quad D = \left[ \begin{matrix} {b} \\ c_1 \\ \vdots \\ c_k \\ d_1 \\ \vdots \\ d_n \end{matrix} \right] \text{,} \quad Y = \left[ \begin{matrix} {x}(t) \end{matrix} \right]\text{,}$$
+and each row of $A$ and $Y$ correspond to an evaluation point $t$ from the dataset.
+
+For vector representations, $\V{x}(t)$, we can repeat this independently for each dimension, to solve for a decoding matrix and a vector of synapses. 
+Furthermore, if we substitute this target with the desired post-synaptic current, $\alpha_i \left \langle \V{x}(t)\text{,}\, \V{e}_i \right \rangle + \beta_i$---analogous to a core idea from the methods of \citet{stoeckel2018}---then we can repeat this optimization procedure for each neuron to obtain a full weight-matrix and an individual synaptic filter for each neuron, while maintaining the desired encoding.
+This can be used to fully leverage hardware where synapses are configurable at the post-synaptic neuron level, in order to improve overall accuracy.
+
+Since our $A$ matrix contains spikes, we should regularize the system by filtering the columns of both $A$ and $Y$ by some filter (e.g.,~lowpass).
+Improved accuracy for sparse datasets may be achieved via Generalized Tikhonov regularization, by mapping some Bayesian prior over the poles of $H(s)$\footnote{The time-constants of $h(t)$ are equal to $-p_i^{-1}$ where $p_i$ is the $i^\text{th}$ pole of $H(s)$.} to some corresponding distribution over $c_i$ ($1 \le i \le k$).
+This results in a regularization matrix with block-structure, with one block imposing the usual diagonal L2-regularization on the entries corresponding to the $d_i$ parameters, and the other imposing some correlation structure on the $c_i$ parameters given the chosen prior on the unknown time-constants of $h(t)$.
 
 \subsection{Dale's Principle}
 
