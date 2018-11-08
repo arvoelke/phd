@@ -342,17 +342,19 @@ Static distortion error scales as $\bigoh{n^{-1}}$ in the number of neural basis
 \TODO{Cite appropriate page in NEF text.}
 Spike noise scales as $\bigoh{ \tau^{-1} n^{-1/2} }$.\footnote{The PSC has an amplitude of $\tau^{-1}$ which linearly scales the error $\bigoh{n^{-1/2}}$.}
 In this section, we focus on addressing the third source of error, which is independent of the number of neurons.
+Furthermore, we address this in the context of Principle~3, where our goal is to precisely compile some set of differential equations onto the spiking network.
+In other contexts it may be desirable to leverage stateful behaviour such as adaptation (see section~\ref{sec:adaptive-neurons}) instead of viewing it as a source of error.
 
 As suggested in section~\ref{sec:spike-coding}, the goal is for our neurons to be ``uniformly ready to spike'' at every given moment in time.
 The issue with LIF neurons is that, for non-constant inputs, this requirement is systematically violated.
-Each neuron is biased away from the median of the distribution, tending towards one of two extremes of either being near the start of its ideal ISI or near its end (see Fig.~\ref{fig:spike-time-intervals}).
+Each neuron is biased away from the median of the distribution, tending towards one of two extremes of either being closer to the start of its ideal ISI or closer to its end (see Fig.~\ref{fig:spike-time-intervals}).
 This discrepancy between the true distribution of neural states, and the ideal uniform distribution, worsens as the input frequency increases relative to the spike-rates and time-constants of the neuron model (not shown).
 This observation goes well beyond the scope of the LIF model, to any neuron model that has some internal memory or state that leads it to violate the criteria of uniformity.
 
 This discussion motivates the search for a ``memoryless'' spiking neuron model -- one that cannot be biased towards a non-uniform probability of being ready to spike by its prior inputs or absence thereof.
 The exponential distribution is the only such continuous-time probability distribution.
 This distribution describes the arrival time between Poisson events.
-Therefore, a Poisson spiking model is the only probabilistic neuron model that satisfies our criteria for removing this source of error.
+Therefore, a Poisson spiking model is the only probabilistic neuron model that satisfies our criteria for eliminating this source of error.
 We thus consider Poisson spiking neurons where the number of spikes within a given time-step follows a Poisson distribution with a rate given by some desired static response curve evaluated at the input current.
 
 Poisson spiking models have numerous benefits.
@@ -387,11 +389,13 @@ Poisson LIF performance scales towards $0$ error as $n \rightarrow \infty$, sinc
 
 We validate these claims in Figure~\ref{fig:poisson-frequency-scaling} and Figure~\ref{fig:poisson-neuron-scaling} by exploring a Poisson spiking version of the LIF model.
 The properties of this neuron model make it particularly suitable for neuromorphic architectures such as SpiNNaker~2.
-Specifically, SpiNNaker~2 has specialized hardware for computing exponentials, logarithms, and uniform samples, and benefits greatly from the reduction of memory requirements and spike traffic.
+Specifically, SpiNNaker~2 has specialized hardware for computing exponentials, logarithms, and uniform samples, and benefits enormously from the reduction of memory requirements and spike traffic.
 Since the Poisson spike generator can be applied to any desired static response curve, this method can be applied to whatever is cheap to compute while still providing a suitable nonlinear basis for the desired transformation.
 
 \subsection{Adaptative Neurons}
+\label{sec:adaptive-neurons}
 
+Partial differentiation (Fairhall)
 Eric's system itendification
 Subtractive adaptation and perfect cancellation
 Divisive adaptation (adaptive threshold) and modelling it by the latter
