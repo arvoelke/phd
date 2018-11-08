@@ -50,6 +50,7 @@ Maybe additional biological detail can get around this limitation, or maybe the 
 \section{Suitability for Neuromorphic Hardware}
 
 \subsection{Optimality of Spike Coding}
+\label{sec:spike-coding}
 
 Mention the spike-time decoder optimization (Temporal Solver) for more detailed neurons.
 
@@ -264,7 +265,9 @@ For changing inputs, however, the uniform assumption immediately breaks down ($p
 Taken together, this means that any approximation error arising from the substitution of spiking LIF for non-spiking LIF models must arise from two sources: (1) the variability in equation \ref{eq:variance}, which is a function of $\tau$, the number of neurons, and the magnitude of the decoders, and (2) a systematic bias (Fig.~\ref{fig:spike-time-intervals}) resulting from the ISI positions being non-uniform with respect to the input stimuli.
 In summary, this provides a theoretical framework for understanding the differences between spiking and non-spiking neuron models in the context of some desired PSC.
 This also provides some theoretical justification for using spiking LIF models following an offline optimization using static tuning curves -- a procedure that the NEF and Nengo use regularly.
-Lastly, this suggests criteria for optimizing the information-processing capabilities of spiking neurons in the context of high-frequency signals.
+Lastly, this suggests criteria for optimizing the information-processing capabilities of spiking neurons in the context of high-frequency signals, as done in section~\ref{sec:poisson-spiking}.
+
+\TODO{Comment on dimensional analysis for speeding up / slowing down timescales}
 
 \subsection{Efficiency in Time and Space}
 

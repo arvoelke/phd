@@ -37,7 +37,7 @@ Pulse-extender
 Special case of transistor mismatch
 
 
-\section{Arbitrary Linear Synapses}
+\section{Synaptic Extensions}
 
 Insert patent here.
 
@@ -270,12 +270,70 @@ Include method of simultaneously solving for decoders and linear filter in a sin
 
 Compare my DalesSolver to Parisian Transform
 
-
-\section{Biological Detail}
-
 \subsection{Conductance-Based Synapses}
 
 Summarize Andreas' research
+
+
+\section{Neural Extensions}
+
+\subsection{Poisson Spiking}
+\label{sec:poisson-spiking}
+
+In the NEF, there are three sources of error in the neural representation: (1) ``static distortion'' arising from the use of decoders; that is, the linear combination of nonlinear basis functions to approximate some desired transformation, (2) ``spike noise'' arising from the use of discontinuous spikes; that is, the substitution of a continuous non-spiking model with a spiking model that produces variable PSCs, and (3) ``state discrepancy'' arising from the substitution of a stateless model with a stateful model; specifically, when it leads to a violation of the uniform assumption outlined in section~\ref{sec:spike-coding}.
+
+The first two problems can be solved by scaling up the number of neurons.
+Static distortion error scales as $\bigoh{n^{-1}}$ in the number of neural basis functions~\citep{eliasmith2003a}.
+\TODO{Cite appropriate page in NEF text.}
+Spike noise scales as $\bigoh{ \tau^{-1} n^{-1/2} }$.\footnote{The PSC has an amplitude of $\tau^{-1}$ which linearly scales the error $\bigoh{n^{-1/2}}$.}
+In this section, we focus on addressing the third source of error, which is independent of the number of neurons.
+
+As suggested in section~\ref{sec:spike-coding}, the goal is for our neurons to be ``uniformly ready to spike'' at every given moment in time.
+The issue with LIF neurons is that, for non-constant inputs, this requirement is systematically violated.
+Each neuron is biased away from the median of the distribution, tending towards one of two extremes of either being near the start of its ideal ISI or near its end (see Fig.~\ref{fig:spike-time-intervals}).
+This discrepancy between the true distribution of neural states, and the ideal uniform distribution, worsens as the input frequency increases relative to the spike-rates and time-constants of the neuron model (not shown).
+This observation goes well beyond the scope of the LIF model, to any neuron model that has some internal memory or state that leads it to violate the criteria of uniformity.
+
+This discussion motivates the search for a ``memoryless'' spiking neuron model -- one that cannot be biased towards a non-uniform probability of being ready to spike by its prior inputs or absence thereof.
+The exponential distribution is the only such continuous-time probability distribution.
+This distribution describes the arrival time between Poisson events.
+Therefore, a Poisson spiking model is the only probabilistic neuron model that satisfies our criteria for removing this source of error.
+We thus consider Poisson spiking neurons where the number of spikes within a given time-step follows a Poisson distribution with a rate given by some desired static response curve evaluated at the input current.
+
+Poisson spiking models have numerous benefits.
+First, they are cheap to simulate in both space and time, as they require no additional memory or updates to state.
+Second, they can be applied to any static response curve without loss of generality.
+Third, there is no latency when processing inputs that jump discontinuously, and more generally when processing high-frequency input signals, as there is no start-up transient in the model; the expected spike rate of each neuron always equals the desired instantaneous rate.
+Fourth, by solving the state discrepancy problem, the performance continues to scale with the number of neurons.
+Fifth, since increasing the input frequency is equivalent to decreasing the spike-rates for a Poisson model, this scaling promotes a reduction in total power by way of fewer spikes needed to achieve some level of precision.
+
+\begin{figure}
+\centering
+\includegraphics[width=1.0\textwidth]{poisson-frequency-scaling}
+\caption{\label{fig:poisson-frequency-scaling} Performance of Poisson LIF versus regular LIF as the frequency of the input signal is scaled.
+The input signal is a sinusoid with frequency $f$\,Hz.
+Both the ideal sinusoid and the decoded spike trains are filtered by $\tau = 0.01 f^{-1}$\,s to compute the RMSE.
+The number of neurons is set to $50 f$ in order to scale the total number of spikes with the input frequency, and the maximum firing rate of each neuron is uniformly distributed over $20-40$\,Hz.
+We give the LIF neurons an advantage by washing out the initial transient induced by an initial voltage of $v(0) = 0$.
+Due to the variability in the Poisson process, the regular LIF is better for near-constant inputs.
+Due to the memoryless property of the Poisson process, the Poisson LIF retains identical performance with higher frequencies.
+}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=1.0\textwidth]{poisson-neuron-scaling}
+\caption{\label{fig:poisson-neuron-scaling} Performance of Poisson LIF versus regular LIF as the number of neurons are scaled.
+The input signal is a sinusoid with frequency $10$\,Hz, and the maximum firing rates are uniformly distributed over $20-40$\,Hz.
+Regular LIF plateaus in performance for large numbers of neurons, due to the systematic discrepancy between the neural state and the ideal uniform distribution for non-constant inputs, as shown in section~\ref{sec:spike-coding}.
+Poisson LIF performance scales towards $0$ error as $n \rightarrow \infty$, since the memoryless property means each neuron is always ready to spike with the ideal probability. 
+}
+\end{figure}
+
+We validate these claims in Figure~\ref{fig:poisson-frequency-scaling} and Figure~\ref{fig:poisson-neuron-scaling} by exploring a Poisson spiking version of the LIF model.
+The properties of this neuron model make it particularly suitable for neuromorphic architectures such as SpiNNaker~2.
+Specifically, SpiNNaker~2 has specialized hardware for computing exponentials, logarithms, and uniform samples, and benefits greatly from the reduction of memory requirements and spike traffic.
+Since the Poisson spike generator can be applied to any desired static response curve, this method can be applied to whatever is cheap to compute while still providing a suitable nonlinear basis for the desired transformation.
 
 \subsection{Adaptative Neurons}
 

@@ -65,10 +65,13 @@
 \usepackage{fourier}
 \usepackage[T1]{fontenc}
 
+% https://tex.stackexchange.com/questions/67881/resetting-mathcal-font-to-default
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+
 % argmin and argmax aren't normal?
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\argmax}{arg\,max}
-\newcommand*{\bigoh}{O}
+\newcommand*{\bigoh}[1]{\mathcal{O}\left({#1}\right)}
 
 \newcommand*{\V}[1]{\mathbf{#1}}
 \newcommand*{\dt}{\Delta t}

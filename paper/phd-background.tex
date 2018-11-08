@@ -48,7 +48,7 @@ System Level Approach (SLA) https://arxiv.org/abs/1701.05880
 
 Anectodally (e.g., personal conversation with Sophie Den\`eve, experience with Nengo, and averages in Spaun), we say 50-100 neurons per dimension achieves tolerable levels of noise.
 For a fixed amount of noise in a represention implemented by an ensemble of $n$ neurons, the current best-known lower-bound predicts the dimensionality $d$ scales as $\Omega \left( n^{\frac{2}{3}} \right)$ for $n$ neurons~citep[][p.~60]{jgosmann2018}.
-Although we don't know the upper-bound, we conjecture that it is $\bigoh \left( n \right)$.
+Although we don't know the upper-bound, we conjecture that it is $\bigoh{n}$.
 That is, the dimensionality should not be able to scale faster than the neuron count.
 If it could, then each neuron would represent $\omega(1)$ dimensions, which seems physically implausible given access to only $\bigoh (1)$ state variables.
 This limitation could be broken by dendritic computation, for instance if each neuron had access to $\bigoh (n)$ variables distributed along the dendritic tree.
