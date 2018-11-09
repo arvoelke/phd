@@ -24,6 +24,10 @@
 *.tdo
 *.synctex.gz
 
+# For latexmk
+*.fdb_latexmk
+*.fls
+
 # For Python
 __pycache__/
 *.py[cod]
