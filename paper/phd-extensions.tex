@@ -45,6 +45,62 @@ Insert patent here.
 
 \subsection{Nonlinear State-Space Characterization}
 
+\subsection{Approximating Derivatives}
+
+Motivated by the theoretical need for driving the synapse with higher-order input derivatives...
+Talk about Bryan's paper, and the fact we can approximate the required transfer function $F(s) = s$ or a lowpass filtered version.
+
+\subsubsection{Taylor-Series Approximation}
+
+\TODO{Include patent method}
+...
+we considered the alpha synapse:
+$$H(s) = \frac{1}{(\tau s + 1)^2} = \frac{1}{\tau^2 s^2 + 2\tau s + 1}$$
+and observed that:
+$$F' \left( H(s)^{-1} \right) = F(s) \quad \iff \quad F'(s) = F \left( \frac{\sqrt{s} - 1}{\tau} \right) .$$
+In general, the final expression, $F \left( \frac{\sqrt{s} - 1}{\tau} \right)$ is not necessarily proper and finite-dimensional (rational in $s$). For instance, with the integrator,
+$$F(s) = 1/s \quad \iff \quad F'(s) = \frac{\tau}{\sqrt{s} - 1}$$
+is infinite-dimensional (irrational in $s$).
+In the patent, we deal with this by taking the Taylor series approximation $(\sqrt{s} - 1) / \tau \approx \left( s - 1 \right) / (2 \tau)$, which yields the approximation: $$F'(s) \approx F \left( \frac{s-1}{2\tau} \right) = \frac{2 \tau}{s - 1} .$$
+We can then convert back to the world of $F(s)$ to see what dynamics we've actually implemented:
+$$F(s) = F' \left( H(s)^{-1} \right) \approx \frac{2\tau}{(\tau s + 1)^2 - 1} = \frac{2\tau}{\tau s (\tau s + 2)} = \frac{1}{s \left( \frac{\tau}{2} s + 1 \right) } .$$
+This reveals that, instead of the integrator, we've implemented an integrator convolved with a lowpass with time-constant $\tau / 2$.
+
+\subsubsection{Lagrange--B\"urmann Approximation}
+
+If the derivatives are not available, but we are okay with changing the state vector, then we may consider making a different approximation.
+For instance, in the alpha case, we approximated $F'(s) \approx F \left( \frac{s-1}{2\tau} \right)$ using a first-order Taylor series.
+But we could have expanded it out to any order -- this will alter the state and increase the dimensionality of the system.
+
+In general, we are trying to find an $F'(s)$ such that $F'(H(s)^{-1}) = F(s)$.
+However, it may not be clear how to do this for general $H(s)^{-1} = \sum_{i=0}^k c_i s^i$, since the inverse of $H(s)^{-1}$ does not necessarily exist.
+Fortunately, we can use a powerful tool named the {\it Lagrange--B\"urmann inversion theorem} to approximate the inverse of $H(s)^{-1}$.
+Essentially it is a way to get the Taylor series of the inverse of some function around a point without explicitly constructing the inverse. Applying it here around the zero frequency, we have:
+\begin{align}
+f(s) &:= H(s)^{-1} = \sum_{i=0}^k c_i s^i \nonumber \\
+g_n &:= \lim_{s \rightarrow 0} \left[ \frac{\partial^{n-1}}{\partial s^{n-1}} \left( \frac{s}{f(s) - c_0} \right)^n \right] \nonumber \\
+F'(s) &\approx F \left( \sum_{n=1}^\infty g_n \frac{(s - c_0)^n}{n!} \right)
+\end{align}
+in some neighbourhood of $s = 0$.
+For some finite truncation of the series $g_n$, this always yields a finite-dimensional and proper approximation of the required $F'(s)$ assuming the same of $F(s)$.
+%The resulting dimensionality increases with the order of the approximation.
+
+For example, returning to the alpha example, we have:
+\begin{align*}
+f(s) &= (\tau s + 1)^2 \\
+g_1 &= \lim_{s \rightarrow 0} \left( \frac{s}{ s(\tau^2 s + 2 \tau)} \right) = \frac{1}{2 \tau} \\
+\implies F'(s) &\approx F \left( \frac{s - 1}{2\tau} \right)
+\end{align*}
+which is identical to beforehand.
+More generally, for $H(s)^{-1} = \sum_{i=0}^k c_i s^i$, we have $g_1 = \frac{1}{c_1}$,
+\begin{equation}
+\implies F'(s) \approx F \left( \frac{s - c_0}{c_1} \right) = C \left( sI - (c_1 A + c_0 I) \right)^{-1} (c_1 B) + D.
+\end{equation}
+Note this is different from the corollary, because the approximations are of a different nature. Before we were approximating the input as a constant signal (and taking the system into account), while here we are approximating the [inverse of the reciprocal of the] synapse as linear around $s = 0$ (independently of the contents of $F(s)$).
+
+But for the integrator (and the alpha) we showed the two approximations were the same.
+In fact, one can easily verify that for $F(s) = s^{-1}$ and for {\it all} $H(s)^{-1} = \sum_{i=0}^k c_i s^i$ the two approximations are identical ($B' = c_1 B$, $A' = c_0 I$).
+
 \subsection{Time-Constant Mismatch}
 
 \subsection{Encoding Filters}
