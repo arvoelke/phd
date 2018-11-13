@@ -184,7 +184,7 @@ Normalization is omitted since the NEF methods already ensure that $\|\V{x}\|$ i
 % footnote to explain?
 %\todo{citation or further justification required? cite evidence for increased firing rate or sparse coding?}
 % assuming each neuron "knows" its own encoder, or can compute the relevant quantity (a_j dot(d_i, x)) at each of its synapses every time it fires (this could also plausibly be done with a separate connection?)
-%We also observe that by summing over all updates with respect to a single postsynaptic neuron, as with Oja's rule, any neuron's total afferent weight is expected to remain constant.
+%We also observe that by summing over all updates with respect to a single post-synaptic neuron, as with Oja's rule, any neuron's total afferent weight is expected to remain constant.
 %\todo{Actually I don't believe this is true for Oja's rule... Where did you find this or how did you decide this?}
 % I think this may be unnecessary detailed
 %\begin{align}
@@ -440,7 +440,7 @@ Finally, we conclude by discussing some implications of this report for learning
   A constant input $x$ is represented by a population of $n$ spiking neurons with the activity vector $\V{a} \in \mathbb{R}^n$.
   A dynamic reference signal $r(t)$ determines the error $e(t) = \left((y - r) \ast h\right)(t)$~(equation~\ref{eq:error}), which in turn drives $y(t)$ towards $r(t)$ by modulating the connection weights via PES~(equation~\ref{eq:pes}).
   These learned connection weights decode $y(t)$ via the decoders $\V{d}(t) \in \mathbb{R}^n$~(equation~\ref{eq:decoding}).
-  A linear filter $h(t)$ models the postsynaptic current induced by each spike.
+  A linear filter $h(t)$ models the post-synaptic current induced by each spike.
 }
 \end{figure}
 
@@ -462,7 +462,7 @@ where $\kappa > 0$ is the learning rate,\footnote{$\kappa$ is automatically scal
 \label{eq:error}
 e(t) = \left((y - r) \ast h \right)(t) \text{,}
 \end{equation}
-where $r(t)$ is the reference (i.e.,~ideal) output, and $h(t)$ is some arbitrary linear filter modeling the postsynaptic current (PSC) induced by a spike arriving at the synaptic cleft.
+where $r(t)$ is the reference (i.e.,~ideal) output, and $h(t)$ is some arbitrary linear filter modeling the post-synaptic current (PSC) induced by a spike arriving at the synaptic cleft.
 Typically, $h(t)$ is a first-order lowpass filter with time constant~$\tau > 0$ (i.e.,~modeling an exponentially decaying PSC): %, sometimes also referred to as a ``leaky integrator'':
 \begin{equation}
 \label{eq:lowpass}

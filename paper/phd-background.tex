@@ -44,18 +44,268 @@ System Level Approach (SLA) https://arxiv.org/abs/1701.05880
 
 \section{Neural Engineering Framework}
 
-\subsection{Principle 1}
+One of the central challenges in computational neuroscience is understanding how dynamic stimuli can be processed by neural mechanisms to drive behavior.
+Recurrent connections, cellular responses, and synaptic responses are ubiquitous sources of dynamics throughout the mammalian brain that must work in concert to support dynamic information processing~\citep{kandel2000principles}.
+How these low-level mechanisms interact in order to encode information about the history of a stimulus, across time, is the subject of considerable study.
+One approach to better understanding these mechanisms is to construct models that capture central features of neural dynamics, while implementing higher-level information processing.
+
+
+%The ways in which these low-level mechanisms might interact, in order to usefully encode information about a stimulus \emph{across time}, are generally unclear in the context of high-level cognition~\citep{?}.
+
+% Biology has appeared to solve this problem by imposing structure in the brain, with neuroanatomical constraints that differ considerably by brain area~\citep[][pp.~207--227]{kandel2000principles}.
+% We interpret this pragmatically as a need to: (1) incorporate prior knowledge of a desired function into the structure of a network, and (2) constrain a network's topology using known properties of the underlying dynamical mechanisms.
+
+The Neural Engineering Framework~\citep[NEF;][]{eliasmith1999developing, eliasmith2003a} proposes a method to model such dynamical systems in networks of spiking neurons~\citep[see][for reviews of other methods]{abbott2016building, deneve2016efficient}.
+The NEF has been used to construct a wide variety of neural models, including a 2.3 million neuron functioning model of the human brain, capable of performing perceptual, motor, and cognitive tasks~\citep{eliasmith2012large}.
+This model incorporates many kinds of observed neural dynamics, including oscillations, sustained activity, and point attractor dynamics.
+The flexibility of the NEF has lead to it being deployed on mixed-analog-digital neuromorphic chips~\citep{choudhary2012silicon, corradi2014, voelker2017iscas, voelker2017neuromorphic} and digital architectures~\citep{bekolay2013nengo, wang2014compact, mundy2015efficient, berzish2016}.
+Consequently, the NEF provides a practical method for programming neuromorphics, thus helping the field realize its promise of a low-energy computing platform that emulates core principles of the nervous system~\citep{boahen2017neuromorph}.
+
+However, the NEF typically assumes an exponential model of the post-synaptic current~(PSC) evoked by an action potential, which has a biologically implausible, instantaneous rise-time.
+This model is also known as a first-order lowpass filter.
+In contrast, the synapse models used in mixed-analog-digital neuromorphic chips are nonideal, featuring higher-order dynamics due to parasitic capacitances~\citep{voelker2017iscas}.
+Similarly, the synapse models commonly used in biological models incorporate distinct rise- and fall-times due to separate time scales of transmitter binding and unbinding, as well as axonal transmission delays due to the finite-velocity propagation of action potentials~\citep{roth2009modeling}.
+To widen the scope of the NEF, we characterize the network-level effects of these higher-order synapse models, and harness them to implement certain classes of dynamical systems with improved accuracy.
+
+A particularly important dynamical system that has not been implemented using the NEF is the pure continuous-time delay line.
+This system must represent a rolling window of input history.
+We provide a novel derivation of an optimal low-dimensional linear approximation to a continuous-time delay, and prove that the resulting \emph{delay network} nonlinearly encodes its input across the delay interval.
+This network uses a scale-invariant representation, with a level of accuracy that depends on the input frequency, chosen dimensionality (i.e.,~the order of the approximation), and particular synapse model.
+Low-dimensional representations (e.g.,~$\le 27$) of low-frequency signals (e.g.,~$\le 50$\,Hz) are pervasive in biological systems~\citep{cunningham2014dimensionality, waernberg2017low, pulvermuller1997high, singer1999neuronal}.
+To our knowledge, this work is the first to demonstrate that such a temporal code may be accurately implemented using a spiking dynamical network.
+
+Reservoir Computing approaches, such as Liquid State Machines~\citep{maass2002real} and Echo State Networks~\citep{jaeger2001echo}, may be used to approximate a delay line.
+However, since these networks use randomly chosen feedback weights, it is likely that they do not {\it efficiently} produce the dynamics of a pure delay.
+Rather, these networks represent a random variety of nonlinear memory traces~\citep{lukovsevicius2012reservoir}.
+Discrete approaches to short-term memory, such as those taken by \citet{white2004short} and \citet{ganguli2008memory}, while optimal in an information-theoretic sense, rely fundamentally on single time-step delays between rate-based neurons.
+In contrast, the method that we propose here works independently of the simulation time-step, and is optimal assuming the population of spiking neurons---coupled with some model of the synapse---accurately represents a low-dimensional, low-frequency, vector space.
+Furthermore, our framework is extended to account for arbitrary linear synapses, which improves our understanding of the relationship between synapse models and network-level computation.
+A detailed comparison of our method to Reservoir Computing remains the subject of future work.
+
+A distinguishing feature of this work is that we begin the problem with a mathematical description of the ideal dynamics for the delay line, and then proceed by mapping this description onto a spiking neural network (using the NEF and its extensions).
+This is in contrast to methods that use online learning or backpropagation through time with rate-based neurons~\citep{de1992gamma, sussillo2009generating} or spiking neurons~\citep{nicola2016supervised, huh2017gradient, gilra2017predicting, alemi2017learning}.
+That is, we do not require any sophisticated training regimes involving online learning or backpropagation; our delay network is trained offline using convex optimization~(i.e.,~regularized least-squares), which yields a more complete understanding of its employed representation and dynamics.
+
+The Neural Engineering Framework~\citep[NEF;][]{eliasmith1999developing, eliasmith2003neural} consists of three mathematical principles used to describe neural computation.
+The NEF is most commonly applied to building dynamic (i.e.,~recurrent) spiking neural networks, but also applies to non-spiking and feed-forward networks.
+Its primary strength lies in providing a well-understood and efficient means of engineering spiking neural models, and programming neuromorphic hardware, to perform mathematically described computations~\citep{eliasmith2013build, boahen2017neuromorph}.
+In this section, we provide an overview of these methods applied to training both feed-forward and recurrent connection weights, in order to implement linear dynamical systems -- although these methods extend to nonlinear dynamical systems as well~\citep{voelker2017iscas, voelker2017neuromorphic}.
+We present this framework in a manner that is consistent with the Nengo~2.4.0 simulator~\citep{bekolay2013nengo}, which implements the NEF among other approaches.
+
+\subsection{Principle 1 -- Representaiton}
+\label{sec:principle1}
+
+Let $\V{x}(t) \in \mathbb{R}^q$ denote a $q$-dimensional time-varying signal, that is to be represented by a population of $n$ spiking neurons.
+To describe this representation, we define a nonlinear \emph{encoding} and a linear \emph{decoding} that together determine how neural activity relates to the represented vector.
+
+First, we choose encoders $E = \transpose{\left[ \V{e}_1\text{,}\, \ldots\text{,}\, \V{e}_n \right]} \in \mathbb{R}^{n \times q}$, gains $\alpha_i > 0$, and biases $\beta_i$, $i = 1 \ldots n$, as parameters for the encoding, which map $\V{x}(t)$ to neural activities.
+These parameters are fit from neuroanatomical data (e.g.,~tuning curves, preferred directions, firing rates, sparsity, etc.; see \citet{voelker2016a} for a recent example), or randomly sampled from distributions constrained by the domain of $\V{x}(t)$ and the dynamic range of the neuron models.
+% Most often, we select distributions from which to sample these parameters, incorporating known constraints on the system under consideration.
+In either case, the encoding is defined by:
+\begin{equation} \label{eq:encoding}
+a_i^\V{x}(t) = G_i \left[ \alpha_i \left\langle \V{e}_i, \V{x}(t) \right\rangle + \beta_i \right] \text{,} \quad i = 1 \ldots n \text{,}
+\end{equation}
+where $a_i^\V{x}(t)$ is the neural activity generated by the $i^{\text{th}}$ neuron encoding the vector $\V{x}(t)$ at time $t$, $\left\langle \cdot , \cdot \right\rangle$ denotes a dot-product, and $G_i[\cdot]$ is the nonlinear dynamical system for a single neuron (e.g.,~a leaky integrate-and-fire~(LIF) neuron, a conductance-based neuron, etc.).
+Then $a_i^\V{x}(t) = \sum_m \delta \left(t - t_{i\text{,}m} \right)$, where $\delta(\cdot)$ is the Dirac delta, and $\left\{ t_{i\text{,}m} \right\}$ is the sequence of spike-times generated by equation~\ref{eq:encoding}. % via $G_i \left[ \cdot \right]$.
+
+Having defined an encoding, we introduce a postsynaptic filter $h(t)$, which acts as the \emph{synapse model} by capturing the dynamics of a receiving neuron's synapse.
+In particular, this filter models the postsynaptic current (PSC) triggered by action potentials arriving at the synaptic cleft.
+For now, we fix $h(t) = \frac{1}{\tau} e^{-\frac{t}{\tau}}$ to be an exponentially decaying PSC with time-constant $\tau$, which is equivalent (in the Laplace domain) to the canonical first-order lowpass filter (also known as a ``leaky integrator'').
+This is the conventional choice of synapse in the NEF, since it strikes a convenient balance between mathematical simplicity and biological plausibility~\citep{eliasmith2003neural}.
+In section~\ref{sec:extensions}, we return to this point by considering more general synapse models that are capable of capturing a much broader variety of PSCs.
+
+We can now characterize the decoding of the neural response, which determines the information extracted from the neural activities encoding $\V{x}(t)$.
+Let $D = \transpose{\left[ \V{d}_1\text{,}\, \ldots\text{,}\, \V{d}_n \right]} \in \mathbb{R}^{n \times q}$ be the decoding matrix that decodes $\V{x}(t)$ from the population's activities $\left( a_i^\V{x}(t) \right)$ at time $t$.
+This linear decoding is described by:
+\begin{equation} \label{eq:rep-decode}
+\left(\V{x} \ast h \right)(t) \approx \sum_{i=1}^n (a_i^\V{x} \ast h)(t) \V{d}_i \text{,}
+\end{equation}
+where $\ast$ is the convolution operator that is used to apply the synaptic filter.
+Equation~\ref{eq:rep-decode} takes a linear combination of the filtered activities, in order to recover a filtered version of the encoded signal.\footnote{It is more accurate to apply the filter to both sides, since in general the (time-invariant) decoders alone cannot compensate for the filter applied to the activities (this instead becomes the role of Principle~3).}
+To complete the characterization of neural representation, we solve for the optimal linear decoders $D$.
+This optimization is identical for Principles~1 and 2, as discussed below.
+
+\TODO{Discuss some scaling}
 
 Anectodally (e.g., personal conversation with Sophie Den\`eve, experience with Nengo, and averages in Spaun), we say 50-100 neurons per dimension achieves tolerable levels of noise.
 For a fixed amount of noise in a represention implemented by an ensemble of $n$ neurons, the current best-known lower-bound predicts the dimensionality $d$ scales as $\Omega \left( n^{\frac{2}{3}} \right)$ for $n$ neurons~citep[][p.~60]{jgosmann2018}.
 Although we don't know the upper-bound, we conjecture that it is $\bigoh{n}$.
 That is, the dimensionality should not be able to scale faster than the neuron count.
-If it could, then each neuron would represent $\omega(1)$ dimensions, which seems physically implausible given access to only $\bigoh (1)$ state variables.
-This limitation could be broken by dendritic computation, for instance if each neuron had access to $\bigoh (n)$ variables distributed along the dendritic tree.
+If it could, then each neuron would represent $\omega(1)$ dimensions, which seems physically implausible given access to only $\bigoh{1}$ state variables.
+This limitation could be broken by dendritic computation, for instance if each neuron had access to $\bigoh{n}$ variables distributed along the dendritic tree.
 
-\subsection{Principle 2}
+\subsection{Principle 2 -- Transformation}
+\label{sec:principle2}
 
-\subsection{Principle 3}
+The second principle of the NEF addresses the issue of computing transformations of the represented signal.
+The encoding remains defined by equation~\ref{eq:encoding}.
+However, we now decode some desired function of $\V{x}(t)$, $\V{f} : \mathbb{R}^q \rightarrow \mathbb{R}^q$,\footnote{
+We may also consider transformations where the range has a different dimension, but the described framework will suffice for our purposes.}
+by applying an alternate matrix of decoders $D^\V{f} = \transpose{\left[ \V{d}^\V{f}_1\text{,}\, \ldots\text{,}\, \V{d}^\V{f}_n \right]} \in \mathbb{R}^{n \times q}$ to the same activities:
+\begin{equation} \label{eq:trans-decode}
+\left( \V{f}(\V{x}) \ast h \right)(t) \approx \sum_{i=1}^n (a_i^\V{x} \ast h)(t) \V{d}^\V{f}_i \text{.}
+\end{equation}
+For both Principles~1 and~2, we optimize for $D^\V{f}$ over the domain of the signal, $S = \{\V{x}(t) : t \ge 0\}$, which is typically the unit $q$-ball $\{ \V{v} \in \mathbb{R}^q : \|\V{v}\|_2 \le 1\}$ or the unit $q$-cube $[-1\text{,}\, 1]^q$.
+To determine these decoders, we first let $r_i(\V{v})$ be the limiting average firing rate of the $i^{\text{th}}$ neuron under the constant input $\V{v} \in S$:
+\begin{equation} \label{eq:rates}
+r_i(\V{v}) = \lim_{t \rightarrow \infty} \frac{1}{t} \int_{0}^t a_i^\V{v}(t') \, dt' \text{.}
+\end{equation}
+For non-adaptive neuron models, equation~\ref{eq:rates} reduces to encoding $\V{v}$ using a rate model.
+For adaptive neuron models, other definitions for $r_i(\V{v})$ may be considered, but we limit our discussion here to the (non-adaptive) spiking LIF model.
+To account for the variance introduced by neural spiking, and other sources of uncertainty, we introduce a white noise term $\eta \sim \mathcal{N}(0, \sigma^2)$.
+The optimality criteria for $D^\V{f}$ is therefore:
+\begin{equation} \label{eq:decoder_solution}
+D^\V{f} = \argmin_{D \in \mathbb{R}^{n \times q}} \int_{S} \left\| \V{f}(\V{v}) - \sum_{i=1}^n (r_i(\V{v}) + \eta) \V{d}_i \right\|^2 \, d^q\V{v} \text{.}
+\end{equation}
+Note that this optimization only depends on $r_i(\V{v})$ for $\V{v} \in S$, as opposed to depending on the signal $\V{x}(t)$.
+In other words, the optimization is determined strictly by the distribution of the signal, and not according to its particular dynamics.
+Furthermore, this is a convex optimization problem, which may be solved by uniformly sampling $S$~\citep{voelker2017} and applying a standard regularized least-squares solver to the sampled data~\citep{bekolay2013nengo}.
+Monte Carlo sampling introduces $\mathcal{O} \left( \frac{1}{\sqrt{m}} \right)$ error into the integral from equation~\ref{eq:decoder_solution}, where $m$ is the number of samples, but this can be improved to $\widetilde{\mathcal{O}} \left( \frac{1}{m} \right)$---effectively squaring $m$---by the use of quasi-Monte Carlo methods~\citep{fang1994, voelker2016b}.
+Nengo also supports alternative decoder solvers that optimize variations of equation~\ref{eq:decoder_solution}~\citep[e.g.,][]{voelker2016a, abrams2017}, but we do not use them here.
+%This provides the decoders needed by equations~\ref{eq:repn_decode} and \ref{eq:trans-decode} to represent the vector or compute transformations, respectively.
+
+% this synapse is only for continuous case:
+%\begin{equation}
+%h_i(t) = \frac{1}{\tau_i} e^{-\frac{t}{\tau_i}}
+%\end{equation}
+
+The accuracy of this approach relies on $r_i(\V{v})$ being a suitable proxy for $a_i^\V{x}(t)$ whenever $\V{x}(t) = \V{v}$.
+This zeroth-order approximation clearly holds in the steady-state for constant $\V{x}(t)$, and turns out to be ideal in practice for low-frequency $\V{x}(t)$~\citep[][appendix~F.1]{eliasmith2003neural}, and likewise for $h(t)$ that filter out high frequencies (i.e.,~when the synaptic time-constant $\tau$ is large).
+% Reminder: there's a result in my comp-II report that the expected spike train is the same as the rate model when the prior for the spike interval is uniform -- this prior becomes invalid for high frequency \V{x}(t) that cross over the neuron threshold
+% We also remark that one may use singular value decomposition~(SVD) to characterize the class of functions that can be accurately approximated by the chosen neural basis functions~\citep[][pp.~185--217]{eliasmith2003neural}.
+
+Equations~\ref{eq:encoding} and \ref{eq:trans-decode} may then be used to derive a connection weight matrix between layers to implicitly compute the desired function $\V{f}(\V{x})$ within the \emph{latent} vector space $\mathbb{R}^q$.
+Specifically, the weight matrix $W = [\omega_{ij}] \in \mathbb{R}^{n \times n}$, which maps activities from the $j^{\text{th}}$ presynaptic neuron to the $i^{\text{th}}$ postsynaptic neuron (disregarding the gain, bias, and synapse), is given by:
+\begin{equation} \label{eq:factored-weights}
+\omega_{ij} = \left\langle \V{e}_i, \V{d}^\V{f}_j \right\rangle \text{.} % = \left( \transpose{E\left( D^\V{f} \right)} \right)_{ij}
+\end{equation}
+%where $E$ are the encoders of the postsynaptic population from equation~\ref{eq:encoding}, and $D$ are the decoders of the presynaptic population solved by equation~\ref{eq:decoder_solution}.
+Consequently, the matrices $E$ and $D^\V{f}$ are a low-rank factorization of $W$.
+In other words, the process of decoding (equation~\ref{eq:trans-decode}) and then encoding (equation~\ref{eq:encoding}) is equivalent to taking the dot-product of the full-rank weight matrix $W$ with the neural activities.
+% Intuitively, structure is imposed by the choice of representing $\V{x}(t)$, which in turn becomes latent within the weight matrix.
+
+This factorization has important consequences for the computational efficiency of neural simulations.
+The crucial difference between the factorized and non-factorized forms is that it takes $\mathcal{O}(q n)$ operations per simulation time-step to implement this dot-product in the factored form of equation~\ref{eq:factored-weights}, as opposed to $\mathcal{O}(n^2)$ operations for a full-rank weight matrix.
+Since $q$ is typically held constant, this yields a factor $\mathcal{O}(n)$ improvement in simulation time.
+Similarly, this factorizations yields an $\mathcal{O}(n)$ reduction in memory, which significantly improves the scaling of neuromorphics~\citep{mundy2015efficient}.
+% including those in RC.
+In essence, this factorization provides a way to describe the network's latent state-vector $\V{x}(t)$.
+This, in turn, permits us to perform useful computations by transforming the state-vector with $\mathcal{O} \left( \frac{1}{\sqrt{n}} \right)$ error in the presence of spike-noise~\citep[][p.~47]{eliasmith2003neural}.
+
+\subsection{Principle 3 -- Dynamics}
+\label{sec:principle3}
+
+\begin{figure}
+  \centering
+  \resizebox{\columnwidth}{!} {
+	\begin{tikzpicture}[auto, node distance=2cm,>=latex']
+	  \node [input, name=input] {};
+	  \node [coordinate, name=fanin, right of=input] {};
+	  \node [block, right of=fanin, node distance=1.5cm] (B) {$B$};
+	  \node [sum, right of=B, node distance=2cm] (sum) {$+$};
+	  \node [block, right of=sum, node distance=2cm] (integ) {$\int$};
+	  \node [block, right of=integ, node distance=3.5cm] (C) {$C$};
+	  \node [sum, right of=C, node distance=2cm] (sumout) {$+$};
+	  \node [output, right of=sumout] (output) {};
+	
+	  \node [block, below of=integ] (A) {$A$};
+	  \node [block, above of=integ] (D) {$D$};
+	
+	  \draw [-] (input) -- node {$\V{u}$} (fanin);
+	  \draw [->] (fanin) -- node {} (B);
+	  \draw [->] (fanin) |- (D);
+	  \draw [->] (D) -| node {} (sumout);
+	  \draw [->] (B) -- node {} (sum);
+	  \draw [->] (sum) -- node {} (integ);
+	  \draw [->] (integ) -- node [name=fanout] {$\V{x}$} (C);
+	  \draw [->] (fanout) |- (A);
+	  \draw [->] (A) -| node {} (sum);
+	  \draw [->] (C) -- node {} (sumout);
+	  \draw [->] (sumout) -- node {$\V{y}$} (output);
+	\end{tikzpicture}  
+  }
+  \caption{ \label{fig:lti-system}
+    Block diagram for a LTI system.
+    The integrator is driven by the signal $\dot{\V{x}}(t)$.
+  }
+\end{figure}
+
+Principle~3 is a method of harnessing the dynamics of the synapse model for network-level information processing.
+We begin by focusing our discussion of NEF dynamics on the neural implementation of continuous, linear time-invariant~(LTI) systems:
+\begin{equation} \label{eq:lti}
+\begin{split}
+\dot{\V{x}}(t) &= A\V{x}(t) + B\V{u}(t) \text{,} \\
+\V{y}(t) &= C\V{x}(t) + D\V{u}(t) \text{,}
+\end{split}
+\end{equation}
+where the time-varying signal $\V{x}(t)$ represents the system state, $\dot{\V{x}}(t)$ its time-derivative, $\V{y}(t)$ the output, $\V{u}(t)$ the input, and the time-invariant matrices $(A\text{,}\, B\text{,}\, C\text{,}\, D)$ fully describe the system~\citep{brogan1982modern}.
+This form of a LTI system is commonly referred to as the \emph{state-space model}, but there are many other equivalent forms, which we will refer to later.
+
+For LTI systems, the \emph{dynamical primitive}---that is, the source of the dynamics---is the integrator (see Figure~\ref{fig:lti-system}).
+However, the dynamical primitive at our disposal is the \emph{leaky} integrator, given by the canonical first-order lowpass filter modeling the synapse:
+\begin{align} \label{eq:lowpass}
+h(t) = \frac{1}{\tau} e^{-\frac{t}{\tau}} = \mathcal{L}^{-1}\left\{ \frac{1}{\tau s + 1} \right\} \text{,}
+\end{align}
+where $\mathcal{L}^{-1}\{ \cdot \}$ denotes the inverse Laplace transform.\footnote{
+For comparison, the Laplace transform of the integrator is $\mathcal{L}\left\{ 1 \right\} = \frac{1}{s}$.}
+To be more precise, our approach is to represent the state-vector $\V{x}(t)$ in a population of spiking neurons (Principle~1;~equation~\ref{eq:encoding}), such that this vector is obtained by filtering some linearly decoded spike-trains with a leaky integrator (Principle~2;~equation~\ref{eq:trans-decode}).
+Thus, the goal of Principle~3 is to determine the transformations required to implement equation~\ref{eq:lti}, given that $\V{x}(t)$ is obtained by some convolution with a leaky integrator, rather than the perfect integrator depicted in Figure~\ref{fig:lti-system}.
+
+Principle~3 states that in order to implement equation~\ref{eq:lti} in a population of neurons that represents $\V{x}(t)$, we must compensate for the effect of ``replacing'' the integrator with a leaky integrator (compare Figures~\ref{fig:lti-system} and~\ref{fig:lti-system-mapped}), that is, by driving the synapse with $\tau \dot{\V{x}}(t) + \V{x}(t)$ instead of only $\dot{\V{x}}(t)$.
+This compensation is achieved as follows: implement the recurrent transformation $(\tau A + I)\V{x}(t)$, and the input transformation $\tau B \V{u}(t)$, but use the same output transformation $C\V{x}(t)$, and the same passthrough transformation $D\V{u}(t)$~\citep[][pp.~221--225]{eliasmith2003neural}.
+%Because Principles~1 and~2 tell us how to represent states (i.e.,~$\V{x}(t)$) and transformations of these states (e.g.,~$(\tau A + I)\V{x}(t)$) we can use these principles to compute the necessary signals.
+Specifically, this may be implemented in a spiking dynamical network by representing $\V{x}(t)$ via Principle~1 and then using Principle~2 to decode the needed transformations.
+The resulting model is summarized in Figure~\ref{fig:lti-system-mapped}.
+
+\begin{figure}
+  \centering
+  \resizebox{\columnwidth}{!} {
+	\begin{tikzpicture}[auto, node distance=2cm,>=latex']
+	  \node [input, name=input] {};
+	  \node [coordinate, name=fanin, right of=input] {};
+	  \node [block, right of=fanin, node distance=1.5cm] (B) {$\tau B$};
+	  \node [sum, right of=B, node distance=2cm] (sum) {$+$};
+	  \node [block, right of=sum, node distance=2cm] (integ) {$\frac{1}{\tau s + 1}$};
+	  \node [block, right of=integ, node distance=3.5cm] (C) {$C$};
+	  \node [sum, right of=C, node distance=2cm] (sumout) {$+$};
+	  \node [output, right of=sumout] (output) {};
+	
+	  \node [block, below of=integ] (A) {$\tau A + I$};
+	  \node [block, above of=integ] (D) {$D$};
+	
+	  \draw [-] (input) -- node {$\V{u}$} (fanin);
+	  \draw [->] (fanin) -- node {} (B);
+	  \draw [->] (fanin) |- (D);
+	  \draw [->] (D) -| node {} (sumout);
+	  \draw [->] (B) -- node {} (sum);
+	  \draw [->] (sum) -- node {} (integ);
+	  \draw [->] (integ) -- node [name=fanout] {$\V{x}$} (C);
+	  \draw [->] (fanout) |- (A);
+	  \draw [->] (A) -| node {} (sum);
+	  \draw [->] (C) -- node {} (sumout);
+	  \draw [->] (sumout) -- node {$\V{y}$} (output);
+	\end{tikzpicture}  
+  }
+  \caption{ \label{fig:lti-system-mapped}
+    Block diagram for a LTI system, equivalent to Figure~\ref{fig:lti-system}, with the integrator replaced by a first-order lowpass filter.
+    % The exact same state-vector $\V{x}(t)$ is represented by a population of neurons (via Principles~1 and 2).
+    The lowpass is driven by the signal $\tau \dot{\V{x}}(t) + \V{x}(t)$ to ensure that it implements the same system as in Figure~\ref{fig:lti-system}.
+  }
+\end{figure}
+
+The correctness of this ``mapping'' procedure relies on three assumptions: (1)~the synapse model is equation~\ref{eq:lowpass}, (2)~the network is simulated in continuous time (or the discrete time-step is sufficiently small), and (3)~the necessary representations and transformations are sufficiently accurate, such that the approximation error $\mathcal{O} \left( \frac{1}{\sqrt{n}} \right)$ from equation~\ref{eq:trans-decode} is negligible.
+In other words, assuming $n$ is sufficiently large, the architecture of Figure~\ref{fig:lti-system-mapped} is equivalent to Figure~\ref{fig:lti-system}, but using the leaky integrator instead of an integrator as the dynamical primitive~\citep{eliasmith2003neural}.
+Consequently, both systems compute the exact same signals $\V{x}(t)$ and $\V{y}(t)$.
+In section~\ref{sec:principle3-proof}, we provide a novel proof of this equivalence.
+In sections~\ref{sec:discrete-lowpass}--\ref{sec:general}, we extend Principle~3 to remove the first and second assumptions.
+% Methods of coping with the third assumption for small $n$ remain a currently active area of research.
+% In section~\ref{sec:results}, we demonstrate the success of this approach given low-frequency inputs in spiking networks.
+
+Principle~3 is useful for accurately implementing a wide class of dynamical systems (e.g.,~integrators, oscillators, attractor networks, etc.) to solve specific problems that frequently arise in neural modeling~\citep[e.g.,][]{eliasmith2000b, singh2004, eliasmith2005b, singh2006}.
+% This provides a precise mathematical understanding of the role of equation~\ref{eq:lowpass} in neural models and the computations that it supports.
+% This mapping allows one to alter the synaptic $\tau$ without affecting the overall dynamics.
+Furthermore, the class of state-space models is isomorphic to the class of all finite-dimensional causal linear filters, or equivalently all rational (finite-order) proper transfer functions, which is a large and useful class of dynamical systems employed widely in control applications~\citep{brogan1982modern}.
+Given the ability of Principle~2 to compute nonlinear functions~(i.e.,~equation~\ref{eq:trans-decode}), Principle~3 also naturally generalizes to nonlinear dynamical systems, but this is outside the scope of this work; we refer the reader to \citet{voelker2017iscas} and \citet{voelker2017neuromorphic} for recent nonlinear extensions.
 
 
 \section{Neuromorphic Computing}
