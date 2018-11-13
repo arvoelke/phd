@@ -34,7 +34,7 @@ This kind of sparsity may be achieved by using the unsupervised Voja rule to tun
 %We also need lower dimensionality to run on SpiNNaker
 
 To construct this network, we let $M$, $D$, and $K$ correspond to the number of associations, dimensionality, and the number of neurons per association, respectively.
-We initialize the encoders of all $N = M \times K$ neurons using the {\it Sobol sequence} to generate a low-discrepancy set of points on the $(D-1)$-cube~\citep{Sobol1967}, and then use the inverse distribution and spherical coordinate transformation derived by \citet{Fang1994} to map this sequence onto the uniform $D$-sphere.
+We initialize the encoders of all $N = M \times K$ neurons using the {\it Sobol sequence} to generate a low-discrepancy set of points on the $(D-1)$-cube~\citep{Sobol1967}, and then use the inverse distribution and spherical coordinate transformation derived by \citet{fang1994} to map this sequence onto the uniform $D$-sphere.
 
 We set $\alpha_i$ and $\beta_i$ from (\ref{eq:encoding}) such that the maximum firing rate of each neuron is $r_i$ (achieved when the input is equal to the encoder) and firing occurs with probability $\frac{1}{M}$.
 This is accomplished by solving the system of equations,

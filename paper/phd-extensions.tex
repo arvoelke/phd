@@ -43,12 +43,379 @@ Insert patent here.
 
 \subsection{Linear Transfer Function Characterization}
 
+We focus on building a comprehensive theory for linear systems, but many of these same techniques also carry over to the case of nonlinear dynamical systems with heterogeneous synapses~\citep{voelker2017iscas, voelker2017neuromorphic}.
+
+Let $F(s)$ be the transfer function for the linear dynamics that we wish to implement (equations~\ref{eq:lti} and~\ref{eq:ss2tf}), and let $H(s)$ be the transfer function for an arbitrary linear synapse model ($H(s) = \mathcal{L} \left\{ h(t) \right\}$).
+As stated in section~\ref{sec:principle3}, introducing the synapse model means replacing the integrator ($s^{-1}$) with $H(s)$.
+This is equivalent to replacing $s$ with $H(s)^{-1}$.
+Notably, substituting $H(s)$ for the integrator results in the transfer function $F \left( H(s)^{-1} \right)$, which no longer implements the original, desired dynamics $F(s)$. %, via the change-of-variables $s \longleftrightarrow H(s)^{-1}$.
+However, we would like to ensure that the new dynamics match the originally specified $F(s)$.
+The key insight is that we can determine a new function, $F^H(s)$, such that $F^{H}\left( H(s)^{-1} \right) = F(s)$.
+That is, we can solve for a function that provides the original dynamics when implemented using the transfer function $H(s)$ as the dynamical primitive.
+This is formalized by the following definition:
+\begin{definition} \label{def:maps-onto}
+A function $F^{H}(s)$ ``maps $F$ onto $H$'' if and only if it satisfies:
+\begin{align} \label{eq:maps-onto}
+F^{H}\left( \frac{1}{H(s)} \right) = F(s) \text{.}
+\end{align}
+\end{definition}
+
+This definition compactly expresses the notion of a ``change of dynamical primitive'', in that $F(s)$ is mapped from the canonical primitive, $s^{-1}$, onto some new primitive, $H(s)$.
+Trivially, $F(s)$ maps itself onto $s^{-1}$.
+Non-trivial examples are given throughout sections~\ref{sec:lowpass}--\ref{sec:general}.
+%To see this, we apply the key insight to some $F^{H}(s)$ to reveal that substituting the integrator for the synapse results in the dynamics $F^{H}(H(s)^{-1})$, which is equal to $F(s)$ if and only if it maps $F$ onto $H$, by definition~\ref{def:maps-onto}.
+%Then, to compensate for this change in dynamics, we must solve for some transfer function $F^{H}(s)$ that satisfies definition~\ref{def:maps-onto}.
+%This effectively means inverting the change-of-variables $s \longleftrightarrow H(s)^{-1}$.
+
+Once we identify a $F^{H}(s)$ that maps $F$ onto $H$, any state-space model $\left( A^H\text{,}\, B^H\text{,}\, C^H\text{,}\, D^H \right)$ that satisfies
+\begin{equation} \label{eq:ss-mapped}
+F^{H} \left( s \right) = C^H \left( sI - A^H \right)^{-1}B^H + D^H
+\end{equation}
+will implement the desired dynamics when using $H(s)$ as the dynamical primitive, by equations~\ref{eq:ss2tf} and~\ref{eq:maps-onto} (see Figure~\ref{fig:lti-system-mapped-general}).
+
+\begin{figure}
+  \centering
+  \resizebox{\columnwidth}{!} {
+	\begin{tikzpicture}[auto, node distance=2cm,>=latex']
+	  \node [input, name=input] {};
+	  \node [coordinate, name=fanin, right of=input] {};
+	  \node [block, right of=fanin, node distance=1.5cm] (B) {$B^H$};
+	  \node [sum, right of=B, node distance=2cm] (sum) {$+$};
+	  \node [block, right of=sum, node distance=2cm] (integ) {$H(s)$};
+	  \node [block, right of=integ, node distance=3.5cm] (C) {$C^H$};
+	  \node [sum, right of=C, node distance=2cm] (sumout) {$+$};
+	  \node [output, right of=sumout] (output) {};
+	
+	  \node [block, below of=integ] (A) {$A^H$};
+	  \node [block, above of=integ] (D) {$D^H$};
+	
+	  \draw [-] (input) -- node {$\V{u}$} (fanin);
+	  \draw [->] (fanin) -- node {} (B);
+	  \draw [->] (fanin) |- (D);
+	  \draw [->] (D) -| node {} (sumout);
+	  \draw [->] (B) -- node {} (sum);
+	  \draw [->] (sum) -- node {} (integ);
+	  \draw [->] (integ) -- node [name=fanout] {$\V{x}$} (C);
+	  \draw [->] (fanout) |- (A);
+	  \draw [->] (A) -| node {} (sum);
+	  \draw [->] (C) -- node {} (sumout);
+	  \draw [->] (sumout) -- node {$\V{y}$} (output);
+	\end{tikzpicture}  
+  }
+  \caption{ \label{fig:lti-system-mapped-general}
+    Block diagram for a LTI system, equivalent to Figure~\ref{fig:lti-system}, with the integrator replaced by a more general linear filter $H(s)$.
+    The state-space model $\left( A^H\text{,}\, B^H\text{,}\, C^H\text{,}\, D^H \right)$ is obtained from some transfer function $F^{H}(s)$ that maps $F$ onto $H$, as defined in the text.
+    This generalizes Figure~\ref{fig:lti-system-mapped} to arbitrary linear synapse models.
+  }
+\end{figure}
+
+Therefore, supposing $F^{H}(s)$ satisfies definition~\ref{def:maps-onto}, and that it is convertible to a state-space model (equation~\ref{eq:lti}), then Figure~\ref{fig:lti-system-mapped-general} is just another form of Figure~\ref{fig:lti-system}, but with the integrator replaced by the synapse.
+Note that this construction, on its own, does not specify how to find a satisfying $F^{H}(s)$, nor whether such a function exists, nor whether it can be converted to a state-space model.
+We provide several examples leading to such a specification in section~\ref{sec:general}.
+%This will be made clear through a number of examples, culminating with an approach that recovers an important result from linear systems theory (see appendix~\ref{app:discrete-connection}).
+%In appendix~\ref{app:state-space} we discuss our freedom to choose state-space models, and the connection to choice of encoders in the NEF.
+
+Before proceeding, we remark that the above theory directly carries over from the continuous-time domain to the discrete-time domain.
+The discrete-time formulation of a LTI system is similar to equation~\ref{eq:lti}, but increments time in steps of length $dt$:
+\begin{equation} \label{eq:dlti}
+\begin{split}
+\V{x}[t+dt] &= \bar{A}\V{x}[t] + \bar{B}\V{u}[t] \text{,} \\
+\V{y}[t] &= \bar{C}\V{x}[t] + \bar{D}\V{u}[t] \text{,}
+\end{split}
+\end{equation}
+where the discrete state-space model $\left( \bar{A}\text{,}\, \bar{B}\text{,}\, \bar{C}\text{,}\, \bar{D} \right)$ fully defines the system.
+The discrete-time equivalent to the Laplace transform is the $z$\emph{-transform}, named for its use of the variable $z$ to denote the complex frequency domain.
+In this domain, $z^{-1}$ plays the role of $s^{-1}$, by performing a discrete shift forwards, one step in time (i.e.,~a delay of one time-step), instead of integration.
+A well-known result is that the transfer function of this discrete LTI system---defined as the ratio of the $z$-transform of the output to the $z$-transform of the input---is equal to $F(z) = \bar{C} (zI - \bar{A})^{-1} \bar{B} + \bar{D}$.
+Consequently, all of the previous discussion carries over to discrete LTI systems.
+In particular, for a discrete synapse expressed using the $z$-transform, $H(z)$, we have the analogous definition:
+\begin{definition} \label{def:discrete-maps-onto}
+A function $F^{H}(z)$ ``maps $F$ onto $H$'' if and only if it satisfies:
+\begin{align} \label{eq:discrete-maps-onto}
+F^{H}\left( \frac{1}{H(z)} \right) = F(z) \text{.}
+\end{align}
+\end{definition}
+Given some $F^{H}(z)$ that maps $F$ onto $H$, any state-space model $\left( \bar{A}^H\text{,}\, \bar{B}^H\text{,}\, \bar{C}^H\text{,}\, \bar{D}^H \right)$ that satisfies
+\begin{equation} \label{eq:dss-mapped}
+F^{H} \left( z \right) = \bar{C}^H \left( zI - \bar{A}^H \right)^{-1}\bar{B}^H + \bar{D}^H
+\end{equation}
+will implement the desired dynamics $F(z)$ when using $H(z)$ as the dynamical primitive.
+Hence, the task of determining $F^{H}(\cdot)$ is identical for both continuous- and discrete-time domains---it is only $F(\cdot)$ and $H(\cdot)$ that differ.
+
+\subsubsection{Continuous Lowpass Synapse}
+
+The first example we consider demonstrates that our new theory recovers the standard form of Principle~3 from the NEF (see section~\ref{sec:principle3}).
+For the case of a continuous-time first-order lowpass filter (equation~\ref{eq:lowpass}), $H(s) = \frac{1}{\tau s + 1}$, let:
+\begin{align*}
+F^H(s) &:= C \left( sI - (\tau A + I) \right)^{-1} \left( \tau B \right) + D \\
+&= C \left( \left(\frac{s-1}{\tau}\right)I - A \right)^{-1}B + D \text{.}
+\end{align*}
+Then, 
+\begin{align*}
+F^H \left( \tau s + 1 \right) &= C \left( \left(\frac{(\tau s + 1) - 1}{\tau}\right) I - A \right)^{-1}B + D \\
+&= F(s)\text{,} 
+\end{align*}
+which satisfies definition~\ref{def:maps-onto}.
+Therefore, by equation~\ref{eq:ss-mapped},
+\begin{equation} \label{eq:p3-novel}
+\begin{aligned}
+A^H &= \tau A + I \text{,} & \quad C^H &= C \text{,} \\
+B^H &= \tau B \text{,} & \quad D^H &= D \text{.}
+\end{aligned}
+\end{equation}
+%$A^H = \tau A + I$, $B^H = \tau B$, $C^H = C$, and $D^H = D$.
+This completes our novel proof of Principle~3 from section~\ref{sec:principle3}.
+
+\subsubsection{Discrete Lowpass Synapse}
+
+When simulating any NEF network on a digital computer, we necessarily use time-steps of some length $dt > 0$ to advance the state of the network, updating at discrete moments in time~\citep{bekolay2013nengo}.
+For instance, Nengo currently uses a default of $dt = 1$\,ms, and implements a zero-order hold~(ZOH) discretization of the synaptic filter.
+Implementing ZOH means that all continuous-time signals are held constant within each time-step.
+This discretization of equation~\ref{eq:lowpass} gives:
+\begin{equation}
+H(z) = \frac{1 - a}{z - a} \text{,} \quad a := e^{-\frac{dt}{\tau}} \text{.} \nonumber
+\end{equation}
+If our desired transfer function is expressed in continuous-time, $F(s)$, then we should also discretize it to $F(z) = \bar{C} (zI - \bar{A})^{-1} \bar{B} + \bar{D}$, with the same time-step, and again using ZOH discretization for consistency.
+Let,
+\begin{align*}
+F^H(z) &:= \bar{C} \left(zI - \frac{1}{1 - a} \left(\bar{A} - aI \right) \right)^{-1} \left( \frac{1}{1-a}\bar{B} \right) + \bar{D} \\
+&= \bar{C} \left( \left(z(1 - a) + a \right)I - \bar{A} \right)^{-1}\bar{B} + \bar{D} \text{.}
+\end{align*}
+Then, 
+\begin{align*}
+F^H \left( \frac{z-a}{1-a} \right) &= \bar{C}\left( \left( \frac{z-a}{1-a}(1 - a) + a \right)I - \bar{A} \right)^{-1}\bar{B} + \bar{D} \\
+&= F(z) \text{,}
+\end{align*}
+which satisfies definition~\ref{def:discrete-maps-onto}.
+Therefore, by equation~\ref{eq:dss-mapped},\begin{equation} \label{eq:discrete-p3}
+\begin{aligned}
+\bar{A}^H &= \frac{1}{1 - a} \left(\bar{A} - aI\right) \text{,} & \quad \bar{C}^H &= \bar{C} \text{,} \\
+\bar{B}^H &= \frac{1}{1-a}\bar{B} \text{,} & \quad \bar{D}^H &= \bar{D} \text{,}
+\end{aligned}
+\end{equation}
+provides an exact implementation of the desired system for digital architectures, regardless of the simulation time-step (assuming ZOH).
+% Consequently, we use this method in the simulations reported in this paper unless otherwise noted.
+
+\subsubsection{Delayed Continuous Lowpass Synapse}
+
+Next, we consider a continuous-time first-order lowpass filter with a time-delay of $\lambda$:
+\begin{equation} \label{eq:delayed-lowpass}
+H(s) = \frac{e^{-\lambda s}}{\tau s + 1} \text{.}
+\end{equation}
+This same model has been proposed by \citet[][equation~6.2]{roth2009modeling} as a more realistic alternative to equation~\ref{eq:lowpass}, that includes an axonal transmission delay of length $\lambda$ (on the order of $\tau$) to account for the finite-velocity propagation of action potentials.
+By commutativity of convolution, modeling the delay in the synapse (as in equation \ref{eq:delayed-lowpass}) is equivalent to modeling the delay in spike propagation.
+Equation~\ref{eq:delayed-lowpass} may also be used to account for feedback delays within some broader setting (e.g.,~when the feedback term is computed via some delayed system).
+
+Letting $d := \frac{\lambda}{\tau}e^{\frac{\lambda}{\tau}}$, and $W_0(\cdot)$ denote the principal branch of the Lambert-$W$ function~\citep{corless1996lambertw}, we invert $y := H(s)^{-1}$ as follows:
+\begin{align*}
+&& y &= \left(\tau s + 1\right) e^{\lambda s} && \\
+\iff && \frac{\lambda}{\tau}e^{\frac{\lambda}{\tau}} y &= \left( \lambda s + \frac{\lambda}{\tau} \right) e^{\lambda s + \frac{\lambda}{\tau}} && \\
+\iff && W_0(dy) &= \lambda s + \frac{\lambda}{\tau} && \\
+\iff && \frac{1}{\lambda} W_0(dy) - \frac{1}{\tau} &= s \text{,} &&
+\end{align*}
+where the second-last line assumes that $|\eta| < \pi$ and $\lambda \text{Re}\left[ s \right] + \frac{\lambda}{\tau} > - \eta \cot \eta$, where $\eta := \lambda \text{Im}\left[ s \right]$, in order for $\lambda s + \frac{\lambda}{\tau}$ to be within the principal branch~\citep[][equation~4.4]{corless1996lambertw}.\footnote{
+A simpler (but only sufficient) condition is $\text{Re} \left[ s \right] \ge -\frac{1}{\tau}$ and $ | \text{Im} \left[ s \right] | < \frac{\pi}{2 \lambda}$.
+Thus, it suffices to consider input frequencies $< \frac{1}{4\lambda}$\,Hz.}
+Therefore,
+\begin{align}
+&& F^H(s) &:= F\left( \frac{1}{\lambda} W_0(ds) - \frac{1}{\tau} \right) \label{eq:delayed-lowpass-mapped} && \\
+\implies && F^H(H(s)^{-1}) &= F^H(y) = F(s) \text{.} && \nonumber
+\end{align}
+
+As a demonstration of how we might use this mapping, suppose the desired transfer function for our system is a time-delay of $\theta$ seconds, $F(s) = e^{-\theta s}$ (equation~\ref{eq:tf-delay}).
+In this setting, we are attempting to ``amplify'' a delay of $\lambda$ seconds in the synapse into a system delay of $\theta$ seconds at the network level.
+Letting $c := e^{\frac{\theta}{\tau}}$ and $r := \frac{\theta}{\lambda}$, and then substituting $F(s)$ into equation~\ref{eq:delayed-lowpass-mapped}, provides the required function:
+\begin{align}
+F^H(s) = \exp \left\{ -\theta \left( \frac{1}{\lambda} W_0(ds) - \frac{1}{\tau} \right) \right\} = c \exp \left\{-r W_0(ds) \right\} = c \left( \frac{W_0(ds)}{ds} \right)^r \text{.} \nonumber
+\end{align}
+This may be numerically converted into a state-space model, of arbitrary dimensionality $q$, via the $\left[q-1/q\right]$ Pad\'e approximants of the following Maclaurin series:
+\begin{align} \label{eq:lambert-delay}
+F^H(s) = c r \sum_{i=0}^\infty \frac{(i+r)^{i-1}}{i!} (-ds)^i \text{.}
+\end{align}
+To our knowledge, there is no closed-form expression for the Pad\'e approximants of equation~\ref{eq:lambert-delay}, but there are methods to compute them accurately and in $\bigoh{q^2}$ time~\citep{sidi2003practical}.
+Given these approximants, we may follow the same procedure from section~\ref{sec:delay-implementation} to obtain a LTI system in the form of equation~\ref{eq:lti}.
+In section~\ref{sec:pure_delay}, we use this approach to improve the accuracy of the delay network demonstrated in section~\ref{sec:delay-implementation}. %(see~Figure~\ref{fig:lambert}).
+We remark that each of $d$, $c$, and $r$ are dimensionless (i.e.,~unitless) constants that can be used to relate measurable properties of a biological system that may be governed by this description to the necessary network-level computations.
+
+\subsubsection{General Linear Synapse}
+
+Finally, we consider the general class of all linear synapse models of the form:
+\begin{equation} \label{eq:synapse}
+H(s) = \frac{1}{\sum_{i=0}^k c_i s^i} \text{,}
+\end{equation}
+for some polynomial coefficients $\left( c_i \right)$ of arbitrary degree $k$.
+To the best of our knowledge, this class includes the majority of linear synapse models used in the literature.
+For instance, this includes the first-order lowpass synapse that is standard in the NEF.
+It also includes the second-order alpha synapse, $\frac{1}{(\tau s + 1)^2}$~\citep{rall1967distinguishing}---the convolution of two exponentials with identical time-constants---which is commonly used in biological models~\citep{koch1989methods, destexhe1994synthesis, mainen1995reliability, destexhe1998kinetic, roth2009modeling}.
+The alpha synapse essentially filters the spike-trains twice, to produce PSCs with finite (non-instantaneous) rise-times.
+In addition, equation~\ref{eq:synapse} includes a generalization of the alpha synapse, the double-exponential synapse, $\frac{1}{(\tau_1 s + 1)(\tau_2 s + 1)}$~\citep{wilson1989simulation}---the convolution of two exponentials with time-constants $\tau_1$ and $\tau_2$---which has different rise- and fall-times to account for the separate time scales of rapid transmitter binding followed by slow unbinding~\citep{destexhe1994synthesis, hausser1997estimating, roth2009modeling}.
+The double-exponential is also a suitable model to account for parasitic capacitances in neuromorphic hardware~\citep{voelker2017iscas}.
+Furthermore, equation~\ref{eq:synapse} includes a higher-order generalization of the alpha synapse, the gamma kernel, $\frac{1}{(\mu^{-1} s + 1)^k}$~\citep[][equation 19]{de1992gamma}. 
+Finally, this class contains more exotic models, such as the $Q$-bandpass synapse model, $\frac{1}{\frac{1}{\omega^2}s^2 + \frac{1}{\omega Q}s + 1}$, where $\omega$ is the peak frequency in radians per second, and $Q$ is inversely proportional to the bandwidth.
+Such synapses have been used to model bandpass filtering from mechanoreceptors in the fingertip~\citep{voelker2016a} or from rods in the retina~\citep{armstrong2003bandpass}.
+
+As well, in appendix~\ref{app:discrete-connection}, we demonstrate how to use equation~\ref{eq:synapse} to model synapses with pure delays, and to prove a complete connection to ZOH discretization.
+%Within the NEF, both the alpha and double-exponential have the advantage of filtering the neural activity twice, thus reducing the spike-noise relative to the first-order lowpass.  CE: just didn't fit well anymore.
+Specifically, by the use of Pad\'e approximants, we may rewrite any transfer function with a Taylor series expansion (even those that are irrational or improper) in the form of equation~\ref{eq:synapse}---albeit with some radius of convergence.
+This permits us to model, for instance, synapses with pulse-extended responses~\citep{voelker2017iscas}.\footnote{
+Pad\'e approximants are computed ``manually'' by \citet[][equations~9--11]{voelker2017iscas} to obtain a second-order approximation in the form of equation~\ref{eq:synapse}.
+}
+Similarly, the delayed lowpass (equation~\ref{eq:delayed-lowpass}) may be expressed in the form of equation~\ref{eq:synapse}.
+% Therefore, equation~\ref{eq:synapse} captures a wide variety of linear postsynaptic responses to some desired degree of accuracy.
+Finally, any linear combinations of the aforementioned synapse models will also be a member of this class.
+Nonlinear synapse models, such as conductance-based synapses~\citep[e.g.,][equation~6]{destexhe1994efficient}, are a current subject of study in the NEF~\citep{stockel2017}.
+
+%It is interesting to note that although our characterization does not include nonlinear synapse models, such as conductance-based synapses~\citep[][equation~6]{destexhe1994efficient}, recent results indicate that, at least in some common cases, such models may also be accounted for without significantly impacting overall accuracy~\citep{stockel2017}.
+%However, these results remain to be thoroughly tested and quantified.
+
+To map $F$ onto equation~\ref{eq:synapse}, we begin by defining our solution to $F^{H}(s)$ in the form of its state-space model (see equation~\ref{eq:ss-mapped}):
+\begin{equation} \label{eq:general-linear}
+\begin{aligned}
+A^H &= \sum_{i=0}^k c_i A^i \text{,} & \quad C^H &= C \text{,} \\
+B^H &= \left( \sum_{j=0}^{k-1} s^j \sum_{i=j+1}^k c_i A^{i-j-1} \right) B \text{,} & \quad D^H &= D \text{,}
+\end{aligned}
+\end{equation}
+which we claim satisfies the required identity, $F^{H}(H(s)^{-1}) = F(s)$ (equation~\ref{eq:maps-onto}).
+To prove this claim, we first rearrange the following expression:
+\begin{align*}
+\left( \sum_{j=0}^{k-1} s^j \sum_{i=j+1}^k c_i A^{i-j-1} \right) (sI - A)  &= \sum_{j=0}^{k-1} \sum_{i=j+1}^k s^j c_i A^{i-j-1} (sI - A) \\
+&= \sum_{i=0}^{k} \sum_{j=0}^{i-1} s^j c_i A^{i-j-1} (sI - A)  \\
+%&= \sum_{i=0}^k c_i (sI - A) \sum_{j=0}^{i-1} s^j A^{i-j-1} \\
+&= \sum_{i=0}^k c_i \left( \sum_{j=0}^{i-1} s^{j+1} A^{i - (j + 1)} - s^j A^{i - j} \right) \\
+&= \sum_{i=0}^k c_i \left( s^i A^{i - i} - s^0 A^{i-0} \right) \\
+&= \left( \sum_{i=0}^k c_i s^i \right) I - \sum_{i=0}^k c_i A^i \\
+&= H(s)^{-1}I - A^H \text{.}
+\end{align*}
+We then complete the proof by substituting this result and the state-space model into our expression for the mapped transfer function from equation~\ref{eq:ss-mapped}:
+\begin{align*}
+F^H(H(s)^{-1}) &= C^H(H(s)^{-1}I - A^H)^{-1} B^H + D^H \\
+&= C(H(s)^{-1}I - A^H)^{-1} \left( \sum_{j=0}^{k-1} s^j \sum_{i=j+1}^k c_i A^{i-j-1} \right) B + D \\
+&= C(sI - A)^{-1} B + D \\
+&= F(s) \text{.}
+\end{align*}
+An alternative derivation may also be found in \citet[][section~2.2]{voelker2017neuromorphic}.
+An interesting insight gained with this solution is that it is not, in general, the case that $B^H$ is time-invariant, since it depends on $s$.
+As a result, solutions will often not be a typical state-space model in the form of equation~\ref{eq:lti}.
+
+Nevertheless, such solutions can still be implemented, as is, in practice.
+Since $s^j$ is the $j^{\text{th}}$-order differential operator, this form of $B^H$ states that we must supply the $j^{\text{th}}$-order input derivatives $\V{u}^{(j)}$, for all $j = 1 \ldots k - 1$.
+When $k = 1$, as in section~\ref{sec:lowpass}, this is trivial (no derivatives are needed).
+For $k > 1$, let us first define $B^H_j:= \left( \sum_{i=j+1}^k c_i A^{i-j-1} \right) B$.
+Then equation~\ref{eq:general-linear} shows that the ideal state-space model must implement the input transformation as a linear combination of input derivatives, $\sum_{j=0}^{k-1} B^H_j \V{u}^{(j)}$.
+If the derivatives of the input are available to the model, then the $F^{H}(s)$ we described may be used to precisely implement the desired $F(s)$.
+
+However, if the required derivatives are not included in the neural representation, then it is natural to use a ZOH method by assuming $\V{u}^{(j)} = 0$, for all $j = 1 \ldots k - 1$:
+\begin{equation} \label{eq:general-linear-approx}
+B^H = B^H_0 =  \left( \sum_{i=1}^k c_i A^{i-1} \right) B \text{,}
+\end{equation}
+with $A^H$, $C^H$, and $D^H$ as before (see equation~\ref{eq:general-linear}).
+This is now an equivalent model to equation~\ref{eq:general-linear} assuming ZOH, and in the form of the standard state-space model (equation~\ref{eq:lti}).
+In appendix~\ref{app:poles}, we characterize the dynamics of this new system in terms of $F$ and $H$ (independently of the chosen state-space model) for general inputs.
+We find that equation~\ref{eq:general-linear-approx} adds $k - 1$ new dimensions, for every dimension in $F$, to the state underlying the resulting dynamical system.
+In appendix~\ref{app:discrete-connection}, we show that the our results yield a novel derivation of ZOH discretization for LTI systems.
+
+To our knowledge, this specific state-space architecture has not been explored in theory or in practice.
+Given that equation~\ref{eq:general-linear} requires the input derivatives to accurately compute low-dimensional network-level dynamics, this strongly suggests that it is important to represent and compute derivatives in neural systems.
+Methods of computing derivatives have been explored by \citet{tripp2010} within the NEF.
+As well, it has long been suggested that adaptive neural mechanisms (e.g., synaptic depression or spike-rate adaptation) may also play a fundamental role in computing such derivatives~\citep{abbott2004synaptic, lundstrom2008fractional}.
+However, there has typically been less emphasis placed on understanding temporal differentiation in comparison to other temporal operators, such as integration~\citep{tripp2010}.
+
+Finally, we again note that these results translate directly to the discrete-time domain.
+The required state-space matrices are the same as in equation~\ref{eq:general-linear}, but with $\left( \bar{c}_i \right)$ corresponding to the coefficients of $H(z)$, bars affixed to each state-space matrix, and $z$ substituted for $s$ in $\bar{B}^H$.
+However, the $z^j$ operator is a shift backwards by $j$ time-steps (i.e.,~an acausal lookahead), and so the ZOH assumption is instead $\V{u}[t+j(dt)] = \V{u}[t]$ for all $j = 1 \ldots k - 1$.
+Thus, the discrete analog to equation~\ref{eq:general-linear-approx} is:
+\begin{equation}
+\bar{B}^H = \left( \sum_{j=0}^{k-1} \sum_{i=j+1}^k \bar{c}_i \bar{A}^{i-j-1} \right) \bar{B} \text{.}
+\end{equation}
+
+\subsubsection{Relationship to Discretization}
+
+As an aside, there is an interesting connection between definition~\ref{def:maps-onto} and the well-known problem of discretizing a linear dynamical system.
+A discrete LTI system (equation~\ref{eq:dlti}) is identical to a continuous LTI system (equation~\ref{eq:lti}), with three adjustments: (1)~the integrator $s^{-1}$ is replaced by a time-delay of $dt$ seconds, (2)~the input signal is sampled every $dt$ seconds, and (3)~the output signal is sampled every $dt$ seconds.
+Focusing on point~1, this is precisely the notion captured by definition~\ref{def:maps-onto} with respect to:
+\begin{equation*}
+H(s) = e^{-(dt)s} = \frac{1}{e^{(dt)s}} = \frac{1}{\sum_{i=0}^\infty \frac{(dt)^i}{i!} s^i} \text{,}
+\end{equation*}
+by the Maclaurin series of $e^{x}$.
+This is in the form of equation~\ref{eq:synapse} with $c_i = \frac{(dt)^i}{i!}$ as $k \rightarrow \infty$.
+These coefficients are also the $\left[ 0 / \infty \right]$ Pad\'e approximants of $\sum_{i=0}^\infty \frac{(-dt)^i}{i!} s^i$.
+
+If we make the ZOH assumption---that the input signal is held piecewise-constant over each continuous-time interval of length $dt$---then $\V{u}^{(j)} = 0$ for all $j \ge 1$.
+Therefore, by equation~\ref{eq:general-linear-approx}, an equivalent state-space model is:
+\begin{align*}
+A^H &= \sum_{i=0}^k c_i A^i = \sum_{i=0}^k \frac{\left(A(dt)\right)^i}{i!} = e^{A(dt)} \text{,} & C^H &= C \text{,} \\
+B^H &= \left( \sum_{i=1}^k c_i A^{i-1} \right) B = A^{-1} \left(A^H - I\right) B \text{,} & D^H &= D \text{,}
+\end{align*}
+which is precisely the discrete state-space model $(\bar{A}, \bar{B}, \bar{C}, \bar{D})$ obtained by ZOH discretization.
+This follows from the fact that points~2 and~3 coincide with the use of the model from equation~\ref{eq:dlti}.
+
+This connection helps highlight the generality and consistency of our theory.
+In particular, the important procedure of discretizing linear state-space models may be viewed as an instance of accounting for changes in dynamical primitives.
+Furthermore, as one should hope, the ZOH assumption recovers the correct result, which is normally proven by integrating the linear differential equations over the interval $[0\text{,}\, dt]$.
+
 \subsection{Nonlinear State-Space Characterization}
 
 \subsection{Approximating Derivatives}
 
 Motivated by the theoretical need for driving the synapse with higher-order input derivatives...
 Talk about Bryan's paper, and the fact we can approximate the required transfer function $F(s) = s$ or a lowpass filtered version.
+
+\subsubsection{Constant Input Analysis}
+
+Consider the $F^H$ determined by equation~\ref{eq:general-linear-approx}, when the derivatives of the input signal are inaccessible.
+Let $\hat{F}(s) := F^{H}(H(s)^{-1})$ be the dynamics of the implemented system for this particular $F^H$.
+Due to the ZOH assumption, $\hat{F} \ne F$ in general, and so $F^H$ does not technically map $F$ onto $H$ (see definition~\ref{def:maps-onto}).
+As discussed in section~\ref{sec:general}, the approximation only satisfies equation~\ref{eq:maps-onto} when the input is held constant.
+To be clear, $\hat{F}(s) = F(s)$ for $s = 0$, but not necessarily for $s \ne 0$.
+Thus, it is important to characterize the difference between $\hat{F}$ and $F$ for general inputs.
+
+To do so, we can examine the \emph{poles} of the transfer function $F(s) = \frac{\mathcal{C}(s)}{\mathcal{D}(s)}$, which are defined as the complex roots of $\mathcal{D}(s)$.
+The poles of a system fully define the dynamics of its state (up to a change of basis).
+For instance, a system is exponentially stable if and only if $\text{Re} \left[ s \right] < 0$ for all poles $s \in \mathbb{C}$.
+Furthermore, $s \in \text{sp}(A)$ if and only if $s$ is a pole, where $\text{sp}(A)$ denotes the eigenvalues of the state-space matrix $A$.\footnote{
+Note that $\text{sp}(A) = \text{sp}(TAT^{-1})$ for any invertible matrix $T$ with the same shape as $A$.
+}
+% $\text{sp}(A) = det(sI - A)$
+Therefore, we may characterize the poles of $\hat{F}$ in terms of the poles of $F$, in order to understand the behavior of the implemented system.
+
+We begin by deriving the poles of $F^H$, recalling that $A^H = \sum_{i=0}^k c_i A^i$.
+Let $\V{v} \ne \V{0}$ be an eigenvector of $A$ with eigenvalue $\lambda$, %(i.e., a pole of $F(s)$),
+so that:
+\begin{align*}
+A\V{v} = \lambda \V{v} \quad \implies \quad A^H \V{v} = \sum_{i=0}^k c_i A^i \V{v} = \left( \sum_{i=0}^k c_i \lambda^i \right) \V{v} \text{.}
+\end{align*}
+Hence, $\text{sp}\left(A^H \right) = \left\{  \sum_{i=0}^k c_i \lambda^i \,:\, \lambda \in \text{sp}(A) \right\}$ is the full set of eigenvalues for $A^H$.
+This is also true for equation~\ref{eq:general-linear}, since $A^H$ is identical, but we do not need this fact.
+
+The denominator of $\hat{F}$ may now be written as $\prod_{\lambda \in \text{sp}(A)} \left( H(s)^{-1} - \sum_{i=0}^k c_i \lambda^i \right)$.
+Therefore, the poles of $\hat{F}$ are the roots of the $q$ polynomials:
+\begin{equation*}
+\mathcal{P}(\phi) := \sum_{i=0}^k c_i \left( \phi^i - \lambda^i \right) \text{,} \quad \lambda \in \text{sp}(A) \text{.}
+\end{equation*}
+% $H(\phi)^{-1} - \sum_{i=0}^k c_i \lambda^i = 0$, where $\lambda$ is a pole of $F$.
+A trivial set of roots are $\phi = \lambda$, and thus each pole of $F$ is also a pole of $\hat{F}$, as desired.
+However, for a synapse of order $k$, there will also be $k - 1$ additional poles for every pole of $F$.
+For this system to behave as $F$ given low-frequency inputs, we must have the old poles dominate the new poles.
+That is, we require $\text{Re} \left[ \lambda \right] \gg \text{Re} \left[ \phi \right]$ for all $\phi \ne \lambda$.
+
+To provide a specific example, let us consider the double-exponential synapse, $H(s)^{-1} = (\tau_1 s + 1)(\tau_2 s + 1)$,
+\begin{align*}
+\implies && \mathcal{P}(\phi) &= \tau_1 \tau_2 \phi^2 + (\tau_1 + \tau_2) \phi - (\tau_1 \tau_2 \lambda^2 + (\tau_1 + \tau_2) \lambda) = 0 && \\
+\iff && \phi &= \frac{-(\tau_1 + \tau_2) \pm \sqrt{(\tau_1 + \tau_2)^2 + 4\tau_1 \tau_2 \left(\tau_1 \tau_2 \lambda^2 + (\tau_1 + \tau_2) \lambda \right)}}{2 \tau_1 \tau_2} && \\
+&& &= \frac{-(\tau_1 + \tau_2) \pm \left(2 \tau_1 \tau_2 \lambda + (\tau_1 + \tau_2) \right)}{2 \tau_1 \tau_2} \text{.} &&
+\end{align*}
+In this instance, the `$+$' case gives back the known poles, $\phi = \lambda$, and the `$-$' case provides the new poles, $\phi = \left(- \frac{\tau_1 + \tau_2}{\tau_1 \tau_2} - \lambda \right)$.
+Consequently, the poles of $\hat{F}$ are the poles of $F$, duplicated and reflected horizontally about the real line $- b$, where $b := \frac{\tau_1 + \tau_2}{2 \tau_1 \tau_2}$ (and the imaginary components are unchanged).
+
+Interestingly, $b$ may be rewritten as $\left( \frac{ \tau_1 + \tau_2}{2} \right) / \sqrt{\tau_1^2 \tau_2^2}$, which is the ratio of the arithmetic mean to the geometric mean of $\{\tau_1, \tau_2\}$, which may in turn be interpreted as a cross-entropy expression~\citep{woodhouse2001ratio}.
+
+Regardless, $\hat{F}$ behaves like $F$ when $\text{Re} \left[ \lambda \right] \gg -b$.
+For the delay system (equation~\ref{eq:ss-delay}), $\text{Re} \left[ \lambda \right] \propto -\frac{q}{\theta}$ (in fact, the mean value across all $q$ poles achieves equality), and so we need $b \gg \frac{q}{\theta}$.
+This predicts that a delay system using the double-exponential synapse, without access to the input's derivative, must necessarily implement a delay that is proportionally longer than $\frac{q}{b}$.
+Otherwise, the second-order dynamics from the synapse will dominate the system-level dynamics.
+We note that $b^{-1}$ is longest for the case of the alpha synapse ($b^{-1} = \tau$), and shortest for the case of the lowpass synapse ($b^{-1} \rightarrow 0$ as $\tau_2 \rightarrow 0$).
+
+
 
 \subsubsection{Taylor-Series Approximation}
 

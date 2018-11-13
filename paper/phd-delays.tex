@@ -1,22 +1,418 @@
 \chapter{Delay Networks}
 \label{chapt:delays}
 
-Motivation
+This section is taken from \citet{voelker2018}.
+
+A fundamental dynamical system that has not yet been discussed within the NEF literature is the continuous-time delay line of $\theta$ seconds,\footnote{
+\citet{voelker2015computing} proposed a NEF model, but did not include detailed analysis or extensions.
+% Here, we elaborate on this network in considerable detail.
+}
+expressed as:
+\begin{align} \label{eq:time-delay}
+y(t) = (u \ast \delta_{-\theta})(t) = u(t - \theta)\text{,} \quad \theta > 0 \text{,}
+\end{align}
+where $\delta_{-\theta}$ denotes a Dirac delta function shifted backwards in time by $\theta$.
+This system takes a time-varying scalar signal, $u(t)$, and outputs a purely delayed version, $u(t - \theta)$.
+The task of computing this function both accurately and efficiently in a biologically plausible, spiking, dynamical network, is a significant theoretical challenge, that, to our knowledge, has previously remained unsolved.
+
+The continuous-time delay is worthy of detailed consideration for several reasons.
+First, it is non-trivial to implement using continuous-time spiking dynamical primitives.
+Specifically, equation~\ref{eq:time-delay} requires that we maintain a \emph{rolling window} of length $\theta$ (i.e.,~the history of $u(t)$, going $\theta$ seconds back in time).
+Thus computing a delay of $\theta$ seconds is just as hard as computing every delay of length $\theta'$, for all $0 \le \theta' \le \theta$.
+Since any finite interval of $\mathbb{R}$ contains an uncountably-infinite number of points, an exact solution for arbitrary $u(t)$ requires that we maintain an uncountably-infinite amount of information in memory.
+Second, the delay provides us with a window of input history from which to compute arbitrary nonlinear functions across time.
+For instance, the spectrogram of a signal may be computed by a nonlinear combination of delays, as may any finite impulse response~(FIR) filter.
+Third, delays introduce a rich set of interesting dynamics into large-scale neural models, including: oscillatory bumps, traveling waves, lurching waves, standing waves, aperiodic regimes, and regimes of multistability~\citep{roxin2005role}.
+Fourth, a delay line can be coupled with a single nonlinearity to construct a network displaying many of the same benefits as Reservoir Computing~\citep{appeltant2011information}.
+Finally, examining the specific case of the continuous-time delay introduces several methods and concepts we employ in generally extending the NEF (section~\ref{sec:extensions}).
 
 \section{Conventional Approaches}
 
 Reservoir computing / FORCE / LSTMs?
 
 \section{Optimal NEF Solution}
+\label{sec:nef-delay}
 
-Insert Neural Computation Paper here
+As it is impossible in practice (i.e.,~given finite-order continuous-time resources) to implement an arbitrary delay, we will instead approximate $u(t)$ as a low-frequency signal, or, equivalently, approximate equation~\ref{eq:time-delay} as a low-dimensional system expanded about the zeroth frequency in the \emph{Laplace domain}.
+We begin by transforming equation~\ref{eq:time-delay} into the Laplace domain, $\mathcal{L} \left\{ y(t) \right\} = \mathcal{L} \left\{ u(t) \right\} \mathcal{L} \left\{ \delta_{-\theta}(t) \right\}$, and then using the fact that $\mathcal{L} \left\{ \delta_{-\theta}(t) \right\} = e^{-\theta s}$ to obtain:
+\begin{align} \label{eq:tf-delay}
+F(s) := \frac{\mathcal{L} \left\{ y(t) \right\}}{\mathcal{L} \left\{ u(t) \right\}} = e^{-\theta s} \text{,}
+\end{align}
+where $F(s)$ is known as the \emph{transfer function} of the system, defined as the ratio of the Laplace transform of the output to the Laplace transform of the input.
+Equation~\ref{eq:tf-delay} should be understood as an equivalent way of expressing equation~\ref{eq:time-delay} in the Laplace domain, where the variable $s$ denotes a complex frequency. 
+Thus far, we have only described the transfer function that we would like the network to implement. %while $t$ is non-negative in the time domain.
+% Unimportant reminder? The transfer function is the Laplace transform of system's impulse response.
+
+The state-space model discussed in section~\ref{sec:principle3} (equation~\ref{eq:lti}) is related to its transfer function by the following:
+\begin{align} \label{eq:ss2tf}
+F(s) = C(sI - A)^{-1}B + D \text{.}
+\end{align}
+Conversely, a transfer function can be converted into a state-space model satisfying equation~\ref{eq:ss2tf} \emph{if and only if} it can be written as a proper ratio of finite polynomials in $s$~\citep{brogan1982modern}.
+The ratio is proper when the degree of the numerator does not exceed that of the denominator.
+In such a case, the output will not depend on future input, and so the system is \emph{causal}.
+The degree of the denominator corresponds to the dimensionality of the state-vector, and therefore must be finite.
+These two conditions align with physically realistic constraints where time may only progress forward, and neural resources are limited.
+
+However, the pure delay (equation~\ref{eq:tf-delay}) has infinite order when expressed as a ratio of polynomials in $s$, and so the system is irrational, or infinite-dimensional.
+Consequently, no finite state-space model will exist for $F(s)$, which formalizes our previous intuition that an exact solution is impossible for finite, continuous-time systems.
+To overcome this, we must approximate the irrational transfer function $e^{-\theta s}$ as a proper ratio of finite-order polynomials.
+We do so using its \emph{Pad\'e approximants}---the coefficients of a Taylor series extended to the ratio of two polynomials---expanded about $s=0$~\citep{Pade1892, vajta2000some}:
+\begin{equation} \label{eq:pade}
+\begin{aligned}
+\left[ p/q \right] e^{-\theta s} &= \frac{\mathcal{B}_{p}(-\theta s)}{\mathcal{B}_{q}(\theta s)} \text{,} \\
+\quad \mathcal{B}_m(s) &:= \sum_{i=0}^m \begin{pmatrix}m \\ i\end{pmatrix} \frac{(p + q - i)!}{(p + q)!} s^i \text{.}
+\end{aligned}
+\end{equation}
+This provides the transfer function of order $p$ in the numerator and order $q$ in the denominator that optimally approximates equation~\ref{eq:tf-delay} for low-frequency inputs (i.e.,~up to order $p + q$).
+
+After choosing $0 \le p \le q$, we may numerically find a state-space model $(A\text{,}\, B\text{,}\, C\text{,}\, D)$ that satisfies equation~\ref{eq:ss2tf} using standard methods,\footnote{
+For instance, the function \texttt{tf2ss} in MATLAB or SciPy.}
+and then map this system onto the synapse using Principle~3.
+%This works independently of the chosen simulation time-step using equation~\ref{eq:p3discrete}.
+However, na\"ively applying this conversion leads to numerical issues in the representation (i.e.,~dimensions that grow exponentially in magnitude), due in part to the factorials in equation~\ref{eq:pade}.
+
+To overcome this problem, we derive an equivalent yet normalized state-space model that we have not encountered elsewhere.
+We do so for the case of $p = q - 1$, since this provides the best approximation to the step-response. We symbolically transform equation~\ref{eq:pade} into a normalized state-space model that avoids the need to compute any factorials.
+We first do so for the special case of $p = q - 1$, since this provides the best approximation to the step-response~\citep{vajta2000some}.
+We begin by expanding equation~\ref{eq:pade}:
+\begin{align*}
+[q-1/q]e^{-\theta s} &= \frac{\sum_{i=0}^{q-1} \begin{pmatrix}{q-1} \\ i\end{pmatrix} (2q - 1 - i)! (-1)^i \theta^i s^i}{\sum_{i=0}^q \begin{pmatrix}q \\ i\end{pmatrix} (2q - 1 - i)! \theta^i s^i} \\
+&= \frac{\frac{1}{\theta^{q} (q-1)!} \sum_{i=0}^{q-1} \frac{(q-1)!}{(q-1-i)!i!} (2q - 1- i)! \theta^i s^i (-1)^i}{s^q + \frac{1}{\theta^q (q-1)!}  \sum_{i=0}^{q-1} \frac{q!}{(q-i)!i!} (2q - 1 - i)! \theta^i s^i} \\
+&= \frac{\sum_{i=0}^{q-1} c_i s^i}{s^q + \sum_{i=0}^{q-1} d_i s^i} \text{,}
+\end{align*}
+where $d_i := \frac{q(2q - 1 - i)!}{(q-i)!i!} \theta^{i-q}$ and $c_i := (-1)^i \left( \frac{q-i}{q} \right) d_i$.
+
+This transfer function is readily converted into a state-space model in controllable canonical form:
+\begin{equation*}
+    \begin{alignedat}{2}
+        A &= \begin{pmatrix} -d_{q-1} & -d_{q-2} & \cdots & -d_0 \\ 1 & 0 & \cdots & 0 \\ 0 & \ddots & \ddots & \vdots \\ 0 & 0 & 1 & 0\end{pmatrix} \text{,} & & \quad\quad \begin{alignedat}{1}
+            B &= \transpose{\begin{pmatrix} 1 & 0 & \cdots & 0\end{pmatrix}} \text{,} \\
+            C &= \begin{pmatrix} c_{q-1} & c_{q-2} & \cdots & c_0\end{pmatrix} \text{,} \\
+            D &= 0 \text{.}
+        \end{alignedat}
+    \end{alignedat}
+\end{equation*}
+
+To eliminate the factorials in $d_i$ and $c_i$, we scale the $i^{\text{th}}$ dimension of the state-vector by $d_{q-1-i}$, for all $i = 0 \ldots q - 1$.
+This is achieved without changing the transfer function by scaling each $(B)_j$ by $d_{q-1-j}$, each $(C)_i$ by $1 / d_{q-1-i}$, and each $(A)_{ij}$ by $d_{q-1-i} / d_{q-1-j}$, which yields the equivalent state-space model:
+\begin{equation*}
+    \begin{alignedat}{2}
+        A &= \begin{pmatrix} -v_0 & -v_0 & \cdots & -v_0 \\ v_1 & 0 & \cdots & 0 \\ 0 & \ddots & \ddots & \vdots \\ 0 & 0 & v_{q-1} & 0\end{pmatrix} \text{,} & & \quad\quad \begin{alignedat}{1}
+            B &= \transpose{\begin{pmatrix} v_0 & 0 & \cdots & 0\end{pmatrix}} \text{,} \\
+            C &= \begin{pmatrix} w_0 & w_1 & \cdots & w_{q-1} \end{pmatrix} \text{,} \\
+            D &= 0 \text{,} \label{eq:ss-delay}
+        \end{alignedat}
+    \end{alignedat}
+\end{equation*}
+where $v_i := \frac{(q+i)(q-i)}{i+1} \theta^{-1}$ and $w_i := (-1)^{q - 1 - i} \left( \frac{i+1}{q} \right)$, for $i = 0 \ldots q-1$.
+This follows from noting that $v_0 = d_{q-1}$ and $v_i := d_{q-1-i} / d_{q-i}$ for $i \ge 1$.
+
+A similar derivation applies to the case where $p = q$, although it results in a passthrough ($D \ne 0$) which is suboptimal for step-responses.
+For brevity, we omit this derivation, and instead simply state the result:
+\begin{equation*}
+    \begin{alignedat}{2}
+        A &= \begin{pmatrix} -v_0 & -v_0 & \cdots & -v_0 \\ v_1 & 0 & \cdots & 0 \\ 0 & \ddots & \ddots & \vdots \\ 0 & 0 & v_{q-1} & 0\end{pmatrix} \text{,} & & \quad\quad \begin{alignedat}{1}
+            B &= \transpose{\begin{pmatrix}-v_0 & 0 & \cdots & 0\end{pmatrix}} \text{,} \\
+            C &= \begin{pmatrix} 2(-1)^q & 0 & 2(-1)^q & 0 & \cdots & \cdots \end{pmatrix} \text{,} \\
+            D &= (-1)^q \text{,}
+        \end{alignedat}
+    \end{alignedat}
+\end{equation*}
+where $v_i = \frac{(q+i+1)(q-i)}{i+1} \theta^{-1}$, for $i = 0 \ldots q-1$.
+
+In either case, $A$ and $B$ depend on the delay length solely by the scalar factor $\theta^{-1}$.
+As a result, we may \emph{control} the length of the delay by adjusting the gain on the input and feedback signals.
+The NEF can be used to build such controlled dynamical systems, without introducing multiplicative dendritic interactions or implausible on-the-fly connection weight scaling~\citep{eliasmith2000b}.
+The identification of this control factor is connected to a more general property of the Laplace transform, $F \left( a^{-1} s \right) = \mathcal{L} \left\{ a f(at) \right\}$ for all $a > 0$, that we can exploit to modulate the width of any filter on-the-fly (in this case affecting the amount of delay; results not shown).
+
+This model is now equivalent to equation~\ref{eq:pade}, but without any factorials, and in the form of equation~\ref{eq:lti}.\footnote{
+In appendix~\ref{app:state-space}, we provide some additional manipulations of the state-space model.}
+The choice of $q$ corresponds to the dimensionality of the latent state-vector $\V{x}(t)$ that is to be represented by Principle~1 and transformed by Principle~2.
+Principle~3 may then be used to map equation~\ref{eq:ss-delay} onto a spiking dynamical network to accurately implement an optimal low-frequency approximation of the delay.
+
+To demonstrate, we implement a $1$\,s delay of $1\,$Hz band-limited white noise using $\num{1000}$ recurrently connected spiking LIF neurons representing a $6$-dimensional vector space (see Figure~\ref{fig:delay-example}).
+The connections between neurons are determined by applying Principle~3 (section~\ref{sec:principle3}) to the state-space model derived above (equation~\ref{eq:ss-delay}, $q=6$) via the Pad\'e approximants of the delay.
+The normalized root-mean-squared error (NRMSE) of the output signal is $0.048$ (normalized so that $1.0$ would correspond to random chance).
+This is achieved without appealing to the simulation time-step ($dt = 1$\,ms); in fact, as shown in section~\ref{sec:pure_delay}, the network accuracy improves as $dt$ approaches zero due to the continuous-time assumption mentioned in section~\ref{sec:principle3} (and resolved in section~\ref{sec:discrete-lowpass}).
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{{NECO-04-17-2838-Figure.3}.pdf}
+  \caption{ \label{fig:delay-example}
+    Delay of $1$\,s implemented by applying standard Principle~3 to equation~\ref{eq:ss-delay} using $q = 6$, $dt=1$\,ms, $\num{1000}$ spiking LIF neurons, and a lowpass synapse with $\tau=0.1$\,s.
+    The input signal is white noise with a cutoff frequency of $1$\,Hz.
+    The plotted spikes are filtered with the same $\tau=0.1$\,s, and encoded with respect to $\num{1000}$ encoders sampled uniformly from the surface of the hypersphere (sorted by time to peak activation).
+  }
+\end{figure}
+
+Although the delay network has its dynamics optimized for a single delay $\theta > 0$, we can still accurately decode any delay $0 \le \theta' \le \theta$ from the same network.
+This means that the network is representing a rolling window (i.e.,~history) of length $\theta$.
+This window forms a temporal code of the input stimulus.
+
+To compute these other delays, we would like to optimally approximate $e^{-\theta' s}$ with a transfer function $F_{\theta \rightarrow \theta'}(s) := \frac{\mathcal{C}(s; \, \theta, \theta')}{\mathcal{D}(s; \, \theta)}$ of order $[p / q]$, such that the denominator $\mathcal{D}(s; \, \theta)$ (which provides us with the recurrent transformation up to a change of basis) depends only on $\theta$, while the numerator $\mathcal{C}(s; \, \theta, \theta')$ (which provides us with the output transformation up to a change of basis) depends on some relationship between $\theta'$ and $\theta$.
+
+From equation~\ref{eq:pade}, we may write the denominator as:
+\begin{align*}
+\mathcal{D}(s; \, \theta) = \sum_{i=0}^q d_i(\theta) s^i \text{,} \quad d_i(\theta) := \begin{pmatrix}q \\ i\end{pmatrix} \frac{(p + q - i)!}{(p + q)!} \theta^i \text{.}
+\end{align*}
+We then solve for the numerator, as follows:
+\begin{align*}
+&& [p/q] e^{-\theta' s} &= \sum_{i=0}^\infty \frac{(-\theta' s)^i}{i !} = \frac{\mathcal{C}(s; \, \theta, \theta')}{\mathcal{D}(s; \, \theta)} & \\
+&& \iff \quad \mathcal{C}(s; \, \theta, \theta') &= \left( \sum_{i=0}^\infty \frac{(-\theta' s)^i}{i !} \right) \left( \sum_{j=0}^q d_j(\theta) s^j \right) + \mathcal{O}(s^{p + 1}) \text{.}
+\end{align*}
+By expanding this product and collecting like terms, the correct numerator up to order $p \le q$ is:
+\begin{align*}
+\mathcal{C}(s; \, \theta, \theta') = \sum_{i=0}^p c_i(\theta, \theta') s^i \text{,} \quad c_i(\theta, \theta') :=  \sum_{j=0}^i \frac{(- \theta')^{i - j}}{(i - j)!} d_j(\theta) \text{.}
+\end{align*}
+Therefore, the optimal readout for a delay of length $\theta'$, given the dynamics for a delay of length $\theta$, is determined by the above linear transformation of the coefficients $\left( d_j(\theta) \right)_{j=0}^p$.
+
+We remark that $c_i(\theta, \theta) = \begin{pmatrix}p \\ i\end{pmatrix} \frac{(p + q - i)!}{(p + q)!} (-\theta)^i$, since $F_{\theta \rightarrow \theta}(s) = [p/q] e^{-\theta s}$, by uniqueness of the Pad\'e approximants, and by equation~\ref{eq:pade}.
+As a corollary, we have proven that the following combinatorial identity holds for all $p, q \in \mathbb{N}$ and $i \in \left[ 0, \min\{p, q\} \right]$:
+\begin{align*}
+\begin{pmatrix}p \\ i\end{pmatrix} = \sum_{j=0}^i (-1)^j \begin{pmatrix}q \\ j\end{pmatrix} \begin{pmatrix}p + q - j \\ i - j\end{pmatrix} \text{.}
+\end{align*}
+
+For the case when $p = q - 1$, we may also apply the same state-space transformation from appendix~\ref{app:ss-delay} to obtain the normalized coefficients for the $C$ transformation (i.e.,~with $A$, $B$, and $D$ from equation~\ref{eq:ss-delay}):
+\begin{align*}
+w_{q-1-i} &= \left( \sum_{j=0}^i \frac{(-\theta')^{i-j}}{(i - j)!} \begin{pmatrix}q \\ j\end{pmatrix} \frac{(2q - 1 - j)!}{(2q - 1)!} \theta^j \right) \left( \frac{(q - i)! i! (2q - 1)!}{\theta^q (q - 1)! q(2q - 1 - i)!} \theta^{q - i} \right) \\
+&= \sum_{j=0}^i \begin{pmatrix}q \\ j\end{pmatrix} \left( \frac{(2q - 1 - j)!}{(i - j)! (2q - 1 - i)!} \right) \left( \frac{(q - i)! i!}{q!} \right) \left( \theta^{j - i} \right) (-\theta')^{i - j} \\
+&= \begin{pmatrix}q \\ i\end{pmatrix}^{-1} \sum_{j=0}^i \begin{pmatrix}q \\ j\end{pmatrix} \begin{pmatrix}2q - 1 - j \\ i - j\end{pmatrix} \left( \frac{-\theta'}{\theta} \right)^{i - j} \text{,} \quad i = 0 \ldots q - 1 \text{.}
+\end{align*}
+
+The $q$-dimensional state-vector of the delay network represents a rolling window of length $\theta$.
+That is, a single delay network with some fixed $\theta > 0$ may be used to accurately decode any delay of length $\theta'$ ($0 \le \theta' \le \theta$).
+Different decodings require different linear output transformations ($C$) for each $\theta'$, with the following coefficients:
+\begin{align} \label{eq:delay-readouts}
+w_{q-1-i} = \begin{pmatrix}q \\ i\end{pmatrix}^{-1} \sum_{j=0}^i \begin{pmatrix}q \\ j\end{pmatrix} \begin{pmatrix}2q - 1 - j \\ i - j\end{pmatrix} \left( \frac{-\theta'}{\theta} \right)^{i - j} \text{,} \quad i = 0 \ldots q - 1 \text{.} 
+\end{align}
+The underlying dynamical state remains the same.
+
+% Apart from providing a means of understanding the state-vector, the basis functions from equation~\ref{eq:delay-readouts} also provide a number of ways to readily exploit the delay network.
+% a) differentiate any point up to q times
+% b) "preferred window" of each neuron
+% c) projecting the window function onto state-space
+% d) characterizing the possible functions using Principles 1+2 and the inverse basis functions
+
+In Figure~\ref{fig:delay-full}, we take different linear transformations of the same state-vector, by evaluating equation~\ref{eq:delay-readouts} at various delays between $0$ and $\theta$, to decode the rolling window of input from the state of the system.\footnote{
+The optimization problem from equation~\ref{eq:decoder_solution} need only be solved once to decode $\V{x}(t)$ from the neural activity.
+The same decoders may then be transformed by each $C$ without loss in optimality (by linearity).
+}
+This demonstrates that the delay network compresses the input's history (lasting $\theta$ seconds) into a low-dimensional state.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{{NECO-04-17-2838-Figure.4}.pdf}
+  \caption{ \label{fig:delay-full}
+    Decoding a rolling window of length $\theta$.
+    Each line corresponds to a different delay, ranging from $0$ to $\theta$, decoded from a single delay network ($q = 12$).
+    (Left)~Error of each delay, as the input frequency is increased relative to $\theta$.
+    Shorter delays are decoded more accurately than longer delays at higher frequencies.
+    A triangle marks $\theta = \text{Frequency}^{-1}$.
+    (Right)~Example simulation decoding a rolling window of white noise with a cutoff frequency of $\theta^{-1}$\,Hz.
+    % See appendix~\ref{app:window} for details.
+  }
+\end{figure}
+
+In Figure~\ref{fig:basis-functions}, we sweep equation~\ref{eq:delay-readouts} across $\frac{\theta'}{\theta}$ to visualize the temporal ``basis functions'' of the delay network.
+This provides a way to understand the relationship between the chosen state-space representation (i.e.,~the $q$-dimensional $\V{x}(t)$) and the underlying window representation (i.e.,~the infinite-dimensional $u(t)$).
+In particular, each basis function corresponds to the continuous window of history represented by a single dimension of the delay network.
+The instantaneous value of each dimension acts as a coefficient on its basis function, to contribute to the representation of the window at that point in time.
+Overall, the entire state-vector determines a linear combination of these $q$ basis functions to represent the window.
+This is analogous to the static function representation explored previously within the context of Principles~1 and~2~\citep[][pp.~63--72]{eliasmith2003a}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{{NECO-04-17-2838-Figure.5}.pdf}
+  \caption{ \label{fig:basis-functions}
+    Temporal basis functions of the delay network ($q = 12$).
+    Each line corresponds to the basis function of a single dimension~($i$) ranging from $0$~(darkest) to $q - 1$~(lightest).
+    The $i^\text{th}$ basis function is a polynomial over $\frac{\theta'}{\theta}$ with degree $i$ (see equation~\ref{eq:delay-readouts}). % ($0 \le \theta' \le \theta$).
+    The state-vector of the delay network takes a linear combination of these $q$ basis functions in order to represent a rolling window of length $\theta$.
+  }
+\end{figure}
+
+The encoder of each neuron can also be understood directly in these terms as taking a linear combination of the basis functions (via equation~\ref{eq:encoding}).
+Each neuron nonlinearly encodes a projection of the rolling window onto some ``preferred window'' determined by its own encoder.
+Since the state-vector is encoded by heterogeneous neural nonlinearities, the population's spiking activity supports the decoding of nonlinear functions across the entire window (i.e.,~functions that we can compute using Principles~1 and~2).
+Therefore, we may conceptualize the delay network as a \emph{temporal coding} of the input stimulus, which constructs a low-dimensional state---representing an entire window of history---to encode the temporal structure of the stimulus into a nonlinear high-dimensional space of neural activities.
+
+To more thoroughly characterize the delay dynamics, we analyze the behavior of the delay network as the dimensionality is increased (see Figure~\ref{fig:pca}).
+Specifically, we perform a standard principal component analysis~(PCA) on the state-vector for the impulse response, and vary the order from $q=3$ to $q=27$.
+This allows us to visualize a subset of the state-vector trajectories, via projection onto their first three principal components (see Figure~\ref{fig:pca}-Top). %\footnote{
+%These same trajectories are obtained by a PCA on the %filtered neural activities, by linearity of decoding.
+%}
+The length of this trajectory over time distinguishes different values of $q$ (see Figure~\ref{fig:pca}-Bottom).
+This length-curve is approximately logarithmic when $q = 6$, convex when $q \le 12$, and sigmoidal when $q > 12$. % (also see Figure~\ref{fig:time-cells}-Bottom).
+To generate this figure we use a delay of $\theta = 10\,$s, but in fact this analysis is scale-invariant with time.
+This means that other delays will simply stretch or compress the impulse response linearly in time (not shown).
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{{NECO-04-17-2838-Figure.6}.pdf}
+  \caption{ \label{fig:pca}
+    Impulse response of the delay network with various orders ($q$) of Pad\'e approximants.
+    (Top)~The state-vector $\V{x}(t)$ projected onto its first three principal components.
+    (Bottom)~The length of the curve $\V{x}$ up to time $t$, computed using the integral $\int_0^t \|\dot{\V{x}}(t')\| \, dt'$ (normalized to $1$ at $t = \theta$).
+    This corresponds to the distance travelled by the state-vector over time.
+    The dashed line marks the last inflection point, indicating when $\V{x}(t)$ begins to slow down.
+    % The slope of $d(t)$ is correlated with the number of neurons encoding $\V{x}(t)$ at time $t$, when using a random encoding (not shown).
+  }
+\end{figure}
+
+We remark that the delay network is scale-invariant with the delay length over input frequency, that is, the accuracy for a chosen order is a function of $s \times \theta$ (see units in Figure~\ref{fig:delay-full} for instance). % and the synaptic time-constants are scaled by $\theta$.
+More specifically, for a fixed approximation error, the delay length scales as $\bigoh{ \frac{q}{f} }$, where $f$ is the input frequency.
+Then, the accuracy of the mapped delay is a function of the relative magnitude of the delay length to $\frac{q}{f}$, whose exact shape depends on the considered synapse model.
+To determine these functions for a wide class of synapses, we proceed by extending the NEF.
+
 
 \section{Performance Comparison}
 
 \section{Time Cell Comparison}
+\label{sec:time-cells}
+
+We now describe a connection between the delay network from section~\ref{sec:delay} and recent neural evidence regarding time cells.
+Time cells were initially discovered in the hippocampus and proposed as temporal analogs of the more familiar place cells~\citep{eichenbaum2014}.
+Similar patterns of neural activity have since been found throughout striatum~\citep{mello2015scalable} and cortex~\citep{luczak2015packet}, and have been extensively studied in the rodent mPFC~\citep{kim2013neural, tiganj2016sequential}.
+
+Interestingly, we find that our delay network produces qualitatively similar neural responses to those observed in time cells.
+This is shown in Figure~\ref{fig:time-cells}, by comparing neural recordings from mPFC~\citep[][Figure~4~C,D]{tiganj2016sequential} to the spiking activity from a network implementing a delay of the same length used in the original experiments.
+Specifically, in this network, a random population of $300$ spiking LIF neurons maps a $4.784$\,s delay onto an alpha synapse ($\tau = 0.1$\,s) using our extension.
+The order of the approximation is $q = 6$ (see equation~\ref{eq:ss-delay}), and the input signal is a rectangular pulse beginning at $t = -1$\,s and ending at $t = 0$\,s (height $= 1.5$).
+The simulation is started at $t = -1$\,s and stopped at $t = 5$\,s.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{{NECO-04-17-2838-Figure.10-Top}.pdf}
+  \includegraphics[width=0.96\textwidth, trim=0 0 -0.7in -0.4in]{{NECO-04-17-2838-Figure.10-Bottom}.pdf}
+  \caption{ \label{fig:time-cells}
+    Comparison of time cells to a NEF delay network.
+    (Top)~Spiking activity from the rodent mPFC~\citep[reproduced from][Figure~4~C,D]{tiganj2016sequential}.
+    Neural recordings were taken during a maze task involving a delay period of $4.784$\,s.
+    (Bottom)~Delay network implemented using the NEF (see text for details).
+    %A random population of $300$ spiking LIF neurons map a $4.784$\,s delay onto an alpha synapse ($\tau = 0.1$\,s) using equation~\ref{eq:general-linear-approx}.
+    %The order of the approximation is $q = 6$ (see equation~\ref{eq:ss-delay}), and the input signal is a rectangular pulse beginning at $t = -1$\,s and ending at $t = 0$\,s.
+    $73$ time cells are selected by uniformly sampling encoders from the surface of the hypersphere.
+    (A)~Cosine similarity between the activity vectors for every pair of time-points.
+    The diagonal is normalized to the warmest colour.
+    The similarity spreads out over time.
+    (B)~Neural activity sorted by the time to peak activation.
+    Each row is normalized between $0$ (cold) and $1$ (warm).
+    We overlay the curve from Figure~\ref{fig:pca}-Bottom ($q = 6$) to model the peak-response times.
+  }
+\end{figure}
+
+We also note a qualitative fit between the length-curve for $q=6$ in Figure~\ref{fig:pca} and the peak response-times in Figure~\ref{fig:time-cells}.
+Specifically, Figure~\ref{fig:pca}-Bottom models the non-uniform distribution of the peak response-time of the cells as the length of the trajectory of $\V{x}(t)$ through time.
+Implicit to this model are the simplifying assumptions that encoders are uniformly distributed, and that the L2-norm of the state-vector remains constant throughout the delay period.
+Nevertheless, this model produces a qualitatively similar curve when $q = 6$ to both peak response-times from Figure~\ref{fig:time-cells}-Right (see overlay).
+
+More quantitatively, we performed the same analysis on our simulated neural activity as \citet{tiganj2016sequential} performed on the biological data to capture the relationship between the peak and width of each time cell.
+Specifically, we fit the spiking activity of each neuron with a Gaussian to model the peak time~($\mu_t$) and the standard deviation~($\sigma_t$) of each cell's ``time field''.\footnote{
+We set $a_1 = P = S = 0$ in equation~1 from \citet{tiganj2016sequential}, since we have no external variables to control.
+}
+This fit was repeated for each of the $250$ simulated spiking LIF neurons that remained after selecting only those that had at least $90\%$ of their spikes occur within the delay interval.
+The correlation between $\mu_t$ and $\sigma_t$ had a Pearson's coefficient of $0.68$ ($\rho < \num{e-34}$), compared to $0.52$ ($\rho < \num{e-5}$) for the biological time cells.
+An ordinary linear regression model linking $\mu_t$ (independent variable) with $\sigma_t$ (dependent variable) resulted in an intercept of $0.27 \pm 0.06$ (standard error) and a slope of $0.40 \pm 0.03$ for our simulated data, compared to $0.27 \pm 0.07$ and $0.18 \pm 0.04$ respectively for the time cell data.
+We note that we used the same bin size of $1$\,ms, modeled the same delay length, and did not perform any parameter fitting beyond the informal choices of $90\%$ cutoff, dimensionality ($q=6$), area of the input signal ($1.5$), and synaptic time-constant ($\tau = 0.1$\,s).
+
+Neural mechanisms previously proposed to account for time cell responses have either been speculative~\citep{tiganj2016sequential},
+or rely on gradually changing firing rates from a bank of arbitrarily long, ideally spaced, lowpass filters~\citep{shankar2012scale, howard2014unified, tiganj2015simple, tiganj2017neural}.
+It is unclear if such methods can be implemented accurately and scalably using heterogeneous spiking neurons.
+We suspect that robust implementation is unlikely given the high precision typically relied upon in these abstract models.
+% For instance, the model from must be able to distinguish values exponentially close to $0$ in the neural representation.
+
+In contrast, our proposed spiking model has its network-level dynamics derived from first principles to optimally retain information throughout the delay interval, without relying on a particular synapse model or bank of filters.
+All of the neurons recurrently work together in a low-dimensional vector space to make efficient use of neural resources.
+By using the methods of the NEF, this solution is inherently robust to spiking noise and other sources of uncertainty.
+Furthermore, our explanation accounts for the nonlinear distribution of peak firing times as well as its linear correlation with the spread of time fields.
+
+The observation of time cells across many cortical and subcortical areas suggests that the same neural mechanisms may be used in many circuits throughout the brain.
+As a result, the neural activity implicated in a variety of delay tasks may be the result of many networks optimizing a similar problem to that of delaying low-frequency signals recurrently along a low-dimensional manifold.
+Such networks would thus be participating in the temporal coding of a stimulus, by representing its history across a delay interval.
+%\footnote{
+%In appendix~\ref{app:ss-delay}, we briefly mention that this delay length may also be modulated on-the-fly.
+% Some food for thought: since multiplication is so inaccurate, this might suggest that biological systems have a way to induce effective changes in the time-constants with some sort of adaptive normalization or gating or etc.
+%In apendix~\ref{app:window}, we derive the output transformations required to decode a rolling window.
+%}
+% Possible predictions regarding time-constants / dimensionality?
+% our network generalizes to predict the responses of time-cells to stimuli that are not simply discrete impulse events.
+
 
 \section{Applications}
 \label{sec:delay-applications}
+
+\subsection{Delay Networks with Higher-order Synapses}
+\label{sec:pure_delay}
+
+We begin by making the practical point that it is crucial to account for the effect of the simulation time-step in digital simulations, if the time-step is not sufficiently small relative to the time scale of the desired network-level dynamics.
+To demonstrate this, we simulate a $27$-dimensional delay network using $\num{1000}$ spiking LIF neurons, implementing a $0.1$\,s delay of $50$\,Hz band-limited white noise.
+We vary the simulation time-step ($dt$) from $0.1$\,ms to $2$\,ms.
+The accuracy of our extension does not depend on $dt$ (see Figure~\ref{fig:principle3fail}-Left).
+When $dt=1$\,ms (the default in Nengo), the standard Principle~3 mapping (equation~\ref{eq:p3-novel}) obtains a NRMSE of $1.425$ ($43\%$ worse than random chance), versus $0.387$ for the discrete lowpass mapping which accounts for $dt$ (equation~\ref{eq:discrete-p3})---a $73\%$ reduction in error.
+As $dt$ approaches $0$ the two methods become equivalent.
+
+More to the point, we can analyze the delay network's frequency response
+%\footnote{
+%The frequency response is the transfer function evaluated at various input frequencies.
+%}
+when using a delayed continuous lowpass synapse (equation~\ref{eq:delayed-lowpass}) instead of the canonical lowpass (equation~\ref{eq:lowpass}) as the dynamical primitive.
+This provides a direct measure of the possible improvement gains when using the extension.
+Figure~\ref{fig:principle3fail}-Right compares the use of Principle~3 (which accounts for $\tau$ but ignores $\lambda)$, to our extension (which fully accounts for both; see section~\ref{sec:delayed-lowpass}) when $\lambda = \tau$.
+The figure reveals that increasing the dimensionality improves the accuracy of our extension, while magnifying the error from Principle~3.
+In the worst case, the Principle~3 mapping has an absolute error of nearly $\num{e15}$.
+In practice, saturation from the neuron model bounds this error by the maximum firing rates.
+Regardless, it is clearly crucial to account for axonal transmission delays to accurately characterize the network-level dynamics.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\textwidth]{{NECO-04-17-2838-Figure.8}.pdf}
+  \caption{\label{fig:principle3fail}
+    Comparing standard Principle~3 to our NEF extensions.
+    (Left)~Error from mapping a $27$-dimensional $0.1$\,s delay onto $\num{1000}$ spiking LIF neurons, while varying the simulation time-step ($dt$).
+    The input to the network is white noise with a cutoff frequency of $50$\,Hz.
+    Unlike our extension, the standard form of Principle~3 does not account for $dt$.
+    A dashed vertical line indicates the default time-step in Nengo.
+    Error bars indicate a $95\%$ confidence interval bootstrapped across $25$ trials.
+    (Right)~Mapping the delay system onto a delayed continuous lowpass synapse (with parameters $\frac{\tau}{\theta} = 0.1$ and $\frac{\lambda}{\tau} = 1$).
+    The order of the delay system ($q$) is varied from $6$ (lightest) to $27$ (darkest).
+    Each line evaluates the error in the frequency response, $\left| e^{-\theta s} - F^H(H(s)^{-1}) \right|$, where $F^H$ is determined by mapping the delay of order $q$ onto equation~\ref{eq:delayed-lowpass} using one of the two following methods.
+    The method of our extension---which accounts for the axonal transmission delay---has monotonically increasing error that stabilizes at $1$ (i.e.,~the high frequencies are filtered).
+    The standard Principle~3---which accounts for $\tau$ but ignores $\lambda$---alternates between phases of instability and stability as the frequency is increased.
+  }
+\end{figure}
+
+To more broadly validate our NEF extensions from section~\ref{sec:extensions}, we map the delay system onto:
+(1)~a continuous lowpass synapse (see section~\ref{sec:lowpass});
+(2)~a delayed continuous lowpass synapse (see section~\ref{sec:delayed-lowpass}); and
+(3)~a continuous double-exponential synapse (see section~\ref{sec:general}).
+We apply each extension to construct delay networks of $\num{2000}$ spiking LIF neurons.
+To compare the accuracy of each mapping, we make the time-step sufficiently small ($dt = 10\,\mu$s) to emulate a continuous-time setting.
+We use the Pad\'e approximants of order $\left[5 / 6\right]$ for both equations~\ref{eq:pade} and~\ref{eq:lambert-delay}.
+For the delayed lowpass, we again fix $\frac{\tau}{\theta} = 0.1$ and $\frac{\lambda}{\tau} = 1$.
+For the double-exponential, we fix $\tau_1 = \tau$ and $\frac{\tau_1}{\tau_2} = 5$.
+Expressing these parameters as dimensionless constants keeps our results scale-invariant with $\theta$.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\textwidth]{{NECO-04-17-2838-Figure.9}.pdf}
+  \caption{\label{fig:lambert}
+    The pure delay mapped onto spiking networks with various synapse models (with parameters $q = 6$, $\frac{\tau}{\theta} = 0.1$, $\frac{\lambda}{\tau} = 1$, $\tau_1 = \tau$, and $\frac{\tau_1}{\tau_2} = 5$).
+    (Left)~Error of each mapping in the frequency domain.
+    This subfigure is scale-invariant with $\theta$.
+    (Right)~Example simulation when $\theta = 0.1\,$s and the input signal is white noise with a cutoff frequency of $15$\,Hz, corresponding to the triangle (over $1.5$) from the left subfigure.
+    We use a time-step of $0.01$\,ms ($10\,\mu$s) and $\num{2000}$ spiking LIF neurons.
+  }
+\end{figure}
+
+Figure~\ref{fig:lambert} reveals that axonal delays may be effectively ``amplified'' $10$-fold while reducing the NRMSE by $71\%$ compared to the lowpass (see Figure~\ref{fig:lambert}-Right; NRMSE for lowpass=$0.702$, delayed lowpass=$0.205$, and double-exponential=$0.541$).
+The double-exponential synapse outperforms the lowpass, despite the additional poles introduced by the ZOH assumption in equation~\ref{eq:general-linear-approx} (see appendix~\ref{app:poles} for analysis).
+This is because the double-exponential filters the spike-noise twice.
+% Including the first-order derivative of the input signal further improves the double-exponential mapping by $X\%$.
+Likewise, by exploiting an axonal delay, the same level of performance (e.g.,~$5\%$ error) may be achieved at approximately $1.5$ times higher frequencies, or equivalently for $1.5$ times longer network delays, when compared to the lowpass synapse (see~Figure~\ref{fig:lambert}-Left).
+In summary, accounting for higher-order synaptic properties allows us to harness the axonal transmission delay to more accurately approximate network-level delays in spiking dynamical networks.
+
+Together, these results demonstrate that our extensions can significantly improve the accuracy of high-level network dynamics.
+Having demonstrated this for delays, in particular, suggests that the extension is useful for a wide variety of biologically relevant networks (see section~\ref{sec:time-cells}).
 
 Detecting cyclic structure
 Autocorelation (cosyne)

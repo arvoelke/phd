@@ -3,8 +3,36 @@
 
 \section{Contributions}
 
+We have discussed two main theoretical results.
+The first provides a method for accurately implementing continuous-time delays in recurrent spiking neural networks.
+This begins with a model description of the delay system, and ends with a finite-dimensional representation of the input's history that is mapped onto the dynamics of the synapse.
+The second provides a method for harnessing a broad class of synapse models in spiking neural networks, while improving the accuracy of such networks compared to standard NEF implementations.
+These extensions are validated in the context of the delay network.
+
+Our extensions to the NEF significantly enhance the framework in two ways.
+First, it allows those deploying the NEF on neuromorphics to improve the accuracy of their systems given the higher-order dynamics of mixed-analog-digital synapses~\citep{voelker2017iscas, voelker2017neuromorphic}.
+Second, it advances our understanding of the effects of additional biological constraints, including finite rise-times and pure time-delays due to action potential propagation.
+Not only can these more sophisticated synapse models be accounted for, but they may be harnessed to directly improve the network-level performance of certain systems.
+
+We exploited this extension to show that it can improve the accuracy of discrete-time simulations of continuous neural dynamics.
+We also demonstrated that it can provide accurate implementations of delay networks with a variety of synapse models, allowing systematic exploration of the relationship between synapse- and network-level dynamics.
+Finally we suggested that these methods provide new insights into the observed temporal properties of individual cell activity.
+Specifically we showed that time cell responses during a delay task are well-approximated by a delay network constructed using these methods.
+This same delay network nonlinearly encodes the history of an input stimulus across the delay interval (i.e.,~ a rolling window) by compressing it into a $q$-dimensional state, with length scaling as $\bigoh{ \frac{q}{f} }$, where $f$ is the input frequency.
+
+While we have focused our attention on delay networks in particular, our framework applies to any linear time-invariant system.
+As well, though we have not shown it here, as with the original NEF formulation these methods also apply to nonlinear systems.
+As a result, these methods characterize a very broad class of combinations of synapse- and network-level spiking dynamical neural networks.
 
 \section{Future Directions}
+
+Many important questions still remain concerning the interactions between Principles~1,~2, and~3.
+While the error in our transformations scale as $\bigoh{ \frac{1}{\sqrt{n}} }$ due to independent spiking, it has been shown that near-instantaneous feedback may be used to collaboratively distribute these spikes and scale the error as $\bigoh{ \frac{1}{n} }$~\citep{boerlin2013predictive, thalmeier2016learning}.
+This reduction in error has potentially dramatic consequences for the efficiency and scalability of neuromorphics by reducing total spike traffic~\citep{boahen2017neuromorph}.
+However, it is currently unclear whether this approach can be applied to a more biologically plausible setting (e.g.,~using neurons with refractory periods) while retaining this linear scaling property.
+Similarly, we wish to characterize the network-level effects of spike-rate adaptation, especially at higher input frequencies, in order to understand the computations that are most accurately supported by more detailed neuron models.
+This will likely involve extending our work to account for nonlinear dynamical primitives and subsequently harness their effects (e.g.,~bifurcations) to improve certain classes of computations.
+
 
 Venn diagram showing intersection between biology, hardware, and what is useful?
 
