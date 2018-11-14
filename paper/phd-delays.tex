@@ -29,6 +29,7 @@ Finally, examining the specific case of the continuous-time delay introduces sev
 \section{Conventional Approaches}
 
 Reservoir computing / FORCE / LSTMs?
+\TODO{Discuss "Reservoir Computing Beyond Memory-Nonlinearty Trade-off Inubushi \& Yoshimura, and Information Processing Capacity of Dynamical Systems Massar et al.}
 
 \section{Optimal NEF Solution}
 \label{sec:nef-delay}
@@ -264,8 +265,108 @@ More specifically, for a fixed approximation error, the delay length scales as $
 Then, the accuracy of the mapped delay is a function of the relative magnitude of the delay length to $\frac{q}{f}$, whose exact shape depends on the considered synapse model.
 To determine these functions for a wide class of synapses, we proceed by extending the NEF.
 
-
 \section{Performance Comparison}
+
+We present a dynamical system that optimally compresses a rolling time window of input into a low-dimensional state-space.
+The state of this system represents the history of its input by a linear combination of time-invariant polynomial basis functions.
+We use the Neural Engineering Framework~(NEF) to compile this system onto a recurrent spiking neural network.
+The activity of this ``delay network'' naturally approximates a Taylor series expansion, over time, centered about every point within the window.
+We show that this permits the computation of arbitrary nonlinear computations across the history of an input stimulus, while outperforming Echo State Networks in accuracy and training/testing time, without explicitly simulating any training examples.
+
+A continuous-time rolling window of length $\theta > 0$, denoted $[ u(t - \theta') \,:\, 0 \le \theta' \le \theta ]$, may be \emph{temporally compressed} into a low-dimensional state $\V{x}(t) \in \mathbb{R}^d$, by the following linear time-invariant dynamical system that approximately delays an input signal by $\theta$ seconds~\citep{voelker2018}:
+\begin{equation} \label{eq:delay-system}
+  \dot{\V{x}}(t) = A\V{x}(t) + Bu(t) \text{,} \quad
+  A = \begin{pmatrix} -v_0 & -v_0 & \cdots & -v_0 \\ v_1 & 0 & \cdots & 0 \\ 0 & \ddots & \ddots & \vdots \\ 0 & 0 & v_{d-1} & 0\end{pmatrix} \text{,} \quad 
+  B = \transpose{\begin{pmatrix} v_0 & 0 & \cdots & 0\end{pmatrix}} \text{,} 
+\end{equation}
+where $v_i := \frac{(d+i)(d-i)}{i+1} \theta^{-1}$, %and $w_i := (-1)^{d - 1 - i} \left( \frac{i+1}{d} \right)$
+for $i = 0 \ldots d-1$.
+%We may also solve this system to express $\V{x}(t)$ as a convolution of $u$ with the SIMO impulse response $\V{f}$: 
+%\begin{equation} \label{eq:lti-solved}
+%\V{f}(t) = e^{At} B \text{,} \quad \V{x}(t) = \left(u \ast \V{f}\right)(t) \text{.}
+%\end{equation}
+This compression is derived by applying Pad\'e approximants to $e^{-\theta s}$ about the complex point $s=0$, which yields an optimal low-degree polynomial expansion of $\mathcal{L}\{u\}(s)$ about its zeroth frequency.
+%\footnote{Note that a LTI system is equivalent up to any invertible linear transformation applied to the state-space.}
+The state $\V{x}(t)$ represents the rolling window via a linear combination of time-invariant polynomial basis functions:
+\begin{equation} \label{eq:basis-interpretation}
+\boxed{u(t - \theta') \approx \sum_{i=0}^{d-1} \mathcal{P}_{i,d} \left(\frac{\theta'}{\theta} \right) \, x_{d-1-i}(t) \text{,} \quad 0 \le \theta' \le \theta \text{,}}
+\end{equation}
+which we have solved in closed-form~\citep[][eq.~14]{voelker2018}:
+\begin{equation} \label{eq:basis-functions}
+\mathcal{P}_{i,d}(r) = \begin{pmatrix}d \\ i\end{pmatrix}^{-1} \sum_{j=0}^i \begin{pmatrix}d \\ j\end{pmatrix} \begin{pmatrix}2d - 1 - j \\ i - j\end{pmatrix} \left( -r \right)^{i - j} \text{.} %\text{,}\quad 0 \le r \le 1 \text{,}\quad i = 0 \ldots d - 1
+\end{equation}
+A set of polynomials $\{ \mathcal{P}_{i, d} \}$ are shown in Figure~\ref{fig:basis-functions}.
+This defines a linear map from the $d$-dimensional state, $\V{x}(t)$, to the infinite-dimensional rolling window, $[ u(t - \theta') \,:\, 0 \le \theta' \le \theta ]$.
+In other words, (\ref{eq:basis-interpretation}) is the optimal pseudoinverse of the linear compression defined by (\ref{eq:delay-system}).
+%The frequencies in $u(t)$ that may be accurately encoded by this approach scale inversely with $\theta$.
+%Likewise, higher values of $q$ allowed for higher frequencies to be encoded at the same level of precision.
+%We remark that each basis function is expressed in terms of the unitless quantity $\frac{\theta'}{\theta}$, and is therefore scale-invariant.
+%We may also transform the state by any invertible matrix (e.g.,~ to orthogonalize the basis functions) without loss of generality.
+%Analysis of the approximation error, and some additional properties of this ``delay network'', may be found in \cite{voelker2018}.
+Moreover, each point along the window, along with its Taylor series expansion up to order $d-1$, as well as any other linear operation across the rolling window (e.g.,~Laplace transform), may be expressed using (\ref{eq:basis-interpretation}) and (\ref{eq:basis-functions}) as a known dot-product with $\V{x}(t)$.
+%Yet, as shown below, this does not restrict our ability to also perform nonlinear computations across the window.
+
+\begin{figure}
+\centering
+  \begin{tikzpicture}[auto, >=latex']
+    \node [input] (u) {$u(t)$};
+    \node [block, right of=u, node distance=2cm] (h) {$h(t)$};
+    \node [ensemble, right of=h, node distance=1.5cm] (x) {$\V{x}(t)$};
+    \node [output, right of=x, node distance=1.5cm] (y) {$y(t)$};
+    \draw [->] (u) -- node {$B^H$} (h);
+    \draw [->] (h) -- (x);
+    %\draw [->] (x.north) -- (y);
+    \draw [->] (x) -- (y);
+    %\draw [->] (x.south) -- (y);
+    \path[->] (x.south) edge [loop below, min distance=5em, out=-60, in=-120] node {$A^H$} (h.south);
+  \end{tikzpicture}
+  \caption{ \label{fig:delay-architecture}
+    Delay network~(DN) architecture.
+    The synapse model $h(t)$ is driven by $A^H \V{x}(t) + B^H u(t)$ to yield the state $\V{x}(t)$. 
+    This state is nonlinearly encoded by a heterogeneous population of neurons and subsequently decoded to estimate the desired $y(t)$.
+  } 
+\end{figure}
+
+\begin{figure}
+\centering
+  \includegraphics[width=0.5\linewidth]{delay-autocorrelation}
+  \caption{ \label{fig:delay-autocorrelation} 
+    Visualizing the autocorrelation function $y(t) = u(t - \theta)\, u(t)$ with $d=3$.
+    Each point along the surface of the unit-sphere is $\V{x}(t)$, and is colored according to its corresponding value of $y(t)$ obtained from (\ref{eq:basis-interpretation}).
+    A slice of the shell is cut away for visualization.
+  } 
+\end{figure}
+
+To implement this system as a recurrent neural network, we use the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a} to map (\ref{eq:delay-system}) onto the dynamics of a lowpass synapse with time-constant $\tau$:
+\begin{equation}
+A^H = \tau A + I \text{,} \quad B^H = \tau B \text{,} \quad H(s) = \left(\tau s + 1\right)^{-1} \text{.}
+\end{equation}
+The resulting ``delay network''~(DN) is depicted in Figure~\ref{fig:delay-architecture}.
+Generalizations to arbitrary linear synapses, including those modelling pure feedback delays, may be found in %\cite{voelker2017b}.
+\cite{voelker2018}.
+The state $\V{x}(t)$ is \emph{encoded} by a heterogeneous population of neurons, which allows arbitrary nonlinear functions across the window, $y(t) = f(\V{x}(t))$, to be \emph{decoded} from its activity~\citep{eliasmith2003a}.
+
+To demonstrate our ability to compute nonlinear window functions, we consider the function $y(t) = u(t - \theta)\, u(t)$, visualized in Figure~\ref{fig:delay-autocorrelation}.
+When integrated over time, this is the autocorrelation of $u$ with lag $\theta$, which has numerous applications in signal processing (e.g.,~detecting repeating events).
+We fix $\theta = 0.1$\,s across all experiments.
+To compute this function accurately, we sample a proportion of the encoders from the diagonal combinations of $\mathcal{P}_{i, d}(0)$ and $\mathcal{P}_{i, d}(1)$.
+The inputs $u(t)$ are drawn from white-noise, band-limited with a cut-off frequency of $30$\,Hz.
+Nengo allows us to consider populations of either spiking LIF neurons or non-spiking sigmoid neurons, without any additional changes to the model specification.
+To optimize for the decoders, we map $d$-dimensional evaluation points onto desired target outputs using (\ref{eq:basis-interpretation}), and apply Nengo's regularized least squares solver, which avoids the need to explicitly simulate the network on any input signals.
+
+To compare with Reservoir Computing, we ported a Python implementation of the Echo State Network~(ESN), from \cite{lukovsevivcius2009reservoir}, to Nengo, and implemented it analogously to the DN.
+We used Hyperopt~\citep{bergstra2015hyperopt} to explore the space of model hyperparameters (e.g.,~$d$, $\tau$, input gain, recurrent gain, L2-regularization) across $100$ iterations containing $10$ trials each.
+Each network consisted of $1\text{,}000$ neurons, simulated with a time-step of $1$\,ms.
+Each trial used a training signal of length $10\text{,}200$, a testing signal of length $2\text{,}200$, and the first $200$ outputs were discarded.
+We then cross-validated the best set of hyperparameters (in terms of mean normalized RMSE across all test signals) using another $25$ trials.
+
+We obtained a mean normalized RMSE of $0.059$ for the sigmoid DN, and $0.518$ for the spiking DN, compared to $0.843$ for the ESN.
+Reducing the input frequency to $15$\,Hz improves the ESN's accuracy to be on par with the non-spiking DN, and thus we attribute this difference to the inherent difficulty of autocorrelating a high-frequency signal (relative to $\theta$) using random feedback weights, as opposed to using optimally derived weights as in the DN.
+In addition, trials took on average $5.10$\,s for the sigmoid DN, $6.44$\,s for the spiking DN, and $17.7$\,s for the ESN.
+This difference is a consequence of not simulating the DN for training, and from using factorized weight matrices (i.e.,~encoders and decoders) to simulate the DN.
+
+
+
 
 \section{Time Cell Comparison}
 \label{sec:time-cells}
