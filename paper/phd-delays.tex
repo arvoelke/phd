@@ -348,30 +348,14 @@ Generalizations to arbitrary linear synapses, including those modelling pure fee
 \cite{voelker2018}.
 The state $\V{x}(t)$ is \emph{encoded} by a heterogeneous population of neurons, which allows arbitrary nonlinear functions across the window, $y(t) = f(\V{x}(t))$, to be \emph{decoded} from its activity~\citep{eliasmith2003a}.
 
-To demonstrate our ability to compute nonlinear window functions, we consider the function $y(t) = u(t - \theta)\, u(t)$, visualized in Figure~\ref{fig:delay-autocorrelation}.
-When integrated over time, this is the autocorrelation of $u$ with lag $\theta$, which has numerous applications in signal processing (e.g.,~detecting repeating events).
-We fix $\theta = 0.1$\,s across all experiments.
-To compute this function accurately, we sample a proportion of the encoders from the diagonal combinations of $\mathcal{P}_{i, d}(0)$ and $\mathcal{P}_{i, d}(1)$.
-The inputs $u(t)$ are drawn from white-noise, band-limited with a cut-off frequency of $30$\,Hz.
-Nengo allows us to consider populations of either spiking LIF neurons or non-spiking sigmoid neurons, without any additional changes to the model specification.
-To optimize for the decoders, we map $d$-dimensional evaluation points onto desired target outputs using (\ref{eq:basis-interpretation}), and apply Nengo's regularized least squares solver, which avoids the need to explicitly simulate the network on any input signals.
-
 \subsection{Scalability}
+
+\TODO{error plots for pade\_delay\_error from nengolib and talk about multiple layers}
+
+\TODO{bounds on error as a function of depth using geometry of complex numbers}
 
 
 \section{Performance Comparison}
-
-
-To compare with Reservoir Computing, we ported a Python implementation of the Echo State Network~(ESN), from \cite{lukovsevivcius2009reservoir}, to Nengo, and implemented it analogously to the DN.
-We used Hyperopt~\citep{bergstra2015hyperopt} to explore the space of model hyperparameters (e.g.,~$d$, $\tau$, input gain, recurrent gain, L2-regularization) across $100$ iterations containing $10$ trials each.
-Each network consisted of $1\text{,}000$ neurons, simulated with a time-step of $1$\,ms.
-Each trial used a training signal of length $10\text{,}200$, a testing signal of length $2\text{,}200$, and the first $200$ outputs were discarded.
-We then cross-validated the best set of hyperparameters (in terms of mean normalized RMSE across all test signals) using another $25$ trials.
-
-We obtained a mean normalized RMSE of $0.059$ for the sigmoid DN, and $0.518$ for the spiking DN, compared to $0.843$ for the ESN.
-Reducing the input frequency to $15$\,Hz improves the ESN's accuracy to be on par with the non-spiking DN, and thus we attribute this difference to the inherent difficulty of autocorrelating a high-frequency signal (relative to $\theta$) using random feedback weights, as opposed to using optimally derived weights as in the DN.
-In addition, trials took on average $5.10$\,s for the sigmoid DN, $6.44$\,s for the spiking DN, and $17.7$\,s for the ESN.
-This difference is a consequence of not simulating the DN for training, and from using factorized weight matrices (i.e.,~encoders and decoders) to simulate the DN.
 
 RC networks often include a sparsity constraint of $20\%$ connectivity, which is still $\bigoh{n^2}$, in order to improve accuracy~\citep{lukovsevicius2012reservoir}.
 We also considered ESNs with constant sparsity~\citep{lukovsevivcius2012practical}, similar to our NEF networks, but found that they did not perform comparably to our results in section~\ref{sec:delay_benchmark}.
@@ -454,6 +438,31 @@ Furthermore, we found that the ESN breaks down for numbers of neurons as few as 
   }
 \end{figure}
 
+\TODO{Discuss ESN radius which linearlizes the tanh unit, and what this means: necessary for capacity but limits nonlinear decode. DN solves both problems simultaneously.}
+
+\TODO{Mention that FORCE and full-FORCE don't do any better (not shown)}
+
+To demonstrate our ability to compute nonlinear window functions, we consider the function $y(t) = u(t - \theta)\, u(t)$, visualized in Figure~\ref{fig:delay-autocorrelation}.
+When integrated over time, this is the autocorrelation of $u$ with lag $\theta$, which has numerous applications in signal processing (e.g.,~detecting repeating events).
+We fix $\theta = 0.1$\,s across all experiments.
+To compute this function accurately, we sample a proportion of the encoders from the diagonal combinations of $\mathcal{P}_{i, d}(0)$ and $\mathcal{P}_{i, d}(1)$.
+The inputs $u(t)$ are drawn from white-noise, band-limited with a cut-off frequency of $30$\,Hz.
+Nengo allows us to consider populations of either spiking LIF neurons or non-spiking sigmoid neurons, without any additional changes to the model specification.
+To optimize for the decoders, we map $d$-dimensional evaluation points onto desired target outputs using (\ref{eq:basis-interpretation}), and apply Nengo's regularized least squares solver, which avoids the need to explicitly simulate the network on any input signals.
+
+
+To compare with Reservoir Computing, we ported a Python implementation of the Echo State Network~(ESN), from \cite{lukovsevivcius2009reservoir}, to Nengo, and implemented it analogously to the DN.
+We used Hyperopt~\citep{bergstra2015hyperopt} to explore the space of model hyperparameters (e.g.,~$d$, $\tau$, input gain, recurrent gain, L2-regularization) across $100$ iterations containing $10$ trials each.
+Each network consisted of $1\text{,}000$ neurons, simulated with a time-step of $1$\,ms.
+Each trial used a training signal of length $10\text{,}200$, a testing signal of length $2\text{,}200$, and the first $200$ outputs were discarded.
+We then cross-validated the best set of hyperparameters (in terms of mean normalized RMSE across all test signals) using another $25$ trials.
+
+We obtained a mean normalized RMSE of $0.059$ for the sigmoid DN, and $0.518$ for the spiking DN, compared to $0.843$ for the ESN.
+Reducing the input frequency to $15$\,Hz improves the ESN's accuracy to be on par with the non-spiking DN, and thus we attribute this difference to the inherent difficulty of autocorrelating a high-frequency signal (relative to $\theta$) using random feedback weights, as opposed to using optimally derived weights as in the DN.
+In addition, trials took on average $5.10$\,s for the sigmoid DN, $6.44$\,s for the spiking DN, and $17.7$\,s for the ESN.
+This difference is a consequence of not simulating the DN for training, and from using factorized weight matrices (i.e.,~encoders and decoders) to simulate the DN.
+
+\TODO{restate the intuitive story of why given the difference between linear and nonlinear results}
 
 \section{Time Cell Comparison}
 \label{sec:time-cells}
