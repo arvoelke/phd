@@ -159,7 +159,7 @@ From equation~\ref{eq:pade}, we may write the denominator as:
 We then solve for the numerator, as follows:
 \begin{align*}
 && [p/q] e^{-\theta' s} &= \sum_{i=0}^\infty \frac{(-\theta' s)^i}{i !} = \frac{\mathcal{C}(s; \, \theta, \theta')}{\mathcal{D}(s; \, \theta)} & \\
-&& \iff \quad \mathcal{C}(s; \, \theta, \theta') &= \left( \sum_{i=0}^\infty \frac{(-\theta' s)^i}{i !} \right) \left( \sum_{j=0}^q d_j(\theta) s^j \right) + \mathcal{O}(s^{p + 1}) \text{.}
+&& \iff \quad \mathcal{C}(s; \, \theta, \theta') &= \left( \sum_{i=0}^\infty \frac{(-\theta' s)^i}{i !} \right) \left( \sum_{j=0}^q d_j(\theta) s^j \right) + \bigoh{s^{p + 1}} \text{.}
 \end{align*}
 By expanding this product and collecting like terms, the correct numerator up to order $p \le q$ is:
 \begin{align*}
@@ -265,7 +265,9 @@ More specifically, for a fixed approximation error, the delay length scales as $
 Then, the accuracy of the mapped delay is a function of the relative magnitude of the delay length to $\frac{q}{f}$, whose exact shape depends on the considered synapse model.
 To determine these functions for a wide class of synapses, we proceed by extending the NEF.
 
-\section{Performance Comparison}
+\section{Computational Properties}
+
+\subsection{Nonlinear Characterization}
 
 We present a dynamical system that optimally compresses a rolling time window of input into a low-dimensional state-space.
 The state of this system represents the history of its input by a linear combination of time-invariant polynomial basis functions.
@@ -354,6 +356,12 @@ The inputs $u(t)$ are drawn from white-noise, band-limited with a cut-off freque
 Nengo allows us to consider populations of either spiking LIF neurons or non-spiking sigmoid neurons, without any additional changes to the model specification.
 To optimize for the decoders, we map $d$-dimensional evaluation points onto desired target outputs using (\ref{eq:basis-interpretation}), and apply Nengo's regularized least squares solver, which avoids the need to explicitly simulate the network on any input signals.
 
+\subsection{Scalability}
+
+
+\section{Performance Comparison}
+
+
 To compare with Reservoir Computing, we ported a Python implementation of the Echo State Network~(ESN), from \cite{lukovsevivcius2009reservoir}, to Nengo, and implemented it analogously to the DN.
 We used Hyperopt~\citep{bergstra2015hyperopt} to explore the space of model hyperparameters (e.g.,~$d$, $\tau$, input gain, recurrent gain, L2-regularization) across $100$ iterations containing $10$ trials each.
 Each network consisted of $1\text{,}000$ neurons, simulated with a time-step of $1$\,ms.
@@ -365,7 +373,86 @@ Reducing the input frequency to $15$\,Hz improves the ESN's accuracy to be on pa
 In addition, trials took on average $5.10$\,s for the sigmoid DN, $6.44$\,s for the spiking DN, and $17.7$\,s for the ESN.
 This difference is a consequence of not simulating the DN for training, and from using factorized weight matrices (i.e.,~encoders and decoders) to simulate the DN.
 
+RC networks often include a sparsity constraint of $20\%$ connectivity, which is still $\bigoh{n^2}$, in order to improve accuracy~\citep{lukovsevicius2012reservoir}.
+We also considered ESNs with constant sparsity~\citep{lukovsevivcius2012practical}, similar to our NEF networks, but found that they did not perform comparably to our results in section~\ref{sec:delay_benchmark}.
 
+Constructing a network to implement a delay is a natural way to measure the network's ability to maintain a history of its input signal, which is needed to compute any function over past inputs.
+Indeed, this task was considered by ESNs in one of the earliest demonstrations of the RC paradigm~\citep{jaeger2002short}.  In its purest form, the delay network (DN) is attempting to encode an infinite amount of information, which is why it is a challenging and useful benchmark to consider.
+
+For the benchmark tasks, weights were trained and validated using randomly sampled band-limited white noise.
+In addition, full-spectrum white-noise was added to the network during both training and testing.
+Accuracy was measured by normalizing the root-mean squared error against the root-mean squared target~\citep[NRMSE;][]{lukovsevicius2012reservoir}.
+As well, $95\%$ confidence intervals were bootstrapped and plotted using Seaborn~\citep{michael_waskom_2015_19108}.
+The free parameters for each method were optimized using $200$ iterations of Hyperopt~\citep{bergstra2013making} with $3$ trials per iteration, to maximize the validation error for $200$\,ms delays (see Table~\ref{tab:hyperopt}).
+LSMs were implemented by replacing the $\tanh$ units with LIF spiking neurons, making them comparable to our NEF networks but with full-rank weight matrices.
+All data and figures may be reproduced by following the instructions at the following URL: \path{https://github.com/arvoelke/rc2017}.
+
+\begin{table}\centering
+  %\ra{1.2}
+  \noindent\begin{tabularx}{\textwidth}{YYYYYY}
+    \toprule
+     & ESN & LSM & NEF with Rate LIF & NEF with Rate Tan & NEF with Spike LIF \\
+    \midrule
+Gain & \num[round-precision=3,round-mode=figures,scientific-notation=true]{1.3251896701} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.00315170551016} &  &  &  \\
+
+Radius & \num[round-precision=3,round-mode=figures,scientific-notation=true]{24.3145093319} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{1.36259213791} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{4.63655157006} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{12.8794579757} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.577484080063} \\
+
+$\tau_\mathrm{readout}$ & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.00686793487811} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0604400629751} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0606008691858} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0873173665926} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0218081523547} \\
+
+$\tau_\mathrm{recurrent}$ & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0021441109352} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.069089989522} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0626041764586} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0937145408042} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0740410932649} \\
+
+$\sigma^2_\mathrm{readout}$ & \num[round-precision=3,round-mode=figures,scientific-notation=true]{2.95578336256e-06} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0329425610169} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.00206289719197} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.00479755699712} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0450158827701} \\
+
+$\sigma^2_\mathrm{recurrent}$ &  &  & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.000200121787175} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.000397747221121} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0375517001869} \\
+
+$q$ &  &  & 20 & 26 & 23 \\
+
+    \bottomrule
+  \end{tabularx}
+  
+  \caption{ \label{tab:hyperopt}
+    Optimal parameters found by Hyperopt for section~\ref{sec:delay_benchmark}.
+  }
+\end{table}
+
+In all cases, we construct a reservoir of $\num{1500}$ neurons, and then train separate linear readouts (see section~\ref{sec:rc}) to approximate various delays ranging from $100$--$200$\,ms.
+For the NEF case, the prescribed dynamical system is a $200$\,ms delay, implemented by mapping equation~\ref{eq:ss-delay} onto a discretized lowpass (see section~\ref{sec:discrete-lowpass}).
+Importantly, the same reservoir is used to compute all of the different delays reported.
+The input to each network is randomly sampled $25$\,Hz band-limited white noise.
+Additional benchmarking details are described in section~\ref{sec:methods}.
+
+As shown in Figure~\ref{fig:rc-accuracy}, the NEF's performance is slightly better than ESNs for both LIF rate neurons and $\tanh$ rate neurons, and significantly better than LSMs for spiking LIF neurons.
+This demonstrates that, at least for this particular task, a low-dimensional reservoir is not only sufficient in the non-spiking case, but advantageous versus a random reservoir in the spiking case.
+This is unsurprising given that we have mapped the delay's dynamics onto the reservoir.
+Nevertheless, by applying the RC training method to the NEF, the readouts are capable of computing many different delays---not only $200$\,ms---from the same reservoir, without loss in accuracy.
+This demonstrates that our derived state-vector (see Figure~\ref{fig:pca}) is robust to changes in the target function.
+More generally, assigning some particular dynamics to the reservoir does not disable the network from computing other similar functions (thereby permitting nonlinear combinations of such functions to be trained from data).
+
+% $\tanh$ performs the best, since this function is approximately linear near $0$, and the desired dynamics are linear. the optimal hyperparameters select a huge radius to linearize the neurons. 
+
+These networks were also simulated while varying the number of neurons from $100$ to $\num{2500}$, in order to measure the real-time cost of simulation (see~Figure~\ref{fig:rc-speed}).
+We again note that traditional RC suffers from scaling issues since the recurrent weight matrices have $\bigoh{ n^2 }$ coefficients.
+Consequently, the NEF is more resource efficient than these RC methods by a factor of $\bigoh{ n }$.
+We also tried matching the sparsity of ESNs to the NEF, in order to balance resource constraints, but found that they no longer performed as accurately (not shown).
+Furthermore, we found that the ESN breaks down for numbers of neurons as few as $q$ neurons, while in fact $q$ linear rate neurons (with linearly independent encoders) will suffice to perfectly implement equation~\ref{eq:ss-delay}, as demonstrated by our next example.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{rc-accuracy}
+  \caption{ \label{fig:rc-accuracy}
+  Performance from training various linear readouts to compute delays of $25$\,Hz band-limited white noise (averaged across 10 trials).
+  Each line corresponds to a single reservoir of $\num{1500}$ neurons, either randomly connected (in the case of ESNs and LSMs), or specifically engineered (in the case of the NEF).
+  }
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\textwidth]{rc-speed}
+  \caption{ \label{fig:rc-speed}
+  Cost of simulating each RC network as the reservoir size is increased (averaged across 10 trials).
+  Conventional RC approaches require $\bigoh{ n^2 }$ space and time, while the NEF improves this to $\bigoh{ n }$ for constant dimensionality.
+  }
+\end{figure}
 
 
 \section{Time Cell Comparison}
