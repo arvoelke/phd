@@ -80,8 +80,8 @@ def go(
     Binc = inverse_basis(realization_result.T, order, tfull)
     assert Bpart.shape == (n_eval_points, order)
     assert Binc.shape == (order, n_eval_points)
-    R = Binc.dot(Bpart)   
-    P = R.dot(H)
+    Z = Binc.dot(Bpart)
+    P = Z.dot(H)
 
     ideal_label = r"$p_k(t)$"
     output_label = r"$\|\| P_%d\mathbf{x}(t) \|\|$" % cycles
@@ -92,12 +92,13 @@ def go(
         for condition, u in (('Aperiodic', generate_acyclic()),
                              ('Periodic', generate_cyclic()),):
             x = sys.X.filt(u, y0=0, dt=dt)[-1, :]
-            x_hat = P.dot(x)
+            Pk = np.linalg.norm(P.dot(x))
+            pk = compute_periodicity(u, cycles)
 
             data['Seed'].append(i)
             data[class_label].append(condition)
-            data[output_label].append(np.linalg.norm(x_hat))
-            data[ideal_label].append(compute_periodicity(u, cycles))
+            data[output_label].append(Pk)
+            data[ideal_label].append(pk)
             
     df = DataFrame(data)
     
