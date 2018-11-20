@@ -545,20 +545,20 @@ Such networks would thus be participating in the temporal coding of a stimulus, 
 % our network generalizes to predict the responses of time-cells to stimuli that are not simply discrete impulse events.
 
 
-\subsection{Cyclic Pattern Detection}
+\subsection{Detecting Repeating Patterns}
 \label{sec:periodicity}
 
-Given an arbitrary scalar signal, $u(t)$, we define the measure of \emph{$k$-periodicity} for natural $k \in \mathbb{N}_{\ge 1}$, with respect to some finite interval length $\theta > 0$, and sub-interval length $\gamma = \frac{\theta}{k}$, as follows:
+Given an arbitrary scalar signal, $u(t)$, we define a measure of \emph{$k$-periodicity} for natural $k \in \mathbb{N}_{\ge 1}$, with respect to some finite interval length $\theta > 0$, and sub-interval length $\gamma = \frac{\theta}{k}$, as follows:
 \begin{equation} \label{eq:periodicity}
 p_k(t) = \sqrt{ \frac{1}{\gamma} \int_{\tau=0}^{\gamma} \left( \frac{1}{k} \sum_{i=0}^{k-1} u \left( t - \theta + i \gamma + \tau \right) \right)^2 d\tau } \text{.}
 \end{equation}
 This can be computed directly by: (1) partitioning the last $\theta$ seconds into $k$ equally sized segments of length $\gamma$, (2) averaging them all together to obtain a superimposed signal of length $\gamma$, and (3) taking its root mean square (RMS).
 When $p_k(t)$ is large relative to the overall RMS, this means that the $k$ segments constructively interfere and thus all segments contain approximately the same pattern. 
 When $p_k(t)$ is maximal (i.e.,~equal to the RMS of the input signal), we refer to the signal  as being \emph{periodic}, since each of the $k$ segments must be exact copies of one another.
-Lower values of $p_k(t)$ imply deconstructive interefence between the superposition of each segment, and thus we refer to such signals as being \emph{aperiodic}.
+Lower values of $p_k(t)$ imply some amount of deconstructive interference within the superposition, and thus we refer to such signals as being \emph{aperiodic}.
 
 We now present a method that can efficiently compute $p_k(t)$ with a SNN, by leveraging the computational properties of the Delay Network (DN).
-This has applications as a general low-power signal processing tool, and for modelling how cyclic patterns could be detected by neural mechanisms in a robust and flexible manner.
+This has applications as a general low-power signal processing tool, and for modelling how nontrivially-repeating patterns could be detected by neural mechanisms in a robust and flexible manner.
 
 Our goal is to recast equation~\ref{eq:periodicity} to be in terms of the DN's state-vector, $\V{x}(t) \in \mathbb{R}^q$.
 We claim that we may compute $p_k(t)$ by taking the L2-norm of the state-vector after a linear transformation:
@@ -574,7 +574,7 @@ and $Z_k \in \mathbb{R}^{q \times q}$ is a ``zooming matrix'' computed by:
 \begin{equation} \label{eq:zoom-matrix}
 Z_k = B(0, 1)^+ B(1-1/k, 1) \text{,} % = \left( \transpose{B(0, 1)} B(0, 1) \right)^{-1} \transpose{B(0, 1)} B(1-1/k, 1) \text{,}
 \end{equation}
-where $(\cdot)^+$ denotes the Moore-Penrose pseudoinverse, $B(\cdot, \cdot) \in \mathbb{R}^{m \times q}$ is a matrix corresponding to a slice of the realized basis function~\ref{eq:basis-functions}, as in:
+where $(\cdot)^+$ denotes the Moore-Penrose pseudoinverse, $B(\cdot, \cdot) \in \mathbb{R}^{m \times q}$ is a matrix corresponding to a slice of the realized basis functions (equation~\ref{eq:basis-functions}), sampled along $m$ points, as in:
 \begin{equation}
 B(a, b) = \begin{pmatrix}
 \mathcal{P}_{q-1,q}(a) & \cdots & \mathcal{P}_{0,q}(a) \\
@@ -719,7 +719,6 @@ In summary, accounting for higher-order synaptic properties allows us to harness
 Together, these results demonstrate that our extensions can significantly improve the accuracy of high-level network dynamics.
 Having demonstrated this for delays, in particular, suggests that the extension is useful for a wide variety of biologically relevant networks (see section~\ref{sec:time-cells}).
 
-Detecting cyclic structure
 Autocorelation (cosyne)
 Storing and replaying episodic memories
 Amplifying axonal spike delays
