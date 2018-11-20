@@ -26,6 +26,8 @@ Third, delays introduce a rich set of interesting dynamics into large-scale neur
 Fourth, a delay line can be coupled with a single nonlinearity to construct a network displaying many of the same benefits as Reservoir Computing~\citep{appeltant2011information}.
 Finally, examining the specific case of the continuous-time delay introduces several methods and concepts we employ in generally extending the NEF (section~\ref{sec:extensions}).
 
+\TODO{Takens Theorem}
+
 \section{Conventional Approaches}
 
 Reservoir computing / FORCE / LSTMs?
@@ -355,10 +357,14 @@ The state $\V{x}(t)$ is \emph{encoded} by a heterogeneous population of neurons,
 
 \TODO{error plots for pade\_delay\_error from nengolib and talk about multiple layers}
 
-\TODO{bounds on error as a function of depth using geometry of complex numbers}
+In section~\ref{sec:deep-delay-networks} we discuss the scaling properties of multiple DNs stacked together to form a Deep Delay Network~(DDN).
 
+\section{Applications}
+\label{sec:delay-applications}
 
-\section{Performance Comparison}
+\TODO{write} Linear and nonlinear window computation. Computational neural modelling.
+
+\subsection{Optimized Reservoir Computing}
 
 RC networks often include a sparsity constraint of $20\%$ connectivity, which is still $\bigoh{n^2}$, in order to improve accuracy~\citep{lukovsevicius2012reservoir}.
 We also considered ESNs with constant sparsity~\citep{lukovsevivcius2012practical}, similar to our NEF networks, but found that they did not perform comparably to our results in section~\ref{sec:delay_benchmark}.
@@ -443,7 +449,9 @@ Furthermore, we found that the ESN breaks down for numbers of neurons as few as 
 
 \TODO{Discuss ESN radius which linearlizes the tanh unit, and what this means: necessary for capacity but limits nonlinear decode. DN solves both problems simultaneously.}
 
-\TODO{Mention that FORCE and full-FORCE don't do any better (not shown)}
+\subsection{Optimized FORCE Learning}
+
+\TODO{Include FORCE in the benchmark comparison}
 
 To demonstrate our ability to compute nonlinear window functions, we consider the function $y(t) = u(t - \theta)\, u(t)$, visualized in Figure~\ref{fig:delay-autocorrelation}.
 When integrated over time, this is the autocorrelation of $u$ with lag $\theta$, which has numerous applications in signal processing (e.g.,~detecting repeating events).
@@ -452,7 +460,6 @@ To compute this function accurately, we sample a proportion of the encoders from
 The inputs $u(t)$ are drawn from white-noise, band-limited with a cut-off frequency of $30$\,Hz.
 Nengo allows us to consider populations of either spiking LIF neurons or non-spiking sigmoid neurons, without any additional changes to the model specification.
 To optimize for the decoders, we map $d$-dimensional evaluation points onto desired target outputs using (\ref{eq:basis-interpretation}), and apply Nengo's regularized least squares solver, which avoids the need to explicitly simulate the network on any input signals.
-
 
 To compare with Reservoir Computing, we ported a Python implementation of the Echo State Network~(ESN), from \cite{lukovsevivcius2009reservoir}, to Nengo, and implemented it analogously to the DN.
 We used Hyperopt~\citep{bergstra2015hyperopt} to explore the space of model hyperparameters (e.g.,~$d$, $\tau$, input gain, recurrent gain, L2-regularization) across $100$ iterations containing $10$ trials each.
@@ -467,7 +474,7 @@ This difference is a consequence of not simulating the DN for training, and from
 
 \TODO{restate the intuitive story of why given the difference between linear and nonlinear results}
 
-\section{Time Cell Comparison}
+\subsection{Time Cells}
 \label{sec:time-cells}
 
 We now describe a connection between the delay network from section~\ref{sec:delay} and recent neural evidence regarding time cells.
@@ -538,9 +545,6 @@ Such networks would thus be participating in the temporal coding of a stimulus, 
 % our network generalizes to predict the responses of time-cells to stimuli that are not simply discrete impulse events.
 
 
-\section{Applications}
-\label{sec:delay-applications}
-
 \subsection{Cyclic Pattern Detection}
 \label{sec:periodicity}
 
@@ -591,7 +595,7 @@ A visualization of $Z_5$ is provided in Fig.~\ref{fig:zoom-matrix}, using a diag
 \end{figure}
 
 We sketch a constructive proof of this claim.
-Since the buffered window of input history is a linear transformation of the DN's state vector, we start by considering how $u \left( t - \theta + i \gamma + \tau \right)$ can be obtained from $\V{x}(t)$. 
+Since the buffered window of input history is a linear transformation of the DN's state vector, we start by constructing a linear transformation of $\V{x}(t)$ that contains the average of all segments. 
 The matrix $e^{A i \gamma}$ provides a linear transformation that emulates the effect of holding the input signal at zero for $i \gamma$ more seconds--a mathematical fast-forwarding of the system assuming no input.
 This can be seen by solving the differential equation $\dot{\V{x}} = A \V{x}$ with the initial condition $\V{x}_0 = \V{x}(t)$.
 Thus, $e^{A i \gamma} \V{x}(t)$ provides the state-vector that corresponds to some input signal where the $i^\text{th}$ segment (ordered by seniority) has been shifted back in time to become the oldest segment. 
@@ -613,6 +617,8 @@ The last fact that we need is that the balanced realization is approximately uni
 \TODO{cite}
 This conveniently implies that it sufficies to take the L2-norm of the resulting state-vector, as in equation~\ref{eq:approx-periodicity}, in order to obtain a proportional estimate of the RMS, $p_k(t)$, from equation~\ref{eq:periodicity}.
 This completes our proof sketch.
+To summarize, since the ideal computation involves a linear transformation of the input window, it can be recast as a linear transformation of the state.
+And since the L2-norm of a balanced state reflects the RMS of its corresponding input signal, the former behaves as a proxy for the latter.
 
 \begin{figure}
   \centering
@@ -632,11 +638,15 @@ The simulated value of $\| P_k(t) \|$ (equation~\ref{eq:periodicity-matrix}) is 
 The results in Fig.~\ref{fig:periodicity} empirically validate the claim of equation~\ref{eq:approx-periodicity} for $k \in \{2, 3, 4, 5\}$, by demonstrating that $\|P_k \V{x}(t) \|$ proportionally-approximates the true $k$-periodicity.
 
 Crucially, nothing has changed about the DN in order to support this brand of temporal pattern recognition.
-Since the ideal computation involves a linear transformation of the input window, it can be recast as a linear transformation of the state.
-And since the L2-norm of a balanced state reflects the RMS of its corresponding input signal, the former behaves as a proxy for the latter.
+The computation is merely a fixed linear transformation of the state, which is already being computed by the DN, followed by a nonlinear L2-norm operation.
 Thus, in order to detect temporal patterns, computations such as measures of $k$-periodicity can be embedded as fixed linear transformations between the DN and additional pools of neural nonlinearities via Principles~1 and~2 of the NEF.
 
-\subsection{Delay Networks with Higher-order Synapses}
+\subsection{Deep Delay Networks}
+\label{sec:deep-delay-networks}
+
+\TODO{bounds on error as a function of depth using geometry of complex numbers}
+
+\subsection{Harnessing Higher-order Synapses}
 \label{sec:pure_delay}
 
 We begin by making the practical point that it is crucial to account for the effect of the simulation time-step in digital simulations, if the time-step is not sufficiently small relative to the time scale of the desired network-level dynamics.

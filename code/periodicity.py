@@ -138,7 +138,6 @@ fig, axes = plt.subplots(1, len(k_values), sharey=True,
                          figsize=(14, 3))
 for ax, k in zip(axes, k_values):
     go(ax=ax, cycles=k)
-    ax.axis('equal')
     if k == k_values[-1]:
         ax.legend(loc="upper left", bbox_to_anchor=(1,1))
     else:
