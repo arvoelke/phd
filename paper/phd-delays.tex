@@ -126,7 +126,6 @@ where $v_i = \frac{(q+i+1)(q-i)}{i+1} \theta^{-1}$, for $i = 0 \ldots q-1$.
 In either case, $A$ and $B$ depend on the delay length solely by the scalar factor $\theta^{-1}$.
 As a result, we may \emph{control} the length of the delay by adjusting the gain on the input and feedback signals.
 The NEF can be used to build such controlled dynamical systems, without introducing multiplicative dendritic interactions or implausible on-the-fly connection weight scaling~\citep{eliasmith2000b}.
-The identification of this control factor is connected to a more general property of the Laplace transform, $F \left( a^{-1} s \right) = \mathcal{L} \left\{ a f(at) \right\}$ for all $a > 0$, that we can exploit to modulate the width of any filter on-the-fly (in this case affecting the amount of delay; results not shown).
 
 This model is now equivalent to equation~\ref{eq:pade}, but without any factorials, and in the form of equation~\ref{eq:lti}.\footnote{
 In appendix~\ref{app:state-space}, we provide some additional manipulations of the state-space model.}
@@ -353,16 +352,69 @@ The state $\V{x}(t)$ is \emph{encoded} by a heterogeneous population of neurons,
 \subsection{Scalability}
 \label{sec:delay-scalability}
 
-\TODO{stress that the state for one delay is the same for another with a stretched input}
+\begin{figure}
+\centering
+  \includegraphics[width=1.0\linewidth]{pade-delay-error}
+  \caption{ \label{fig:pade-delay-error} 
+    Visualizing the error in the Delay Network, $|E_q(r)|$ (see equation~\ref{eq:pade-delay-error}), while varying the dimenionless quantity $r = 2 \pi i f \cdot \theta$, and the order of approximation, $q$.
+  } 
+\end{figure}
 
-\TODO{error plots for pade\_delay\_error from nengolib and talk about multiple layers}
+In this section we address several fundamental questions regarding the scalability of the Delay Network with respect to $q$, $\theta$, and the complex frequency of the input signal, $s = 2 \pi i f$, for some real frequency, $f$.
+For the time being, we disregard the error arising from neural representation (see sections~\ref{sec:principle2}, \ref{sec:nengolib}, and~\ref{sec:neural-extensions}), and focus on the last remaining source of error: the use of Pad\'e approximants to render equation~\ref{eq:tf-delay} finite-dimensional.
+This error can be expressed in the Laplace domain as follows:
+\begin{equation} \label{eq:pade-delay-error}
+E_q(\theta s) = [q-1/q]e^{-\theta s} - e^{-\theta s} \text{,}
+\end{equation}
+where $[q-1/q]e^{-\theta s}$ is defined by equation~\ref{eq:pade} (see Fig.~\ref{fig:pade-delay-error}).
+For instance, $|E_{21}(2 \pi i \cdot 5)| \approx 0.003$ implies that a $21$-dimensional DN can delay a $1$\,Hz signal for $5$\,s with $0.3\%$ error.
+By linearity of the Laplace transform, it suffices to consider the error at individual frequencies $s$ in order to fully characterize the error of the entire system for any given input.
+More precisely, by the convolution theorem, we can interpret equation~\ref{eq:pade-delay-error} as a linear filter in the $s$-plane, to reveal how each input frequency is amplified, attentuated, or phase-shifted, to contribute to the spectrum of the overall error.\footnote{
+Only frequencies that are present within the input can become present in the error.}
 
-In section~\ref{sec:deep-delay-networks} we discuss the scaling properties of multiple DNs stacked together to form a Deep Delay Network~(DDN).
+Dimensional analysis quickly reveals an important property of this error: the dimensionless quantity, $\theta s$ (i.e., the product of time and frequency), fully determines the error (for fixed $q$).
+In other words, the ``difficulty'' of computing a delay is a function of the length of the delay multiplied by the frequency of the input signal being delayed.
+For instance, delaying a $10$\,Hz signal for $0.1$\,s has the same approximation error as delaying a $0.1$\,Hz signal for $10$\,s.
+This is seen by simply rescaling the time-axis by a factor of $100$.
+This is also consistent with the results from Fig.~\ref{fig:delay-full}.
+
+This is deeply connected to the observation that in equation~\ref{eq:ss-delay}, the delay length $\theta$ scales inversely with the gain on $A$ and $B$.
+The identification of this control factor is derived from a more general property of the Laplace transform, $F \left( a^{-1} s \right) = \mathcal{L} \left\{ a f(at) \right\}$ for all $a > 0$, that we can exploit to modulate the time-scale of any linear filter on-the-fly (in this case affecting the amount of delay; results not shown).
+
+Next, as shown in Fig.~\ref{fig:pade-delay-error}, the radius of convergence for the Pad\'e approximants increases linearly with $q$.\footnote{
+We have increased $q$ as large as $80$ before running into numerical issues related to catastrophic cancellation and discretizing the system via zero-order hold.
+We are confident that these issues can be resolved by more careful use of numerical methods.}
+Thus, scaling $q$ by some factor means that either the frequency of the input signal or the length of the delay can be scaled by the same factor, while achieving the same error.
+When $\theta s$ is outside the radius of convergence, the absolute error is bounded between $0$ and $2$.
+This fact simply comes from the observations that $e^{-\theta s}$ is a unit-length complex number, and $[q-1/q]e^{-\theta s}$ is complex with magnitude less than $1$.
+Thus, by the triangle inequality, the magnitude of their difference is bounded above by $2$.
+In the limit as $\theta s \rightarrow \infty$, the magnitude of the error converges to $1$ as $[q-1/q]e^{-\theta s} \rightarrow 0$.
+
+We may interpret these results in the context of equation~\ref{eq:pade-delay-error} as a linear filter.
+When $\theta s$ is small (within the radius of convergence, which scales linearly with $q$), an input frequency at $s$ radians is delayed almost perfectly for $\theta$ seconds.
+Outside the radius of convergence, the error contains frequencies that are phase-shifted and multiplied (with magnitude bounded above by $2$) versions of the input frequencies in that range.
+As $\theta s$ increase further, the error contains input frequencies that are simply phase-shifted, without any change in magnitude.
+
+Lastly, as revealed by equation~\ref{eq:basis-functions}, and as shown in Fig.~\ref{fig:basis-functions}, the basis functions are also dimensionless, in the sense that they are defined over the range $r \in [0, 1]$ which maps onto the time-interval $(t - \theta') \in [t - \theta, t]$, where $\theta' = r \theta$, for any $\theta > 0$.
+This has numerous implications that are all linked together: (1) the relationship between the input signal and its state-vector is scale-invariant; scaling the input length by some factor, and the delay length by the same factor, results in the exact same state-vector corresponding to a rescaled input history, (2) we can perform computations on the representation of the DN, independently of scale; see section~\ref{sec:periodicity} for an example, and (3) we can reinterpret the same state-vector on arbitrary time-scales.
+
+Taking neural constraints into consideration, we do need to separate out $\theta s$ into its dimensional quantities.
+As shown in section~\ref{sec:poisson-spiking}, the frequency of the state-vector being represented can matter.
+This concern may be alleviated by the use of Poisson spiking, or through the use of some other solution to the ``state discrepancy'' error.
+Likewise, longer values of $\theta$ are more suspeciptible to the integration of spiking noise, in the form of ``drift'', along a fixed time-scale determined by the firing rates.
+Lastly, when using a balanced realization, larger values of $q$ require denser interconnectivity ($q \times q$ transform matrices) between all $q$ dimensions, leading to $\bigoh{q^2}$ increase in time and memory requirements -- a constraint we address in section~\ref{sec:deep-delay-networks} when stacking multiple DNs together to form a Deep Delay Network~(DNN).
+
+To summarize, the consideration of scaling $\theta$ is intrinisically coupled to the consideration of which input frequencies need to be delayed, and with what accuracy.
+The accuracy is a function of $\theta s$.
+For a fixed level of precision, $\theta s$ scales linearly with $q$.
+And in all cases, the representation employed by the DN (i.e., the linear relationship between the input history and the state-vector) is scale-invariant in $\theta$.
 
 \section{Applications}
 \label{sec:delay-applications}
 
 \TODO{write} Linear and nonlinear window computation. Computational neural modelling.
+Memory. Communication.
+INRC motivation slide.
 
 \subsection{Optimized Reservoir Computing}
 
