@@ -96,7 +96,7 @@ This transfer function is readily converted into a state-space model in controll
 
 To eliminate the factorials in $d_i$ and $c_i$, we scale the $i^{\text{th}}$ dimension of the state-vector by $d_{q-1-i}$, for all $i = 0 \ldots q - 1$.
 This is achieved without changing the transfer function by scaling each $(B)_j$ by $d_{q-1-j}$, each $(C)_i$ by $1 / d_{q-1-i}$, and each $(A)_{ij}$ by $d_{q-1-i} / d_{q-1-j}$, which yields the equivalent state-space model:
-\begin{equation*}
+\begin{equation}
     \begin{alignedat}{2}
         A &= \begin{pmatrix} -v_0 & -v_0 & \cdots & -v_0 \\ v_1 & 0 & \cdots & 0 \\ 0 & \ddots & \ddots & \vdots \\ 0 & 0 & v_{q-1} & 0\end{pmatrix} \text{,} & & \quad\quad \begin{alignedat}{1}
             B &= \transpose{\begin{pmatrix} v_0 & 0 & \cdots & 0\end{pmatrix}} \text{,} \\
@@ -104,7 +104,7 @@ This is achieved without changing the transfer function by scaling each $(B)_j$ 
             D &= 0 \text{,} \label{eq:ss-delay}
         \end{alignedat}
     \end{alignedat}
-\end{equation*}
+\end{equation}
 where $v_i := \frac{(q+i)(q-i)}{i+1} \theta^{-1}$ and $w_i := (-1)^{q - 1 - i} \left( \frac{i+1}{q} \right)$, for $i = 0 \ldots q-1$.
 This follows from noting that $v_0 = d_{q-1}$ and $v_i := d_{q-1-i} / d_{q-i}$ for $i \ge 1$.
 
@@ -349,6 +349,7 @@ Generalizations to arbitrary linear synapses, including those modelling pure fee
 The state $\V{x}(t)$ is \emph{encoded} by a heterogeneous population of neurons, which allows arbitrary nonlinear functions across the window, $y(t) = f(\V{x}(t))$, to be \emph{decoded} from its activity~\citep{eliasmith2003a}.
 
 \subsection{Scalability}
+\label{sec:delay-scalability}
 
 \TODO{stress that the state for one delay is the same for another with a stretched input}
 
@@ -539,6 +540,101 @@ Such networks would thus be participating in the temporal coding of a stimulus, 
 
 \section{Applications}
 \label{sec:delay-applications}
+
+\subsection{Cyclic Pattern Detection}
+\label{sec:periodicity}
+
+Given an arbitrary scalar signal, $u(t)$, we define the measure of \emph{$k$-periodicity} for natural $k \in \mathbb{N}_{\ge 1}$, with respect to some finite interval length $\theta > 0$, and sub-interval length $\gamma = \frac{\theta}{k}$, as follows:
+\begin{equation} \label{eq:periodicity}
+p_k(t) = \sqrt{ \frac{1}{\gamma} \int_{\tau=0}^{\gamma} \left( \frac{1}{k} \sum_{i=0}^{k-1} u \left( t - \theta + i \gamma + \tau \right) \right)^2 d\tau } \text{.}
+\end{equation}
+This can be computed directly by: (1) partitioning the last $\theta$ seconds into $k$ equally sized segments of length $\gamma$, (2) averaging them all together to obtain a superimposed signal of length $\gamma$, and (3) taking its root mean square (RMS).
+When $p_k(t)$ is large relative to the overall RMS, this means that the $k$ segments constructively interfere and thus all segments contain approximately the same pattern. 
+When $p_k(t)$ is maximal (i.e.,~equal to the RMS of the input signal), we refer to the signal  as being \emph{periodic}, since each of the $k$ segments must be exact copies of one another.
+Lower values of $p_k(t)$ imply deconstructive interefence between the superposition of each segment, and thus we refer to such signals as being \emph{aperiodic}.
+
+We now present a method that can efficiently compute $p_k(t)$ with a SNN, by leveraging the computational properties of the Delay Network (DN).
+This has applications as a general low-power signal processing tool, and for modelling how cyclic patterns could be detected by neural mechanisms in a robust and flexible manner.
+
+Our goal is to recast equation~\ref{eq:periodicity} to be in terms of the DN's state-vector, $\V{x}(t) \in \mathbb{R}^q$.
+We claim that we may compute $p_k(t)$ by taking the L2-norm of the state-vector after a linear transformation:
+\begin{align} \label{eq:approx-periodicity}
+p_k(t) &\appropto \| P_k \V{x}(t) \| \\
+P_k &= \frac{Z_k}{k} \sum_{i=0}^{k-1} e^{A i \gamma} \text{,} \label{eq:periodicity-matrix}
+\end{align}
+where $A$ is the recurrent state-space matrix from the balanced realization of equation~\ref{eq:ss-delay},\footnote{
+The proportionality $\propto$ in equation~\ref{eq:approx-periodicity} refers to a constant scaling in the balanced realization, while the approximation $\sim$ comes from the use of Pad\'e approximants to render the system finite-dimensional, and from assuming the DN mapping is unitary.
+See text for details.
+}
+and $Z_k \in \mathbb{R}^{q \times q}$ is a ``zooming matrix'' computed by:
+\begin{equation} \label{eq:zoom-matrix}
+Z_k = B(0, 1)^+ B(1-1/k, 1) \text{,} % = \left( \transpose{B(0, 1)} B(0, 1) \right)^{-1} \transpose{B(0, 1)} B(1-1/k, 1) \text{,}
+\end{equation}
+where $(\cdot)^+$ denotes the Moore-Penrose pseudoinverse, $B(\cdot, \cdot) \in \mathbb{R}^{m \times q}$ is a matrix corresponding to a slice of the realized basis function~\ref{eq:basis-functions}, as in:
+\begin{equation}
+B(a, b) = \begin{pmatrix}
+\mathcal{P}_{q-1,q}(a) & \cdots & \mathcal{P}_{0,q}(a) \\
+\vdots & \vdots & \vdots \\
+\mathcal{P}_{q-1,q}(b) & \cdots & \mathcal{P}_{0,q}(b)
+\end{pmatrix} T \text{.}
+\end{equation}
+and $T$ is the similarity transform for the balanced realization.
+A visualization of $Z_5$ is provided in Fig.~\ref{fig:zoom-matrix}, using a diagonal $T$ to reveal its checkerboard structure.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.4\textwidth]{zoom-matrix}
+  \caption{\label{fig:zoom-matrix}
+    Visualizing the ``zooming matrix'', $Z_k$ (see equation~\ref{eq:zoom-matrix}), for the case of $k=5$, $q=20$, $T$ taken by a digonal realization that normalizes the system's Hankel singular values, and the Moore-Penrose pseudoinverse taken while truncating the singular values below a cut-off ratio of 10\%.
+   This matrix linearly transforms the state-space of the Delay Network to ``zoom in'' on the oldest segment of input history partitioned into $k$ segments.
+  }
+\end{figure}
+
+We sketch a constructive proof of this claim.
+Since the buffered window of input history is a linear transformation of the DN's state vector, we start by considering how $u \left( t - \theta + i \gamma + \tau \right)$ can be obtained from $\V{x}(t)$. 
+The matrix $e^{A i \gamma}$ provides a linear transformation that emulates the effect of holding the input signal at zero for $i \gamma$ more seconds--a mathematical fast-forwarding of the system assuming no input.
+This can be seen by solving the differential equation $\dot{\V{x}} = A \V{x}$ with the initial condition $\V{x}_0 = \V{x}(t)$.
+Thus, $e^{A i \gamma} \V{x}(t)$ provides the state-vector that corresponds to some input signal where the $i^\text{th}$ segment (ordered by seniority) has been shifted back in time to become the oldest segment. 
+Note that $e^0 = I$, and so the oldest segment ($i=0$) is not shifted.
+More generally, $k^{-1} \left( I + e^{A \gamma} + \ldots + e^{A (k-1) \gamma} \right)$ linearly transforms the state-vector to correspond to an input signal where the oldest segment is the average of all segments.
+
+Next, we must ``zoom in'' on the oldest segment.  
+This zooming operation can be done by yet another linear transformation.
+In particular, $Z_k$ is a linear transformation that takes us from a state-vector representing the entire interval of length $\theta$ to a state-vector representing the oldest sub-interval of length $\gamma$.
+This is derived by observing that $B(1 - 1/k, 1)$ maps $\V{x}(t)$ onto the window of input history across the sub-interval $[t - \theta, t - \theta + \gamma]$---sampled along $m$ points---by construction.
+Then $B(0, 1)^+$ reinterprets this sampled signal as a state-vector in the context of the full interval $[t - \theta, t]$.
+To determine these matrices numerically, $m$ should be sufficiently large so as to approximate the limit as $m \rightarrow \infty$ within some tolerance.\footnote{
+We found $m = \numprint{1000}$ to be sufficient for our experiments.}
+
+This same technique works without loss of generality to zoom in on any slice of the window, and reinterpret that segment of input as a new state-vector. This is a specific instantiation of the more general observation that the relationship between the state-vector and the input history is linear, and so any linear operation across the window (e.g., slicing, shifting, convolution, integral transforms, etc.) must also be linear with respect to the state-vector.
+Moreover, by the scale-invariance of the delay network (see section~\ref{sec:delay-scalability}), all of the matrices (e.g., $Z_k$, $B(\cdot, \cdot)$, $P_k$) are independent of $\theta$. That is, these matrices only need to be precomputed once for some choice of $k$ and $q$, and applied to any $\theta$.
+
+The last fact that we need is that the balanced realization is approximately unitary, in the sense that $\| \V{x}(t) \|$ is proportional to the RMS of its corresponding window of history.
+\TODO{cite}
+This conveniently implies that it sufficies to take the L2-norm of the resulting state-vector, as in equation~\ref{eq:approx-periodicity}, in order to obtain a proportional estimate of the RMS, $p_k(t)$, from equation~\ref{eq:periodicity}.
+This completes our proof sketch.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\textwidth]{periodicity}
+  \caption{\label{fig:periodicity}
+    The Delay Network (DN) approximating a measure of periodicity, tested against \numprint{1000} randomly generated input signals.
+    The true measure of the input signal's $k$-periodicity, $p_k(t)$ (see equation~\ref{eq:periodicity}), is plotted on the $y$-axis, for two classes of input signals ($500$ periodic, and $500$ aperiodic), and $k \in \{2, 3, 4, 5\}$.
+    The $x$-axis is the L2-norm of a linear transformation of the DN's state-vector, $\| P_k \V{x}(t) \|$ (see equation~\ref{eq:periodicity-matrix}).
+    This empirically validates the claim of equation~\ref{eq:approx-periodicity} that the state-vector of the DN can be linearly transformed by a fixed matrix $P_k$ to proportionally-approximate a signal's $k$-periodicity.
+  }
+\end{figure}
+
+We validate the above derivation by fixing $\theta=0.24$\,s, $q=20$, and then sampling white-noise signals band-limited at $22$\,Hz (such that the error in the Pad\'e approximants are bounded above by 5\%) with RMS=$1$ from the two possible classes: periodic and aperiodic.
+The periodic signals are generated by repeating a segment of length $\gamma$, $k$ times, while the aperiodic signals are random across the interval of length $\theta$.
+In each case, the system of equations~\ref{eq:ss-delay} are balanced and simulated using zero-order hold~(ZOH) with a time-step of $\dt{} = 1$\,ms, to obtain the value of $\V{x}(t)$ at $t = \theta$.
+The simulated value of $\| P_k(t) \|$ (equation~\ref{eq:periodicity-matrix}) is then compared to the ideal value of $p_k(t)$ (equation~\ref{eq:periodicity}).
+The results in Fig.~\ref{fig:periodicity} empirically validate the claim of equation~\ref{eq:approx-periodicity} for $k \in \{2, 3, 4, 5\}$, by demonstrating that $\|P_k \V{x}(t) \|$ proportionally-approximates the true $k$-periodicity.
+
+Crucially, nothing has changed about the DN in order to support this brand of temporal pattern recognition.
+Since the ideal computation involves a linear transformation of the input window, it can be recast as a linear transformation of the state.
+And since the L2-norm of a balanced state reflects the RMS of its corresponding input signal, the former behaves as a proxy for the latter.
+Thus, in order to detect temporal patterns, computations such as measures of $k$-periodicity can be embedded as fixed linear transformations between the DN and additional pools of neural nonlinearities via Principles~1 and~2 of the NEF.
 
 \subsection{Delay Networks with Higher-order Synapses}
 \label{sec:pure_delay}

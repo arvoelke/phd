@@ -83,6 +83,12 @@
 \newcommand*{\coords}[2]{\left\{ #1 \right\}_{#2}}
 \newcommand*{\ztrans}[1]{\mathcal{Z} \left\{ #1 \right\}}
 
+% https://tex.stackexchange.com/questions/33538/how-to-get-an-approximately-proportional-to-symbol
+\newcommand{\appropto}{\mathrel{\vcenter{
+  \offinterlineskip\halign{\hfil$##$\cr
+    \propto\cr\noalign{\kern2pt}\sim\cr\noalign{\kern-2pt}}}}}
+
+
 % binding
 \newcommand*{\bind}{\circledast}
 % We got room; big summations please!
