@@ -263,8 +263,7 @@ This means that other delays will simply stretch or compress the impulse respons
 
 We remark that the delay network is scale-invariant with the delay length over input frequency, that is, the accuracy for a chosen order is a function of $s \times \theta$ (see units in Figure~\ref{fig:delay-full} for instance). % and the synaptic time-constants are scaled by $\theta$.
 More specifically, for a fixed approximation error, the delay length scales as $\bigoh{ \frac{q}{f} }$, where $f$ is the input frequency.
-Then, the accuracy of the mapped delay is a function of the relative magnitude of the delay length to $\frac{q}{f}$, whose exact shape depends on the considered synapse model.
-To determine these functions for a wide class of synapses, we proceed by extending the NEF.
+We elaborate on these properties in section~\ref{sec:delay-scalability}, and demonstrate our extensions to harnessing arbitrary linear synapse models to improve accuracy in section~\ref{sec:pure_delay}.
 
 \section{Computational Properties}
 
@@ -356,7 +355,7 @@ The state $\V{x}(t)$ is \emph{encoded} by a heterogeneous population of neurons,
 \centering
   \includegraphics[width=1.0\linewidth]{pade-delay-error}
   \caption{ \label{fig:pade-delay-error} 
-    Visualizing the error in the Delay Network, $|E_q(r)|$ (see equation~\ref{eq:pade-delay-error}), while varying the dimenionless quantity $r = 2 \pi i f \cdot \theta$, and the order of approximation, $q$.
+    Visualizing the error in the Delay Network, $|E_q(2 \pi i f \cdot \theta)|$ (see equation~\ref{eq:pade-delay-error}), while varying the dimensionless quantity $f \cdot \theta$ (input frequency multiplied by delay length), and the order of approximation, $q$.
   } 
 \end{figure}
 
@@ -697,7 +696,55 @@ Thus, in order to detect temporal patterns, computations such as measures of $k$
 \subsection{Deep Delay Networks}
 \label{sec:deep-delay-networks}
 
-\TODO{bounds on error as a function of depth using geometry of complex numbers}
+We now consider an architecture that stacks multiple DNs on top of one another, to form a \emph{Deep Delay Network}~(DNN) chaining multiple delays together.
+For simplicity, we consider the case where each delay has the same length, $\gamma$, and each layer has the same dimensionality, $q$.
+Thus, $k$ layers results in an overall delay of length $\theta = k \gamma$, and represents $k \cdot q$ total dimensions.
+
+The state-vector of the $i^\text{th}$ layer, is denoted $\V{x}_i(t)$, where $i=0$ corresponds to the deepest layer (i.e., the last delay), and $i=k-1$ corresponds to the shallowest layer (i.e., the first delay).
+We note that such an architecture realizes an alternative solution to computing the $k$-periodicity in section~\ref{sec:periodicity}; in particular, since $\V{x}_i(t)$ corresponds to the $i^\text{th}$ segment of input history, we have:
+\begin{equation*}
+P_k \V{x}(t) = \frac{1}{k} \sum_{i=0}^{k-1} \V{x}_i(t) \text{,}
+\end{equation*}
+where $P_k$ is the matrix defined by equation~\ref{eq:periodicity-matrix}, and $\V{x}(t)$ is the state-vector for an overall delay of length $\theta$.
+
+We now determine the error in the overall delay by extending our analysis from section~\ref{sec:delay-scalability}.
+Since each layer implements the transfer function $[q-1/q]e^{-\gamma s}$ (equation~\ref{eq:pade}), by the convolution theorem, the overall filter is the product of each transfer function.
+Therefore, the error is characterized by the filter:
+\begin{equation} \label{eq:deep-delay-network-error}
+E_{q,k}(\theta s) = \left( [q-1/q]e^{-\gamma s} \right)^k - e^{-\theta s} \text{.}
+\end{equation}
+When $k = 1$, this reduces to equation~\ref{eq:pade-delay-error}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1.0\textwidth]{deep-delay-network-error}
+  \caption{\label{fig:deep-delay-network-error}
+    Visualizing the error in the Deep Delay Network~(DNN) of width~$q$ and depth~$k$ (see equation~\ref{eq:deep-delay-network-error}) for two different resource-cost functions.
+    (Left) Fixing the number of dimensions, $kq$, to be constant.
+    Smaller $k$ scales further in this case.
+    (Right) Fixing the density of connections, $kq^2$, to be constant.
+    Smaller $q$ is more accurate in this case.
+  }
+\end{figure}
+
+To gain insights into potential trade-offs between $k$ and $q$, we require additional constraints to keep the comparison meaningful.
+If our main constraint is the number of neurons, then resource usage scales as $\bigoh{k q}$ given a constant level of accuracy per dimension.
+However, if our main constraint is the number of multiply-adds and memory usage (i.e.,~connection density), then these scale as $\bigoh{k q^2}$ assuming the use of factored connection-weight matrices (as in the standard NEF formulation, and as realized on both SpiNNaker and Braindrop) and assuming the use of balanced state-space realizations.
+In either case, we evaluate $E_{q,k}(\theta s)$ while varying $(q, k)$ to keep the resource-cost fixed (see Fig.~\ref{fig:deep-delay-network-error}).
+
+Depending on which resource-cost function is considered, we obtain very different trade-offs for the amount of error at some desired operating point $\theta s$ (see Fig.~\ref{fig:pade-delay-error}).
+In the former case of minimizing neural resources, we should set $k = 1$ and minimize $q$ such that $\theta s$ falls within the radius of convergence.
+This should come as no surprise, as the DN has been derived to optimally approximate the delay line, and so there is no benefit to adding additional layers if we are free to scale $q$.
+However, for the latter case of minimizing connectivity, we should primarily minimize $q$.
+In other words, deeper structures provide an improvement in accuracy when paying $\bigoh{kq^2}$ for resources.
+
+Furthermore, note that in Fig.~\ref{fig:deep-delay-network-error}, the error oscillates with dampened amplitude beyond the radius of convergence for larger $k$.
+This can be seen from equation~\ref{eq:deep-delay-network-error} by noticing that $[q-1/q]e^{-\gamma s}$ is a complex number with magnitude less than $1$, that is then exponentiated to the power of $k$.
+By the same triangle-inequality argument in section~\ref{sec:delay-scalability}, this effectively regularizes the error $k$ times towards $1$ outside the radius of convergence.
+
+The final consideration that should be made in picking $(q, k)$ is in determining the ideal nonlinear support for any function(s) to be computed across the window of history.
+Since each dimension is encoded by a heterogeneous pool of neural nonlinearities, this supports the decoding of nonlinear functions with respect to the coefficient on the corresponding basis function (equation~\ref{eq:basis-functions}) via Principles~1 and~2.
+All of this should be systematically taken into account when choosing the state-space realization, the delay lengths of each layer, the dimensionality of each layer, and the number of layers.
 
 \subsection{Harnessing Higher-order Synapses}
 \label{sec:pure_delay}

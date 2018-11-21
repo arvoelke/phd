@@ -12,8 +12,8 @@ for color, order in zip(colors, orders):
     plt.plot(freq_times_theta,
              np.abs(pade_delay_error(freq_times_theta, order=order)),
              c=color, lw=2, label="q=%s" % order)
-plt.xlabel(r"$r$ (Frequency $\times \, \theta$)")
-plt.ylabel(r"$|E_q(r)|$")
+plt.xlabel(r"$f \cdot \theta$ (Hz $\times \, s$)")
+plt.ylabel(r"$|E_q(2 \pi i f \cdot \theta)|$")
 plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
 sns.despine(offset=10)
 
