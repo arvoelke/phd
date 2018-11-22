@@ -596,6 +596,16 @@ Such networks would thus be participating in the temporal coding of a stimulus, 
 % Possible predictions regarding time-constants / dimensionality?
 % our network generalizes to predict the responses of time-cells to stimuli that are not simply discrete impulse events.
 
+\subsection{Computing Taylor Series}
+\label{sec:taylor-series}
+
+\TODO{Linear map between state-vector and Taylor series of input signal expanded about any point.
+More general than computing the derivative. Special case of a linear transformation of the input.}
+
+\subsection{Computing Fourier Transform}
+\label{sec:fourier-transform}
+
+\TODO{Fourier Transform another special case of linear transformation}
 
 \subsection{Detecting Repeating Patterns}
 \label{sec:periodicity}
@@ -744,6 +754,7 @@ By the same triangle-inequality argument in section~\ref{sec:delay-scalability},
 
 The final consideration that should be made in picking $(q, k)$ is in determining the ideal nonlinear support for any function(s) to be computed across the window of history.
 Since each dimension is encoded by a heterogeneous pool of neural nonlinearities, this supports the decoding of nonlinear functions with respect to the coefficient on the corresponding basis function (equation~\ref{eq:basis-functions}) via Principles~1 and~2.
+Deeper networks effectively partition the basis functions into individual segments of input history, which enhances the complexity of the nonlinearities with respect to each segment, while limiting nonlinear interactions between segments.
 All of this should be systematically taken into account when choosing the state-space realization, the delay lengths of each layer, the dimensionality of each layer, and the number of layers.
 
 \subsection{Harnessing Higher-order Synapses}
