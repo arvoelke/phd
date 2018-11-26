@@ -442,16 +442,24 @@ The conclusions from this section are similar to those drawn by \citet[][see sup
 
 \section{Neuromorphic Computing}
 
-\TODO{Talk about the motivation for neuromorphic hardware from a computer scientist's point of view.}
+The term \emph{neuromorphic computing} refers broadly to the use of specialized hardware to emulate core computational principles of biological nervous systems~\citep{mead1989analog, cohen2001report}.
+Here, we focus more specifically on the synthesis of spiking neural networks~(SNNs)--- in both analog and digital hardware---for low-power, dynamical, brain-like, computation~\citep{boahen2017neuromorph}.
+This chapter provides a brief overview of the landscape, with an emphasis placed on state-of-the-art hardware made available to the Centre for Theoretical Neuroscience, at the University of Waterloo, for academic research, namely: SpiNNaker~\citep{painkras2013spinnaker}, Braindrop~\citep{braindrop2019}, and Loihi~\citep{davies2018loihi}.
+At the same time, we will touch on some overlap with the efforts of many companies, including: Applied Brain Research~(ABR), Intel, IBM, Numenta, Qualcomm, BrainChip, General Vision, HRL Laboratories, Brain Corporation, Knowm, Samsung, and Vicarious FP~\citep{marketreport2018}.
 
-Common goals.
-Colocated memory and computation
-Heterogeneity and sparsity in time
-Heterogeneity and sparsity in space
-Minimize spiking / synaptic events
-Minimize power
-Class of computations / descriptions
-https://ieeexplore.ieee.org/document/7551407/ Christian Mayr's digital SRAM scaling 
+Coming from a conventional computational-theoretic standpoint, there is nothing special about neuromorphic hardware; alternative hardware architectures cannot move beyond what is already Turing-computable.
+There is no sense in hoping that neurons and synapses somehow enable some new computations that were not already able to be emulated using currently available technologies.
+Instead, neuromorphic architectures aim to implement specific classes of algorithms using dramatically less power, achieved by way of massively-parallelized event-driven computation that is sparse in both space and time.
+Such power savings are potentially tremendous, estimated to be on the order of ???, which becomes necessary to reach the exascale level of computation performed by the human brain without requiring unreasonable (???) amounts of power~\citep{painkras2013spinnaker}.
+
+To use such hardware, we must develop new programming paradigms that leverage its computational primitives.
+This involves inventing new algorithms, and training the next generation of programmers to think differently about programs -- but the benefits are far-reaching: real-time computation that can in principle scale up to the cognitive, perceptual, and motor capabilities of the human brain, while using reasonable (???) amounts of power.
+As such, there are many common goals between neuromorphic hardware architectures including: memory that is colocated with computational elements, heterogeneity and sparsity in both time and space, the minimization of spike traffic and synaptic events, and real-time data IO.
+
+In chapter~\ref{chapt:nef-extensions} we will summarize some of the main challenges surrounding the use of neuromorphic hardware, and demonstrate how the NEF solves many of these problems.
+More generally, we will provide a theoretical framework and extensions for understanding the class of computations that neuromorphic hardware enables, given some resource budget and desired precision.
+
+\TODO{https://ieeexplore.ieee.org/document/7551407/ Christian Mayr's digital SRAM scaling}
 
 \subsection{SpiNNaker}
 
