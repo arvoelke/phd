@@ -3,7 +3,9 @@
 
 
 \section{Challenges Posed by Neuromorphic Hardware}
+\label{sec:challenges}
 
+Apart from having to think differently about how to program.
 Some of these are already solved to some extent by standard NEF. Others require more careful consideration / theoretical extensions.
 
 \subsection{Discretization}
@@ -754,7 +756,6 @@ Summarize Andreas' research
 
 
 \section{Neural Extensions}
-\label{sec:neural-extensions}
 
 \subsection{Poisson Spiking}
 \label{sec:poisson-spiking}
@@ -813,7 +814,7 @@ Poisson LIF performance scales towards $0$ error as $n \rightarrow \infty$, sinc
 
 We validate these claims in Figure~\ref{fig:poisson-frequency-scaling} and Figure~\ref{fig:poisson-neuron-scaling} by exploring a Poisson spiking version of the LIF model.
 The properties of this neuron model make it particularly suitable for neuromorphic architectures such as SpiNNaker~2.
-Specifically, SpiNNaker~2 has specialized hardware for computing exponentials, logarithms, and uniform samples, and benefits enormously from the reduction of memory requirements and spike traffic.
+Specifically, SpiNNaker~2 has specialized hardware for computing exponentials~\citep{partzsch2017fixed} and uniform samples~\citep{liu2018memory}, and the architecture benefits enormously from the reduction of memory requirements and spike traffic~\citep{mundy2015, stromatias2013power}.
 Since the Poisson spike generator can be applied to any desired static response curve, this method can be applied to whatever is cheap to compute while still providing a suitable nonlinear basis for the desired transformation.
 
 \subsection{Adaptative Neurons}
