@@ -813,6 +813,7 @@ Poisson LIF performance scales towards $0$ error as $n \rightarrow \infty$, sinc
 \end{figure}
 
 We validate these claims in Figure~\ref{fig:poisson-frequency-scaling} and Figure~\ref{fig:poisson-neuron-scaling} by exploring a Poisson spiking version of the LIF model.
+These results demonstrate that Poisson spiking models solve the state-discrepancy problem, and thus continue to scale in accuracy with neuron count at increasingly-greater signal frequencies relative to the firing rates.
 The properties of this neuron model make it particularly suitable for neuromorphic architectures such as SpiNNaker~2.
 Specifically, SpiNNaker~2 has specialized hardware for computing exponentials~\citep{partzsch2017fixed} and uniform samples~\citep{liu2018memory}, and the architecture benefits enormously from the reduction of memory requirements and spike traffic~\citep{mundy2015, stromatias2013power}.
 Since the Poisson spike generator can be applied to any desired static response curve, this method can be applied to whatever is cheap to compute while still providing a suitable nonlinear basis for the desired transformation.
