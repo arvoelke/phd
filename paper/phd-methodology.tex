@@ -234,6 +234,8 @@ As the simulation progresses, from left to right, each encoder converges to one 
 
 \subsection{Dynamics of Supervised Learning}
 
+Learning is a dynamical system, and vice-versa, i.e., dynamical systems can implement learning.
+
 This report is taken from \citep{voelker2015}.
 
 Prescribed Error Sensitivity (PES) is a biologically plausible supervised learning rule that is frequently used with the Neural Engineering Framework (NEF). PES modifies the connection weights between populations of neurons to minimize an external error signal. We solve the discrete dynamical system for the case of constant inputs and no noise, to show that the decoding vectors given by the NEF have a simple closed-form expression in terms of the number of simulation timesteps. Moreover, with $\gamma = (1 - \kappa \|\V{a}\|^2) < 1$, where $\kappa$ is the learning rate and $\V{a}$ is the vector of firing rates, the error at timestep $k$ is the initial error times $\gamma^k$. Thus, $\gamma > - 1$ implies exponential convergence to a unique stable solution, $\gamma < 0 $ results in oscillatory weight changes, and $\gamma \le -1$ implies instability.
