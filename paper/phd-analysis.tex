@@ -38,8 +38,25 @@ It is also important to consider both for neuromorphic hardware.
 
 The NEF's state variable is linearly mapped onto the post-synaptic current.
 Contrast this with rate code and spike-time code and rank-order coding (simon thorpe) and Bryan Tripp (2007).
+\TODO{\url{https://www.sciencedirect.com/science/article/pii/S0303264798000501}}
 \TODO{\url{https://www.frontiersin.org/articles/10.3389/fnsys.2015.00151/full}}
 We further step outside this paradigm for conductance-based synapses, and adaptive LIF neurons.
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{spike-time-coding}
+     
+    \caption{\label{fig:spike-time-coding} 
+      Demonstrating the semantic ambiguity between ``spike-time coding'' and ``rate-coding'' in the context of a standard NEF-optimized network.
+      (Left)~An ensemble of \numprint{5000} LIF neurons with random 2D encoders and uniform $[0.5, 1]$ intercepts are trained to oscillate at approximately $3.5$\,Hz.
+      We omit the first $1.2$ seconds of simulation to wash away initial transients.
+      (Right)~Spike rasters of \numprint{50} randomly selected neurons, ordered by the angle of each neuron's respective encoding vector.
+      Each neuron spikes only $0$, $1$, or $2$ times per oscillation, and at a precise moment in time -- on the order of milliseconds (see inset) -- before remaining silent for another several hundred milliseconds.
+      Thus, the precise spike-timing of each individual neuron reliably conveys information about the 2D state-space of the oscillation, despite not explicitly incorporating such a requirement into the training procedure.
+      See text for explanation.
+    }
+\end{figure}
 
 \subsection{Low-Frequency Representations}
 
