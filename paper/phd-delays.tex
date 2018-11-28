@@ -24,7 +24,10 @@ Second, the delay provides us with a window of input history from which to compu
 For instance, the spectrogram of a signal may be computed by a nonlinear combination of delays, as may any finite impulse response~(FIR) filter.
 Third, delays introduce a rich set of interesting dynamics into large-scale neural models, including: oscillatory bumps, traveling waves, lurching waves, standing waves, aperiodic regimes, and regimes of multistability~\citep{roxin2005role}.
 Fourth, a delay line can be coupled with a single nonlinearity to construct a network displaying many of the same benefits as Reservoir Computing~\citep{appeltant2011information}.
-Finally, examining the specific case of the continuous-time delay introduces several methods and concepts we employ in generally extending the NEF (section~\ref{sec:extensions}).
+
+Many learning algorithms also tend to rely on sliding windows of input history.
+For instance, \citet{leng2013online} and \citet{izzeldin2011online} improved their neural networks' accuracy by incorporating sliding windows into their learning rules -- but they did not offer any neural implementation for the component that performs the required buffering.
+Similarly, \citet{ferreira2009online} found sliding windows to be beneficial for the online learning of process models, in which the parameters of a nonlinear time-varying system are identified.
 
 \TODO{Takens Theorem. Mental time-travel. INRC delay motivation slide. Class of dynamical-systems-based algorithms.}
 
