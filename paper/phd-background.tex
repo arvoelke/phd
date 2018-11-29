@@ -446,21 +446,21 @@ The term \emph{neuromorphic computing} refers broadly to the use of specialized 
 Here, we focus more specifically on the synthesis of spiking neural networks~(SNNs)---in both analog and digital hardware---for low-power, dynamical, brain-like, computation~\citep{boahen2017neuromorph}.
 
 This chapter provides a brief overview of the landscape, with an emphasis placed on state-of-the-art hardware made available to the Centre for Theoretical Neuroscience, at the University of Waterloo, for academic research, namely: SpiNNaker~\citep{furber2014spinnaker}, Braindrop~\citep{braindrop2019}, and Loihi~\citep{davies2018loihi}.
-At the same time, this overlaps with the efforts of many companies, including: Applied Brain Research~(ABR), Femtosense, Intel, IBM, Numenta, Qualcomm, BrainChip, General Vision, HRL Laboratories, Brain Corporation, Knowm, Samsung, and Vicarious FP~\citep{marketreport2018, femtosense}--although we focus primarily on ABR's marriage of Nengo and the NEF with neuromorphic hardware from Femtosense and Intel.
+At the same time, this overlaps with the efforts of many companies, including: Applied Brain Research~(ABR), Femtosense, Intel, IBM, Numenta, Qualcomm, BrainChip, General Vision, HRL Laboratories, Brain Corporation, Knowm, Samsung, and Vicarious FP~\citep{marketreport2018, femtosense}--although we focus primarily on ABR's marriage of Nengo and the NEF with neuromorphic hardware from Femtosense (i.e.,~Braindrop) and Intel (i.e.,~Loihi).
 
 Coming from a purely computational-theoretic perspective, there is nothing special about neuromorphic hardware; alternative hardware architectures cannot move beyond what is already Turing-computable.
 There is no logical or physical reason to believe that neurons and synapses somehow enable new computations that were previously unable to be emulated using available technology.
-Instead, neuromorphic architectures aim to implement specific classes of algorithms using dramatically less power, while scaling up to massively-parallelized event-driven computations that are sparse in both space and time~\citep{tang2017sparse}.
-Such power savings are potentially tremendous, estimated to be on the order of a \numprint{e5}-fold increase in efficiency, which becomes necessary to reach the exascale level of computation achieved by the human brain, which would otherwise require \numprint{e9}\ watts~\citep{furber2012build}.
+Instead, neuromorphic architectures aim to implement specific classes of algorithms, realized via massively-parallelized event-driven computations that are sparse in both space and time, using dramatically less power~\citep{tang2017sparse}.
+Such power savings are potentially tremendous, estimated to be on the order of a \numprint{e3}--\numprint{e5}-fold increase in efficiency over conventional architectures, using currently available analog and digital technology -- a requirement to reach the exascale level of computation achieved by the human brain, unless one has access to a nuclear power plant producing at least \numprint{e9}\ watts~\citep{furber2012build}.
 
 However, improved power-efficiency often comes at the cost of reduced programmability and narrowed application spaces;
 the more you know about the problem that you are trying to solve, the more that can be ``baked in'' to the hardware to save energy and space, while sacrificing flexibility.
 This fundamental trade-off between being able to solve fewer problems more efficiently, versus more problems less efficiently, is one that the community as a whole are still trying to navigate.
-It appears likely there will be no one-size-fits-all solution, and rather a variety of strategies will be needed to mirror the degree of architectural specificity observed in the human brain.
+It appears likely there will be no one-size-fits-all solution, and rather a variety of strategies will be needed to mirror the degrees of architectural specificity observed in the human brain.
 Yet, there are many common goals between neuromorphic hardware architectures, including: parallelism, memory colocated with computational elements, heterogeneity and sparsity, structured connectivity, minimization of spike traffic and synaptic events, and real-time interfacing.
 
 To fully unlock the potential of such hardware, we require significant advances at the intersection of computer science, electrical engineering, computational neuroscience, and mathematics.
-This involves discovering new algorithms, delevoping new software frameworks, and training the next generation of programmers to think differently about problems -- but the benefits are far-reaching: real-time computation that can in principle scale up to the cognitive, perceptual, and motor capabilities of the human brain, without requiring the energy production of an entire nuclear power plant~\citep{furber2012build}.
+This involves discovering new algorithms, delevoping new software frameworks, and training the next generation of programmers to think differently about problems -- but the benefits are far-reaching: real-time computation that can in principle scale up to the cognitive, perceptual, and motor capabilities of the human brain, without requiring the energy production of an entire nuclear power plant.
 
 In chapter~\ref{chapt:nef-extensions} we summarize some of the main challenges surrounding the use of neuromorphic hardware, and demonstrate how the NEF solves many of these problems.
 More generally, we provide a theoretical framework and extensions for understanding the class of computations that neuromorphic hardware enables, given its computational elements and constraints, including resource budget and desired precision.
@@ -473,20 +473,20 @@ The SpiNNaker\footnote{SpiNNaker stands for ``Spiking Neural Network Architectur
 Secondary goals include providing a balance between power, cost, and programmability, to make SpiNNaker accessible to a wide range of researchers across neuroscience and cognitive modelling communities.
 
 The basic building block of SpiNNaker is a chip multiprocessor~(CMP) containing 18 ARM968 cores and 128\,MB SDRAM~\citep{painkras2013spinnaker}.
-Each core was prescribed to simulate \numprint{1000} spiking neurons and \numprint{1000000} synapses, although Nengo's integration doubled this target by achieving \numprint{2000} neurons per core through the use of factorized weight matrices~\citep{mundy2015}.
+Each core was prescribed to simulate \numprint{e3} spiking neurons and \numprint{e6} synapses, although Nengo's integration doubled this target by achieving \numprint{2000} neurons per core through the use of factorized weight matrices~\citep{mundy2015}.
 Each CMP is fully digital, locally synchronous, and clocked at some time-step.
-The architecture scales up to \numprint{65536} CMPs---over one billion neurons and one trillion synapses---asynchronously connected to one another through a 2D triangular toroidal mesh.
-An instantiation that realizes their initial target of 1\% of the human brain, using \numprint{1000000} cores, was finally reached as of 2018.
+The architecture scales up to $2^{16}$ CMPs---over one billion neurons and one trillion synapses---asynchronously connected to one another through a 2D triangular toroidal mesh.
+An instantiation that realizes their initial target of 1\% of the human brain, using \numprint{e6} cores, was finally reached as of 2018.
 
-Studies involving power-usage are surprisingly scarse, but one such study demonstrated that scaling to one quarter of a million neurons required less than $30$\,W of power, in the worst-case~\citep{stromatias2013power}, or on the order of \numprint{e5}--\numprint{e6} times more power than a human brain of the same size.\footnote{
+Studies involving power-usage are surprisingly scarce, but one such study demonstrated that scaling to one quarter of a million neurons required less than $30$\,W of power, in the worst-case~\citep{stromatias2013power}, or on the order of \numprint{e5}--\numprint{e6} times more power than a human brain of the same size.\footnote{
 The human brain has \numprint{400000} times as many neurons, and uses $20$\,W of power.}
-This is a significant improvement upon standard computing architectures, which devour at least \numprint{e8} times more power than a human brain~\citep{furber2012build}. 
-However, power measurements are not easy to interpret or translate from one architecture to the next, as there are many other factors such as the total number of synaptic events, flexibility and scalability of the hardware, and open questions surrounding how much biological detail and accuracy is necessary for the target application~\citep{eliasmith2013build}--all of which make fair benchmarking an incredibly challenging problem~\citep{stewart2015closed}.
+This is a significant improvement upon high-performance computing~(HPC) architectures, which devour at least \numprint{e8} times more power than a human brain~\citep{furber2012build}. 
+However, such power measurements are not straight-forward to interpret, as there are many other factors such as the total number of synaptic events, flexibility and scalability of the hardware, and open questions surrounding how much biological detail and accuracy is necessary for the target application~\citep{eliasmith2013build}--all of which make fair benchmarking an incredibly challenging problem~\citep{stewart2015closed}.
 To this point, another study by \citet{van2018performance} concluded much more conservatively that SpiNNaker is still a factor of $\numprint{e7}$--$\numprint{e9}$ away from the efficiency of the mammalian brain.
-On the other hand \citet{sugiarto2016high} estimated that both SpiNNaker and an FPGA provide a $\numprint{e2}$--$\numprint{e3}$-fold improvement over both CPUs and GPUs, on an image processing task. 
+On the other hand, \citet{sugiarto2016high} estimated that both SpiNNaker and an FPGA provide a $\numprint{e2}$--$\numprint{e3}$-fold improvement over both CPUs and GPUs, on an image processing task. 
 Clearly it matters what one is actually scaling towards.
 
-Nengo has been ported to SpiNNaker~\citep{mundy2015} and used to run the full Spaun model in real-time~\citep{mundy2016real}.
+Nengo has been ported to SpiNNaker~\citep{mundy2015} and used to run the full Spaun brain model in real-time~\citep{mundy2016real}.
 This goal represented a \numprint{e4}-fold speedup over a conventional X86 CPU implementation~\citep{stewart2014large}.
 This implementation required significant work by \citet{mundy2016real} to leverage the flexibility of the SpiNNaker architecture, and so we do not go into detail here.
 General support has also been added for both supervised learning~\citep{davies2013} and unsupervised learning~\citep{knight2016} to learn human-scale vocabularies online using Nengo (see section~\ref{sec:learn-spinnaker}).
