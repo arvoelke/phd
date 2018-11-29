@@ -24,14 +24,15 @@ Generally speaking, neuromorphic programming forces us to rethink our traditiona
 Biological nervous systems already do this quite successfully, and so we seek to borrow existing
 principles and models from neuroscience, exploit their properties using tools from mathematics and engineering,
 and use software methods to synthesize the resulting networks ``in silico''.
-By virtue of emulating core principles of brain function, this realizes algorithms that consume far less power, and scale more readily to massively-parallelized computing architectures running in biological real-time.
+By virtue of emulating core principles of brain function, this realizes algorithms that consume far less power, and scale much more readily to massively-parallelized computing architectures running in biological real-time.
+But such algorithms must also be practically useful.
 To flip this on its head: we must also be able to look at what some individual piece of hardware can achieve,
 and adjust our tools and theory to systematically harness its capabilities.
 Analagous to how a single compiler can translate the same C++ code
 to dozens of physically distinct digital architectures, we strive to systematically describe
 how the same dynamical computations can be mapped onto distinct spiking neuromorphic architectures.
 
-The primary goal of this thesis is to unpack the above statements through the exploration of fundamental problems and their theoretical solutions, validated by practical results that include functional SNNs deployed on state-of-the-art neuromorphic chips: Braindrop~\citep{braindrop2019} and Loihi~\citep{davies2018loihi}.
+The primary goal of this thesis is to unpack the above statements through the exposition of fundamental problems and their theoretical solutions, validated by practical results that include a set of novel spiking algorithms deployed on state-of-the-art neuromorphic chips: Braindrop~\citep{braindrop2019} and Loihi~\citep{davies2018loihi}.
 This aims to unravel a class of computations where neuromorphic hardware excels, and to further automate and systemetize the process of engineering algorithms for such hardware.
 We have already learned a great deal through the mutually interacting processes of bottom-up neuromorphic hardware design and top-down SNN construction.
 Theoretical frameworks help guide decisions in hardware design, while hardware constraints demand relevant extensions to theoretical frameworks and software tools -- both processes coexist in a dynamic feedback loop.
@@ -95,7 +96,7 @@ In the former view, time is intrinsic to the state of all physical ``devices'' p
 However, in the latter view, the time that a computation takes is an implementation detail that is mostly decoupled from the actual function.
 As such, there is currently an important distinction between the computational approaches taken by the neuromorphic community and those who program traditional digital computers.
 This is not simply a matter of biological detail, but more crucially a matter of thinking of the system that is actually solving these tasks as a collection of signal processors whose dynamics are coupled to the task at hand.
-If our aim is to build artificial systems that are as robust, capable, and scalable as the human brain, then we should strive to understand computation in such terms.
+If our aim is to build artificial systems that are as useful, robust, capable, and scalable as the human brain, then we should strive to understand computation in such terms.
 
 The approach we take considers time as a fundamental starting point, and thus situates dynamics front-and-center; we bridge the time-scales of the entire system, down from the level of spikes and post-synaptic currents, up to the level of human reaction times and behaviours. 
 We validate this model of computation by deploying these SNNs on low-power neuromorphic hardware emulating core biological principles.
