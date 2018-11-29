@@ -56,7 +56,7 @@ One approach to better understanding these mechanisms is to construct models tha
 % We interpret this pragmatically as a need to: (1) incorporate prior knowledge of a desired function into the structure of a network, and (2) constrain a network's topology using known properties of the underlying dynamical mechanisms.
 
 The Neural Engineering Framework~\citep[NEF;][]{eliasmith1999developing, eliasmith2003a} proposes a method to model such dynamical systems in networks of spiking neurons~\citep[see][for reviews of other methods]{abbott2016building, deneve2016efficient}.
-The NEF has been used to construct a wide variety of neural models, including a 2.3 million neuron functioning model of the human brain, capable of performing perceptual, motor, and cognitive tasks~\citep{eliasmith2012}.
+The NEF has been used to construct a wide variety of neural models, including a 2.3 million neuron functioning model of the human brain, named ``Spaun'', capable of performing perceptual, motor, and cognitive tasks~\citep{eliasmith2012}.
 This model incorporates many kinds of observed neural dynamics, including oscillations, sustained activity, and point attractor dynamics.
 The flexibility of the NEF has lead to it being deployed on mixed-analog-digital neuromorphic chips~\citep{choudhary2012silicon, corradi2014, voelker2017iscas, voelker2017neuromorphic} and digital architectures~\citep{bekolay2013, wang2014compact, mundy2015efficient, berzish2016}.
 Consequently, the NEF provides a practical method for programming neuromorphics, thus helping the field realize its promise of a low-energy computing platform that emulates core principles of the nervous system~\citep{boahen2017neuromorph}.
@@ -470,7 +470,7 @@ Applications running on neuromorphic hardware are provided in chapter~\ref{chapt
 \subsection{SpiNNaker}
 
 The SpiNNaker\footnote{SpiNNaker stands for ``Spiking Neural Network Architecture''.} project formally began in 2005 as a collaboration between several universities and industrial partners, housed at the University of Manchester, with the primary goals of simulating large-scale SNNs in real-time, and investigating new architectures which ``lead to fundamentally new and advantageous principles for energy-efficient massively-parallel computing''~\citep{spinnakerproject, furber2014spinnaker}.
-Secondary goals include providing a balance between power, cost, and programmability, to make SpiNNaker accessible to a wide range of researchers in neuroscience and cognitive modelling communities.
+Secondary goals include providing a balance between power, cost, and programmability, to make SpiNNaker accessible to a wide range of researchers across neuroscience and cognitive modelling communities.
 
 The basic building block of SpiNNaker is a chip multiprocessor~(CMP) containing 18 ARM968 cores and 128\,MB SDRAM~\citep{painkras2013spinnaker}.
 Each core was prescribed to simulate \numprint{1000} spiking neurons and \numprint{1000000} synapses, although Nengo's integration doubled this target by achieving \numprint{2000} neurons per core through the use of factorized weight matrices~\citep{mundy2015}.
@@ -478,13 +478,16 @@ Each CMP is fully digital, locally synchronous, and clocked at some time-step.
 The architecture scales up to \numprint{65536} CMPs---over one billion neurons and one trillion synapses---asynchronously connected to one another through a 2D triangular toroidal mesh.
 An instantiation that realizes their initial target of 1\% of the human brain, using \numprint{1000000} cores, was finally reached as of 2018.
 
-Scaling to one quarter of a million neurons required less than $30$\,W of power~\citep{stromatias2013power}, or on the order of \numprint{e6} times more power than a human brain of the same size.\footnote{
+Studies involving power-usage are surprisingly scarse, but one such study demonstrated that scaling to one quarter of a million neurons required less than $30$\,W of power, in the worst-case~\citep{stromatias2013power}, or on the order of \numprint{e5}--\numprint{e6} times more power than a human brain of the same size.\footnote{
 The human brain has \numprint{400000} times as many neurons, and uses $20$\,W of power.}
-This is still a significant improvement upon standard computing architectures, which devour on the order of \numprint{e8} times more power than a human brain~\citep{furber2012build}. 
-However, power measurements are not easy to interpret or translate from one architecture to the next, as there are many other factors such as the total number of synaptic events, flexibility of the hardware, and open questions surrounding how much biological detail is necessary for some target application~\citep{eliasmith2013build}.
+This is a significant improvement upon standard computing architectures, which devour at least \numprint{e8} times more power than a human brain~\citep{furber2012build}. 
+However, power measurements are not easy to interpret or translate from one architecture to the next, as there are many other factors such as the total number of synaptic events, flexibility and scalability of the hardware, and open questions surrounding how much biological detail and accuracy is necessary for the target application~\citep{eliasmith2013build}--all of which make fair benchmarking an incredibly challenging problem~\citep{stewart2015closed}.
+To this point, another study by \citet{van2018performance} concluded much more conservatively that SpiNNaker is still a factor of $\numprint{e7}$--$\numprint{e9}$ away from the efficiency of the mammalian brain.
+On the other hand \citet{sugiarto2016high} estimated that both SpiNNaker and an FPGA provide a $\numprint{e2}$--$\numprint{e3}$-fold improvement over both CPUs and GPUs, on an image processing task. 
+Clearly it matters what one is actually scaling towards.
 
 Nengo has been ported to SpiNNaker~\citep{mundy2015} and used to run the full Spaun model in real-time~\citep{mundy2016real}.
-This goal represented a \numprint{9000}-fold speedup over a conventional X86 CPU implementation~\citep{stewart2014large}.
+This goal represented a \numprint{e4}-fold speedup over a conventional X86 CPU implementation~\citep{stewart2014large}.
 This implementation required significant work by \citet{mundy2016real} to leverage the flexibility of the SpiNNaker architecture, and so we do not go into detail here.
 General support has also been added for both supervised learning~\citep{davies2013} and unsupervised learning~\citep{knight2016} to learn human-scale vocabularies online using Nengo (see section~\ref{sec:learn-spinnaker}).
 Meanwhile, Nengo has also been deployed on a prototype autonomous robot equipped with a SpiNNaker board to sense and act in real-time~\citep{galluppi2014}.
