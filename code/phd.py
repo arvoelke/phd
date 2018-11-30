@@ -9,6 +9,7 @@ from pandas import DataFrame
 import nengo
 import nengolib
 from nengolib.signal import s, z
+from nengolib.networks import RollingWindow
 
 import os
 

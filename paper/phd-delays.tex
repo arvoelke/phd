@@ -416,7 +416,7 @@ And in all cases, the representation employed by the DN (i.e., the linear relati
 \label{sec:delay-applications}
 
 \TODO{write} Linear and nonlinear window computation. Computational neural modelling.
-Memory. Communication.
+Memory. Play-back. Communication.
 INRC motivation slide.
 
 \subsection{Optimized Reservoir Computing}
@@ -598,6 +598,24 @@ Such networks would thus be participating in the temporal coding of a stimulus, 
 %}
 % Possible predictions regarding time-constants / dimensionality?
 % our network generalizes to predict the responses of time-cells to stimuli that are not simply discrete impulse events.
+
+\subsection{Deconvolution}
+\label{sec:deconvolution}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{comm-channels}
+     
+    \caption{\label{fig:comm-channels} 
+      Demonstrating the ability of the Delay Network~(DN) to approximate a synaptic deconvolution operation, realizing a pure communication channel.
+      The test input $u(t)$ is a white-noise signal band-limited at $10$\,Hz.
+      (Top)~A standard feed-forward communication channel, implemented by decoding the identity funciton at each layer.
+      (Bottom)~A recurrent communication channel, implemented by a Deep Delay Network~(DNN) approximating $u(t)$ at each layer. Each layer is a DN with $\theta = 50$\,ms and $q = 6$.
+      In either case, there are $8$ layers of \numprint{2500} spiking LIF neurons, with each layer communicating spikes to the next through a lowpass synapse with time-constant $\tau = 100$\,ms.
+    }
+\end{figure}
+
+\TODO{Demonstrate multiple layer communication channel without filtering.}
 
 \subsection{Computing Taylor Series}
 \label{sec:taylor-series}
