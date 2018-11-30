@@ -405,7 +405,7 @@ Taking neural constraints into consideration, we do need to separate out $\theta
 As shown in section~\ref{sec:poisson-spiking}, the frequency of the state-vector being represented can matter.
 This concern may be alleviated by the use of Poisson spiking, or through the use of some other solution to the ``state discrepancy'' error.
 Likewise, longer values of $\theta$ are more suspeciptible to the integration of spiking noise, in the form of ``drift'', along a fixed time-scale determined by the firing rates.
-Lastly, when using a balanced realization, larger values of $q$ require denser interconnectivity ($q \times q$ transform matrices) between all $q$ dimensions, leading to $\bigoh{q^2}$ increase in time and memory requirements -- a constraint we address in section~\ref{sec:deep-delay-networks} when stacking multiple DNs together to form a Deep Delay Network~(DNN).
+Lastly, when using a balanced realization, larger values of $q$ require denser interconnectivity ($q \times q$ transform matrices) between all $q$ dimensions, leading to $\bigoh{q^2}$ increase in time and memory requirements -- a constraint we address in section~\ref{sec:deep-delay-networks} when stacking multiple DNs together to form a Deep Delay Network~(DDN).
 
 To summarize, the consideration of scaling $\theta$ is intrinisically coupled to the consideration of which input frequencies need to be delayed, and with what accuracy.
 The accuracy is a function of $\theta s$.
@@ -609,8 +609,8 @@ Such networks would thus be participating in the temporal coding of a stimulus, 
     \caption{\label{fig:comm-channels} 
       Demonstrating the ability of the Delay Network~(DN) to approximate a synaptic deconvolution operation, realizing a pure communication channel.
       The test input $u(t)$ is a white-noise signal band-limited at $10$\,Hz.
-      (Top)~A standard feed-forward communication channel, implemented by decoding the identity funciton at each layer.
-      (Bottom)~A recurrent communication channel, implemented by a Deep Delay Network~(DNN) approximating $u(t)$ at each layer. Each layer is a DN with $\theta = 50$\,ms and $q = 6$.
+      (Top)~A standard feed-forward communication channel, implemented by decoding the identity function at each layer.
+      (Bottom)~A recurrent communication channel, implemented by a Deep Delay Network~(DDN; section~\ref{sec:deep-delay-networks}) approximating $u(t)$ at each layer. Each layer is a DN with $\theta = 50$\,ms and $q = 6$.
       In either case, there are $8$ layers of \numprint{2500} spiking LIF neurons, with each layer communicating spikes to the next through a lowpass synapse with time-constant $\tau = 100$\,ms.
     }
 \end{figure}
@@ -727,7 +727,7 @@ Thus, in order to detect temporal patterns, computations such as measures of $k$
 \subsection{Deep Delay Networks}
 \label{sec:deep-delay-networks}
 
-We now consider an architecture that stacks multiple DNs on top of one another, to form a \emph{Deep Delay Network}~(DNN) chaining multiple delays together.
+We now consider an architecture that stacks multiple DNs on top of one another, to form a \emph{Deep Delay Network}~(DDN) chaining multiple delays together.
 For simplicity, we consider the case where each delay has the same length, $\gamma$, and each layer has the same dimensionality, $q$.
 Thus, $k$ layers results in an overall delay of length $\theta = k \gamma$, and represents $k \cdot q$ total dimensions.
 
@@ -750,7 +750,7 @@ When $k = 1$, this reduces to equation~\ref{eq:pade-delay-error}.
   \centering
   \includegraphics[width=1.0\textwidth]{deep-delay-network-error}
   \caption{\label{fig:deep-delay-network-error}
-    Visualizing the error in the Deep Delay Network~(DNN) of width~$q$ and depth~$k$ (see equation~\ref{eq:deep-delay-network-error}) for two different resource-cost functions.
+    Visualizing the error in the Deep Delay Network~(DDN) of width~$q$ and depth~$k$ (see equation~\ref{eq:deep-delay-network-error}) for two different resource-cost functions.
     (Left) Fixing the number of dimensions, $kq$, to be constant.
     Smaller $k$ scales further in this case.
     (Right) Fixing the density of connections, $kq^2$, to be constant.
