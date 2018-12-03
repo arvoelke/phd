@@ -443,22 +443,25 @@ The conclusions from this section are similar to those drawn by \citet[][see sup
 
 \section{Neuromorphic Computing}
 
-The term \emph{neuromorphic computing} (a.k.a.,~neuromorphic engineering) refers broadly to the use of specialized hardware that emulates computational principles of biological nervous systems~\citep{mead1989analog, liu2002analog}.
+The term \emph{neuromorphic computing}---also known as neuromorphic engineering---refers broadly to the use of specialized hardware to emulate computational principles of biological nervous systems~\citep{mead1989analog, liu2002analog}.
 Here, we focus more specifically on the synthesis of spiking neural networks~(SNNs)---in both analog and digital hardware---for low-power, dynamical, brain-like, computation~\citep{boahen2017neuromorph}.
 
 This chapter provides a brief overview of the landscape, with an emphasis placed on state-of-the-art hardware made available to the Centre for Theoretical Neuroscience, at the University of Waterloo, for academic research, namely: SpiNNaker~\citep{furber2014spinnaker}, Braindrop~\citep{braindrop2019}, and Loihi~\citep{davies2018loihi}.
 At the same time, this overlaps with the efforts of many companies, including: Applied Brain Research~(ABR), Femtosense, Intel, IBM, Numenta, Qualcomm, BrainChip, General Vision, HRL Laboratories, Brain Corporation, Knowm, Samsung, and Vicarious FP~\citep{marketreport2018, femtosense}--although we focus primarily on ABR's marriage of Nengo and the NEF with neuromorphic hardware from Femtosense (i.e.,~Braindrop) and Intel (i.e.,~Loihi).
 
 Coming from a purely computational-theoretic perspective, there is nothing special about neuromorphic hardware; alternative hardware architectures cannot move beyond what is already Turing-computable.
-There is no logical or physical reason to believe that neurons and synapses somehow enable new computations that were previously unable to be emulated using available technology.
+There is no logical nor physical reason to believe that neurons and synapses somehow enable new computations that were previously unable to be emulated using available technology.
 Instead, neuromorphic architectures aim to implement specific classes of algorithms, realized via massively-parallelized event-driven computations that are sparse in both space and time, using dramatically less power~\citep{tang2017sparse}.
-Such power savings are potentially tremendous, estimated to be on the order of a \numprint{e3}--\numprint{e5}-fold increase in efficiency over conventional architectures, using currently available analog and digital technology -- a requirement to reach the exascale level of computation achieved by the human brain, unless one has access to a nuclear power plant producing at least \numprint{e9}\ watts~\citep{furber2012build}.
+
+The human brain has been estimated to consume as little as $10$--$20$\,fJ on average per ``synaptic event''~\citep{cassidy2014real, boahen2017neuromorph}, totalling approximately $20$\,W across its {\textasciitilde{}}\numprint{e11} neurons and {\textasciitilde{}}\numprint{e14} synapses~\citep{koch2014}.
+State-of-the-art is on the verge of reaching this level of performance, with Braindrop, Loihi, and TrueNorth~\citep{merolla2014million}, all coming within a factor of \numprint{e1}--\numprint{e3} for roughly equivalent measures of energy per synaptic operation for typical network configurations~\citep{braindrop2019}.
+Such potential energy savings are not only tremendous, but a prerequisite to reach the exascale level of computation achieved by the human brain, unless one has access to a nuclear power plant producing at least \numprint{e9}\ watts~\citep{furber2012build}.
 
 However, improved power-efficiency often comes at the cost of reduced programmability and narrowed application spaces;
 the more you know about the problem that you are trying to solve, the more that can be ``baked in'' to the hardware to save energy and space, while sacrificing flexibility.
-This fundamental trade-off between being able to solve fewer problems more efficiently, versus more problems less efficiently, is one that the community as a whole are still trying to navigate.
+This fundamental trade-off between being able to solve fewer problems more efficiently, versus more problems less efficiently, is one that the community as a whole is still trying to navigate.
 It appears likely there will be no one-size-fits-all solution, and rather a variety of strategies will be needed to mirror the degrees of architectural specificity observed in the human brain.
-Yet, there are many common goals between neuromorphic hardware architectures, including: parallelism, memory colocated with computational elements, heterogeneity and sparsity, structured connectivity, minimization of spike traffic and synaptic events, and real-time interfacing.
+Yet, there are many common features between neuromorphic hardware architectures, including: parallelism, memory colocated with computational elements, heterogeneity and sparsity, structured connectivity, minimization of spike traffic and synaptic events, and real-time interfacing.
 
 To fully unlock the potential of such hardware, we require significant advances at the intersection of computer science, electrical engineering, computational neuroscience, and mathematics.
 This involves discovering new algorithms, delevoping new software frameworks, and training the next generation of programmers to think differently about problems -- but the benefits are far-reaching: real-time computation that can in principle scale up to the cognitive, perceptual, and motor capabilities of the human brain, without requiring the energy production of an entire nuclear power plant.
@@ -483,7 +486,9 @@ Studies involving power-usage are surprisingly scarce, but one such study demons
 The human brain has \numprint{400000} times as many neurons, and uses $20$\,W of power.}
 This is a significant improvement upon high-performance computing~(HPC) architectures, which devour at least \numprint{e8} times more power than a human brain~\citep{furber2012build}. 
 However, such power measurements are not straight-forward to interpret, as there are many other factors such as the total number of synaptic events, flexibility and scalability of the hardware, and open questions surrounding how much biological detail and accuracy is necessary for the target application~\citep{eliasmith2013build}--all of which make fair benchmarking an incredibly challenging problem~\citep{stewart2015closed}.
-To this point, another study by \citet{van2018performance} concluded much more conservatively that SpiNNaker is still a factor of $\numprint{e7}$--$\numprint{e9}$ away from the efficiency of the mammalian brain.
+To this point, another study by \citet{van2018performance} concluded much more conservatively that SpiNNaker is still a factor of $\numprint{e7}$--$\numprint{e9}$ away from the efficiency of the mammalian brain.\footnote{
+The lower-bound on this estimate comes from a hypothetical extrapolation of their results. Furthermore, the range becomes \numprint{e8}--\numprint{e10} if using the estimate of $10$--$20$\,fJ per synaptic event for the brain.}
+In this scenario SpiNNaker was outperformed by NEST running on an HPC cluster.
 On the other hand, \citet{sugiarto2016high} estimated that both SpiNNaker and an FPGA provide a $\numprint{e2}$--$\numprint{e3}$-fold improvement over both CPUs and GPUs, on an image processing task. 
 Clearly it matters what one is actually scaling towards.
 
@@ -508,6 +513,8 @@ and Neurogrid
 \subsection{Others}
 
 Spikey, BrainScaleS 1 and 2, Dynapse 1 and 2, TrueNorth, DeepSouth, COLAMN, ODIN, ROLLS, Giacomo and Eliasmith, Tripp, Wang and Tapson, STPU, Neuromemristive random projection networks (Dhireesha Kudithipudi)
+\TODO{\url{https://link.springer.com/chapter/10.1007/978-3-642-00641-8_38}}
+
 
 
 \section{Dynamical Systems}
