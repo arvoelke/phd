@@ -33,7 +33,7 @@ to dozens of physically distinct digital architectures, we strive to systematica
 how the same dynamical computations can be mapped onto distinct spiking neuromorphic architectures.
 
 The primary goal of this thesis is to unpack the above statements through the exposition of fundamental problems and their theoretical solutions, validated by practical results that include a set of novel spiking algorithms deployed on state-of-the-art neuromorphic chips: Braindrop~\citep{braindrop2019} and Loihi~\citep{davies2018loihi}.
-This aims to unravel a class of computations where neuromorphic hardware excels, and to further automate and systemetize the process of engineering algorithms for such hardware.
+This aims to unveil a class of computations where neuromorphic hardware excels, and to further automate and systemetize the process of engineering algorithms for such hardware.
 We have already learned a great deal through the mutually interacting processes of bottom-up neuromorphic hardware design and top-down SNN construction.
 Theoretical frameworks help guide decisions in hardware design, while hardware constraints demand relevant extensions to theoretical frameworks and software tools -- both processes coexist in a dynamic feedback loop.
 
@@ -57,23 +57,24 @@ Concerns for conventional deep learning approaches include: the amount of power 
 But even more fundamentally, the majority of ANNs in use today, including AlphaGo, are applied to \emph{static} inputs to produce \emph{static} outputs.
 For a board game such as Go, this is forgiveable, as the entire state of the game is encapsulated by the current state of the board itself, and so there is technically no need to consider any history in order to optimize across future states.\footnote{
 Practically speaking, there could still be a benefit, for a sub-optimal player, to knowing the history of the game in order to better predict the opponent's strategy.}
-Nevertheless, this points towards a broader underlying concern: time is not being treated as a fundamental property in many of the most successful methods, which may limit their applicability to many real-world problems.
+Nevertheless, this points towards a broader underlying concern: time is not being treated as a fundamental unit of computation in many of the most successful methods, which may limit their applicability to many real-world problems.
 For instance, human vision is a continuous-time process, while convolutional ANNs are deployed in visual processing tasks to classify objects in single frames, without internal knowledge of how these objects might move or behave.
 Specifically, when processing video, frames are typically sampled at some arbitrary interval and then processed independently from one another.
 We will discuss some exceptions later that we embrace.
-But at large, most ANNs do not begin with {\it time} as a physical dimension intrinsic to the dynamics of the system's input, output, or processing units;
+But at large, most ANNs do not begin with time as a physical dimension intrinsic to the dynamics of the system's input, output, or processing units;
 time is neither a variable in the neuron models, synapse models, nor any of the computational elements.
 % Consequently, training these networks becomes an art-form than a science, 
 % This pattern is beginning to reverse, with examples such as deep LSTMs and qRNNs for machine translation and speech synthesis.
 % However, we argue that we can do even better, by arming ourselves with tools for better understanding the role of time, and being able to engineer specific dynamic computations into RNNs.
 
 On the other hand, the human brain is a physical system that must continuously process information over time.
-This is crucial for an agent situated in a dynamic environment wherein all interactions depend on internally and externally evolving states.
+This is crucial for a cognitive agent embodied in a dynamic environment wherein all interactions depend on internally and externally evolving states.
 The brain naturally learns from and interacts with its environment over many different time-scales. 
-Everything that we interact with becomes a part of who we are.
 For instance, our brains are not programmed to be static object recognition machines. Rather, we have evolved to interact with objects in continuously changing environments, from which the phenomenon of object recognition emerges as a byproduct.
 From a very young age, children can intuitively infer the physics of moving objects, and learn how to interact with them to achieve desired outcomes.
-We take much of this for granted, but this means that our brains are constructing explicit and implicit dynamical models of the world, and using these models
+This continues well through adulthood, up to the level of coordinating our thoughts and behaviours, shaped by our cumulative experience with the world.
+Everything that we interact with becomes a part of who we are, to mold what we become.
+We realize this so naturally and seemlessly that we often take it for granted, but our brains are constructing explicit and implicit dynamical models of reality, and applying these models
 to perform behaviourally appriorate computations in real-time.
 
 Consider a real-world example such as driving a car. We must constantly integrate new information with our existing understanding of where we are, where we are headed, and what might happen along the way.
@@ -95,7 +96,7 @@ This ``signal processing view'' of computation is fundamentally different from c
 In the former view, time is intrinsic to the state of all physical ``devices'' performing the computation~(i.e.,~neurons and synapses), which are themselves necessarily tied to the timing and dynamics of the overall function.
 However, in the latter view, the time that a computation takes is an implementation detail that is mostly decoupled from the actual function.
 As such, there is currently an important distinction between the computational approaches taken by the neuromorphic community and those who program traditional digital computers.
-This is not simply a matter of biological detail, but more crucially a matter of thinking of the system that is actually solving these tasks as a collection of signal processors whose dynamics are coupled to the task at hand.
+This is not simply a matter of biological detail, but more crucially a matter of thinking of the system that is actually solving these tasks as a collection of signal processors whose dynamics are coupled to the task at hand by the physics of time.
 If our aim is to build artificial systems that are as useful, robust, capable, and scalable as the human brain, then we should strive to understand computation in such terms.
 
 The approach we take considers time as a fundamental starting point, and thus situates dynamics front-and-center; we bridge the time-scales of the entire system, down from the level of spikes and post-synaptic currents, up to the level of human reaction times and behaviours. 
