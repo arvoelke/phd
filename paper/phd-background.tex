@@ -455,7 +455,7 @@ Instead, neuromorphic architectures aim to implement specific classes of algorit
 
 The human brain has been estimated to consume as little as $10$--$20$\,fJ on average per ``synaptic event''~\citep{cassidy2014real, boahen2017neuromorph}, totalling approximately $20$\,W across its {\textasciitilde{}}\numprint{e11} neurons and {\textasciitilde{}}\numprint{e14} synapses~\citep{koch2014}.
 The state-of-the-art in neuromorphic computing is on the verge of reaching this level of performance, with Braindrop, Loihi, and TrueNorth~\citep{merolla2014million}, all coming within a factor of \numprint{e1}--\numprint{e3} for roughly equivalent measures of energy per synaptic operation and typical network configurations~\citep{braindrop2019}.
-Such potential energy savings are not only tremendous, but a prerequisite to reach the exascale level of computation achieved by the human brain, unless one has access to a nuclear power plant producing at least \numprint{e9}\ watts~\citep{furber2012build}.
+Such potential energy savings are not only tremendous, but a prerequisite to reach the exascale level of computation achieved by the human brain, unless one has access to a nuclear power plant producing on the order of \numprint{e9}\ watts~\citep{furber2012build, neurogrid2014}.
 However, such power measurements are not straight-forward to interpret, as there are many other factors such as the cost of scaling, flexibility of the hardware, and open questions surrounding whether the number of synaptic events is the best metric for evaluating system performance, and how much biological detail is necessary~\citep{eliasmith2013build}--all of which make fair benchmarking an incredibly challenging problem~\citep{stewart2015closed}.
 
 However, improved power-efficiency often comes at the cost of reduced programmability and narrowed application spaces;
@@ -477,7 +477,7 @@ Applications running on neuromorphic hardware are provided in chapter~\ref{chapt
 The SpiNNaker\footnote{SpiNNaker stands for ``Spiking Neural Network Architecture''.} project formally began in 2005 as a collaboration between several universities and industrial partners, housed at the University of Manchester, with the primary goals of simulating large-scale SNNs in real-time, and investigating new architectures which ``lead to fundamentally new and advantageous principles for energy-efficient massively-parallel computing''~\citep{spinnakerproject, furber2014spinnaker}.
 Secondary goals include providing a balance between power, cost, and programmability, to make SpiNNaker accessible to a wide range of researchers across neuroscience and cognitive modelling communities.
 
-The basic building block of SpiNNaker is a chip multiprocessor~(CMP) containing 18 ARM968 cores and 128\,MB SDRAM~\citep{painkras2013spinnaker}.
+The basic building block of SpiNNaker is a chip multiprocessor~(CMP) containing 18 ARM968 cores and 128\,MB SDRAM~\citep{painkras2013spinnaker, furber2013overview}.
 Each core was prescribed to simulate \numprint{e3} spiking neurons and \numprint{e6} synapses, although Nengo's integration doubled this target by achieving \numprint{2000} neurons per core through the use of factorized weight matrices~\citep{mundy2015}.
 Each CMP is fully digital, locally synchronous, and clocked at some time-step.
 The architecture scales up to $2^{16}$ CMPs---over one billion neurons and one trillion synapses---asynchronously connected to one another through a 2D triangular toroidal mesh.
@@ -492,7 +492,7 @@ In this scenario SpiNNaker was outperformed by NEST running on an HPC cluster, a
 On the other hand, \citet{sugiarto2016high} estimated that both SpiNNaker and an FPGA provide a $\numprint{e2}$--$\numprint{e3}$-fold improvement over both CPUs and GPUs, on an image processing task. 
 Clearly it matters what one is actually scaling towards.
 
-Nengo has been ported to SpiNNaker~\citep{mundy2015} and used to run the full Spaun brain model in real-time~\citep{mundy2016real}.
+Nengo has been ported to SpiNNaker~\citep{galluppi2012real, mundy2015} and used to run the full Spaun brain model in real-time~\citep{mundy2016real}.
 This goal represented a \numprint{e4}-fold speedup over a conventional X86 CPU implementation~\citep{stewart2014large}.
 This implementation required significant work by \citet{mundy2016real} to leverage the flexibility of the SpiNNaker architecture, and so we do not go into detail here.
 General support has also been added for both supervised learning~\citep{davies2013} and unsupervised learning~\citep{knight2016} to learn human-scale vocabularies online using Nengo (see section~\ref{sec:learn-spinnaker}).
@@ -506,7 +506,18 @@ Although Nengo support may not be available any time soon, the hardware promises
 
 \subsection{Braindrop}
 
-and Neurogrid
+Braindrop~\citep{braindrop2019} is a mixed-signal (i.e.,~both analog and digital) neuromorphic architecture that seeks to realize the energy-efficiency of the human brain, without sacrificing the flexibility required to model large-scale cognitive systems such as Spaun~\citep{eliasmith2012}.
+This chip was designed explicitly with the NEF in mind~\citep{boahen2017neuromorph}, by way of a novel mapping~\citep{voelker2017iscas, neckar2018optimizing}, accompanied by a number of inventions including temperature-invariance~\citep{abrams2017, reidpint2019, benjamintemp2019}, sparse encoding~\citep{fokserial2018}, and spike-thinning~\citep{fokthinning2019}.
+
+To put this achievement into perspective, we begin with an overview of its predecessor, Neurogrid~\citep{neurogrid2014}. 
+
+Dynamical systems approach \citep{arthur2011silicon}
+
+Multicast tree router \citep{merolla2014multicast}
+
+The NEF has been deployed on Neurogrid primarily to implement control algorithms~\citep{dethier2011brain, choudhary2012silicon, menon2014controlling}.
+
+Requires advanced calibration techniques~\citep{kauderer2017calibrating}.
 
 \subsection{Loihi}
 
@@ -514,8 +525,11 @@ and Neurogrid
 
 Spikey, BrainScaleS 1 and 2, Dynapse 1 and 2, TrueNorth, DeepSouth, COLAMN, ODIN, ROLLS, Giacomo and Eliasmith, Tripp, Wang and Tapson, STPU, Neuromemristive random projection networks (Dhireesha Kudithipudi)
 \TODO{\url{https://link.springer.com/chapter/10.1007/978-3-642-00641-8_38}}
-
-
+% A scalable multicore architecture with heterogeneous memory structures for dynamic neuromorphic asynchronous processors (dynaps)
+% A 65k-neuron 73-mevents/s 22-pj/event asynchronous micro-pipelined integrate-and-fire array transceiver
+% Analog computing in a modern context: A linear algebra accelerator case study
+% A wafer-scale neuromorphic hardware system for large-scale neural modeling
+% A digital neurosynaptic core using embedded crossbar memory with 45 pJ per spike in 45 nm, (GoldenGate SyNAPSE IBM)
 
 \section{Dynamical Systems}
 
