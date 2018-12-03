@@ -454,8 +454,9 @@ There is no logical nor physical reason to believe that neurons and synapses som
 Instead, neuromorphic architectures aim to implement specific classes of algorithms, realized via massively-parallelized event-driven computations that are sparse in both space and time, using dramatically less power~\citep{tang2017sparse}.
 
 The human brain has been estimated to consume as little as $10$--$20$\,fJ on average per ``synaptic event''~\citep{cassidy2014real, boahen2017neuromorph}, totalling approximately $20$\,W across its {\textasciitilde{}}\numprint{e11} neurons and {\textasciitilde{}}\numprint{e14} synapses~\citep{koch2014}.
-State-of-the-art is on the verge of reaching this level of performance, with Braindrop, Loihi, and TrueNorth~\citep{merolla2014million}, all coming within a factor of \numprint{e1}--\numprint{e3} for roughly equivalent measures of energy per synaptic operation for typical network configurations~\citep{braindrop2019}.
+The state-of-the-art in neuromorphic computing is on the verge of reaching this level of performance, with Braindrop, Loihi, and TrueNorth~\citep{merolla2014million}, all coming within a factor of \numprint{e1}--\numprint{e3} for roughly equivalent measures of energy per synaptic operation and typical network configurations~\citep{braindrop2019}.
 Such potential energy savings are not only tremendous, but a prerequisite to reach the exascale level of computation achieved by the human brain, unless one has access to a nuclear power plant producing at least \numprint{e9}\ watts~\citep{furber2012build}.
+However, such power measurements are not straight-forward to interpret, as there are many other factors such as the cost of scaling, flexibility of the hardware, and open questions surrounding whether the number of synaptic events is the best metric for evaluating system performance, and how much biological detail is necessary~\citep{eliasmith2013build}--all of which make fair benchmarking an incredibly challenging problem~\citep{stewart2015closed}.
 
 However, improved power-efficiency often comes at the cost of reduced programmability and narrowed application spaces;
 the more you know about the problem that you are trying to solve, the more that can be ``baked in'' to the hardware to save energy and space, while sacrificing flexibility.
@@ -485,10 +486,9 @@ An instantiation that realizes their initial target of 1\% of the human brain, u
 Studies involving power-usage are surprisingly scarce, but one such study demonstrated that scaling to one quarter of a million neurons required less than $30$\,W of power, in the worst-case~\citep{stromatias2013power}, or on the order of \numprint{e5}--\numprint{e6} times more power than a human brain of the same size.\footnote{
 The human brain has \numprint{400000} times as many neurons, and uses $20$\,W of power.}
 This is a significant improvement upon high-performance computing~(HPC) architectures, which devour at least \numprint{e8} times more power than a human brain~\citep{furber2012build}. 
-However, such power measurements are not straight-forward to interpret, as there are many other factors such as the total number of synaptic events, flexibility and scalability of the hardware, and open questions surrounding how much biological detail and accuracy is necessary for the target application~\citep{eliasmith2013build}--all of which make fair benchmarking an incredibly challenging problem~\citep{stewart2015closed}.
 To this point, another study by \citet{van2018performance} concluded much more conservatively that SpiNNaker is still a factor of $\numprint{e7}$--$\numprint{e9}$ away from the efficiency of the mammalian brain.\footnote{
 The lower-bound on this estimate comes from a hypothetical extrapolation of their results. Furthermore, the range becomes \numprint{e8}--\numprint{e10} if using the estimate of $10$--$20$\,fJ per synaptic event for the brain.}
-In this scenario SpiNNaker was outperformed by NEST running on an HPC cluster.
+In this scenario SpiNNaker was outperformed by NEST running on an HPC cluster, and likewise a smaller-scale implementation of an associative memory on SpiNNaker performed comparably to NEST on an Intel Core i7-4710MQ processor~\citep{stockel2017binary}.
 On the other hand, \citet{sugiarto2016high} estimated that both SpiNNaker and an FPGA provide a $\numprint{e2}$--$\numprint{e3}$-fold improvement over both CPUs and GPUs, on an image processing task. 
 Clearly it matters what one is actually scaling towards.
 
