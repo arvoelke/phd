@@ -455,17 +455,17 @@ Instead, neuromorphic architectures aim to implement specific classes of algorit
 
 The human brain has been estimated to consume as little as $10$--$20$\,fJ on average per ``synaptic event''~\citep{cassidy2014real, boahen2017neuromorph}, totalling approximately $20$\,W across its {\textasciitilde{}}\numprint{e11} neurons and {\textasciitilde{}}\numprint{e14} synapses~\citep{koch2014}.
 The state-of-the-art in neuromorphic computing is on the verge of reaching this level of performance, with Braindrop, Loihi, and TrueNorth~\citep{merolla2014million}, all coming within a factor of \numprint{e1}--\numprint{e3} for roughly equivalent measures of energy per synaptic operation and typical network configurations~\citep{braindrop2019}.
-Such potential energy savings are not only tremendous, but a prerequisite to reach the exascale level of computation achieved by the human brain, unless one has access to a nuclear power plant producing on the order of \numprint{e9}\ watts~\citep{furber2012build, neurogrid2014}.
-However, such power measurements are not straight-forward to interpret, as there are many other factors such as the cost of scaling, flexibility of the hardware, and open questions surrounding whether the number of synaptic events is the best metric for evaluating system performance, and how much biological detail is necessary~\citep{eliasmith2013build}--all of which make fair benchmarking an incredibly challenging problem~\citep{stewart2015closed}.
+Such potential energy savings are not only tremendous, but a prerequisite to reach the exascale (\numprint{e18}) level of computation achieved by the human brain -- unless one has access to a super-computing cluster powered by a nuclear power plant producing on the order of \numprint{e9}\ watts~\citep{furber2012build, neurogrid2014}.
+However, such power measurements are not straight-forward to interpret, as there are many other factors such as the cost of scaling, flexibility of the hardware, and open questions surrounding whether the number of synaptic events is the best metric for evaluating system performance, and how much biological detail is necessary~\citep{eliasmith2013build} -- all of which make fair benchmarking an incredibly challenging problem~\citep{stewart2015closed}.
 
 However, improved power-efficiency often comes at the cost of reduced programmability and narrowed application spaces;
 the more you know about the problem that you are trying to solve, the more that can be ``baked in'' to the hardware to save energy and space, while sacrificing flexibility.
 This fundamental trade-off between being able to solve fewer problems more efficiently, versus more problems less efficiently, is one that the community as a whole is still trying to navigate.
 It appears likely there will be no one-size-fits-all solution, and rather a variety of strategies will be needed to mirror the degrees of architectural specificity observed in the human brain.
-Yet, there are many common features between neuromorphic hardware architectures, including: parallelism, memory colocated with computational elements, heterogeneity and sparsity, structured connectivity, minimization of spike traffic and synaptic events, and real-time interfacing.
+Yet, there are many common features between neuromorphic hardware architectures, including: parallelism, memory colocated with computational elements, heterogeneity, sparsity, structured connectivity, minimization of spike traffic and synaptic events, and real-time interfacing.
 
 To fully unlock the potential of such hardware, we require significant advances at the intersection of computer science, electrical engineering, computational neuroscience, and mathematics.
-This involves discovering new algorithms, delevoping new software frameworks, and training the next generation of programmers to think differently about problems -- but the benefits are far-reaching: real-time computation that can in principle scale up to the cognitive, perceptual, and motor capabilities of the human brain, without requiring the energy production of an entire nuclear power plant.
+This involves discovering new algorithms, developing new software frameworks, and training the next generation of programmers to think differently about problems -- but the benefits are far-reaching: real-time computation that can in principle scale up to the cognitive, perceptual, and motor capabilities of the human brain, without requiring the energy production of an entire nuclear power plant.
 
 In chapter~\ref{chapt:nef-extensions} we summarize some of the main challenges surrounding the use of neuromorphic hardware, and demonstrate how the NEF solves many of these problems.
 More generally, we provide a theoretical framework and extensions for understanding the class of computations that neuromorphic hardware enables, given its computational elements and constraints, including resource budget and desired precision.
@@ -507,9 +507,10 @@ Although Nengo support may not be available any time soon, the hardware promises
 \subsection{Braindrop}
 
 Braindrop~\citep{braindrop2019} is a mixed-signal (i.e.,~both analog and digital) neuromorphic architecture that seeks to realize the energy-efficiency of the human brain, without sacrificing the flexibility required to model large-scale cognitive systems such as Spaun~\citep{eliasmith2012}.
-This chip was designed explicitly with the NEF in mind~\citep{boahen2017neuromorph}, by way of a novel mapping~\citep{voelker2017iscas, neckar2018optimizing}, accompanied by a number of inventions including temperature-invariance~\citep{abrams2017, reidpint2019, benjamintemp2019}, sparse encoding~\citep{fokserial2018}, and spike-thinning~\citep{fokthinning2019}.
+This chip was designed explicitly with the NEF in mind, by way of a novel mapping~\citep{voelker2017iscas, neckar2018optimizing}, accompanied by a number of inventions including: temperature-invariance~\citep{abrams2017, reidpint2019, benjamintemp2019}, H-Tree routing~\citep{fokserial2018}, sparse encoding by spatial convolution~\citep{feinstein1988hexagonal, braindrop2019}, and decoding by accumulative spike-thinning~\citep{fokthinning2019}.
 
-To put this achievement into perspective, we begin with an overview of its predecessor, Neurogrid~\citep{neurogrid2014}. 
+This collection of work was the product a 5-year collaboration between Stanford, Yale, and the University of Waterloo, and was made possible in this time frame 
+by building on more than a decade of experience building---and years of programming---its predecessor, Neurogrid~\citep{neurogrid2014}. 
 
 Dynamical systems approach \citep{arthur2011silicon}
 
@@ -523,7 +524,7 @@ Requires advanced calibration techniques~\citep{kauderer2017calibrating}.
 
 \subsection{Others}
 
-Spikey, BrainScaleS 1 and 2, Dynapse 1 and 2, TrueNorth, DeepSouth, COLAMN, ODIN, ROLLS, Giacomo and Eliasmith, Tripp, Wang and Tapson, STPU, Neuromemristive random projection networks (Dhireesha Kudithipudi)
+Spikey, BrainScaleS 1 and 2, SyNAPSE, Dynapse 1 and 2, TrueNorth, DeepSouth, COLAMN, ODIN, ROLLS, Giacomo and Eliasmith, Tripp, Wang and Tapson, STPU, Neuromemristive random projection networks (Dhireesha Kudithipudi)
 \TODO{\url{https://link.springer.com/chapter/10.1007/978-3-642-00641-8_38}}
 % A scalable multicore architecture with heterogeneous memory structures for dynamic neuromorphic asynchronous processors (dynaps)
 % A 65k-neuron 73-mevents/s 22-pj/event asynchronous micro-pipelined integrate-and-fire array transceiver
