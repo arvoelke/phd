@@ -113,3 +113,29 @@ Compare Braindrop versus Loihi
 
 \subsection{Delay Network}
 
+\begin{figure}
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{braindrop-delay-network}
+    \caption{Braindrop Chip}
+    \label{fig:braindrop-delay-network}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{loihi-delay-network}
+    \caption{Loihi Emulator}
+    \label{fig:loihi-delay-network}
+  \end{subfigure}
+  \caption{ \label{fig:neuromorphic-delay-network}
+    Delay Network~(DN; chapter~\ref{chapt:delays}) running on state-of-the-art neuromorphic hardware.
+    Three pools, each containing $128$ spiking neurons, are trained to buffer a white-noise test signal, band-limited to $3$\,Hz, across a $100$\,ms sliding time-window.
+    Output spikes are filtered using a lowpass synapse with $\tau = 18.3$\,ms.
+    (a)~DN running on Braindrop, reproduced from \citet[][Figure~16]{braindrop2019}. 
+        The chip is configured to use the longest possible recurrent time-constant.
+        The normalized RMSE is $14.6$\% across the entire time window.
+    (b)~DN running on Nengo's Loihi Emulator (v0.4.0).
+        Performance is maximized by using all-to-all weight matrices, and setting the recurrent time-constant to $\tau=10$\,ms.
+        The normalized RMSE is $11.6$\% across the entire time window.
+  }
+\end{figure}
