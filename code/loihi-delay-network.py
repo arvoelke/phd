@@ -71,7 +71,7 @@ assert np.allclose(map_hw.B, tau*sys.B)
 nengo.Ensemble.max_rates.default = nengo.dists.Uniform(100, 120)
 nengo.Ensemble.intercepts.default = nengo.dists.Uniform(-1, 0.5)
 
-with nengo.Network() as model:
+with nengo.Network(seed=seed) as model:
     u = nengo.Node(output=process, label='u')
     p_u = nengo.Probe(u, synapse=None)
     
