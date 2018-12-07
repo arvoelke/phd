@@ -132,7 +132,7 @@ Compare Braindrop versus Loihi
     Three pools, each containing $128$ spiking neurons, are trained to buffer a white-noise test signal, band-limited to $3$\,Hz, across a $100$\,ms sliding time-window.
     Output spikes are filtered using a lowpass synapse with $\tau = 18.3$\,ms.
     (a)~DN running on Braindrop, reproduced from \citet[][Figure~16]{braindrop2019}. 
-        The chip is configured to use the longest possible recurrent time-constant.
+        The chip is configured to use the longest possible recurrent time-constants ($\tau \approx 179.3 \pm 53.8$\,ms).
         The normalized RMSE is $14.6$\% across the entire time window.
     (b)~DN running on Nengo's Loihi Emulator (v0.4.0).
         Performance is maximized by using all-to-all weight matrices, and setting the recurrent time-constant to $\tau=10$\,ms.

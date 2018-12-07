@@ -63,7 +63,7 @@ x = sys.X.filt(u, dt=dt)  # discretizes sys using ZOH
 
 
 n_neurons = 128  # per dimension
-tau = 0.01
+tau = 0.01  # 0.17927306243251717 was mean tap-point from braindrop
 map_hw = ss2sim(sys, synapse=Lowpass(tau), dt=None)
 assert np.allclose(map_hw.A, tau*sys.A + np.eye(len(sys)))
 assert np.allclose(map_hw.B, tau*sys.B)
