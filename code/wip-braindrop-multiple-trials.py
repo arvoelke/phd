@@ -1,26 +1,8 @@
+from phd import *
 
-# coding: utf-8
+#################################
 
-# # Delay Network on BrainDrop
-# 
-# This notebook explores the implementation of a "delay network" (DN), i.e., a dynamical system optimized to represent a rolling window of input history, on the real BrainDrop. For technical details, see:
-#  - http://compneuro.uwaterloo.ca/publications/voelker2018.html
-#  - https://arvoelke.github.io/nengolib-docs/nengolib.networks.RollingWindow.html
-#  - https://github.com/arvoelke/cosyne2018/raw/master/abstract.pdf
-
-# In[1]:
-
-
-get_ipython().run_line_magic('matplotlib', 'inline')
-
-
-# In[2]:
-
-
-import seaborn as sns  # does this override any style?
-
-import matplotlib.pyplot as plt
-plt.style.use('~/Downloads/ieee_tran.mplstyle')
+plt.style.use(datapath('ieee_tran.mplstyle'))
 
 SMALL_SIZE = 8
 MEDIUM_SIZE = 10
@@ -36,39 +18,25 @@ plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 plt.rc('text', usetex=True)
 
-
-# In[3]:
-
+#################################
 
 import time
-from collections import defaultdict
-
-import numpy as np
-from pandas import DataFrame
 
 import bootstrapped.bootstrap as bs
 import bootstrapped.stats_functions as bs_stats
 
-import nengo
 import nengo_brainstorm as brd
 
-import nengolib
 from nengolib import Lowpass
 from nengolib.networks import readout
 from nengolib.signal import Balanced, nrmse
 from nengolib.synapses import PadeDelay, pade_delay_error, ss2sim
 
 
-# In[4]:
-
-
 print(nengo.__version__)
 print(nengolib.__version__)
 # nengo_brainstorm=aaron-mismatch-hacks (branch)
 # pystorm=modify_flush
-
-
-# In[5]:
 
 
 from matplotlib.collections import LineCollection
@@ -168,19 +136,13 @@ def analyze(name, t, u, x_hat, x_ideal, C, dump_file=True, do_plot=True):
                      handlelength=3.2, loc='lower right',
                      handler_map={LineCollection: HandlerDashedLines()})
 
-        for fmt in ('pdf', 'png'):
-            fig.savefig('%s.%s' % (name, fmt), dpi=600, bbox_inches='tight')
-
-        fig.show()
+        fig.savefig('%s.pdf' % name, dpi=600, bbox_inches='tight')
 
     if dump_file:
         np.savez("%s-%s" % (name, time.time()),
                  t=sim.trange(), u=u, x_hat=x_hat, x_ideal=x_ideal, C=C)
 
     return nrmse(w.flatten(), target=w_ideal.flatten())
-
-
-# In[6]:
 
 
 theta = 0.1
@@ -201,9 +163,6 @@ t_samples = 100
 C = np.asarray([readout(len(pd), r)
                 for r in np.linspace(0, 1, t_samples)]).dot(rz.T)
 assert C.shape == (t_samples, len(sys))
-
-
-# In[7]:
 
 
 n_neurons = 128  # per dimension
@@ -241,9 +200,6 @@ with nengo.Network() as model:
         P.append(nengo.Probe(X[i], synapse=None))
 
 
-# In[8]:
-
-
 with model:
     from nengo_brainstorm import solvers
     solver = solvers.FallbackSolver([nengo.solvers.LstsqL2(reg=0.01),
@@ -257,9 +213,6 @@ factory = lambda model, dt: brd.Simulator(
     generate_offset=1.0,
     precompute_offset=1.0,
 )
-
-
-# In[12]:
 
 
 def do_trial(name, seed, factory, length=2000, dt=0.001, tau_probe=0.02,
@@ -279,7 +232,8 @@ def do_trial(name, seed, factory, length=2000, dt=0.001, tau_probe=0.02,
                 x_hat=x_ideal,
                 x_ideal=x_ideal,
                 C=C,
-                dump_file=False)
+                dump_file=False,
+                do_plot=False)
         
     u.output = process
 
@@ -304,41 +258,17 @@ def do_trial(name, seed, factory, length=2000, dt=0.001, tau_probe=0.02,
         **kwargs)
 
 
-# In[13]:
-
-
 data = defaultdict(list)
 
-for trial in range(20):
+for trial in range(25):
     for seed in range(1, 11):
         data['Trial'].append(trial)
         data['Test Case (#)'].append(seed)
-        
         data['NRMSE'].append(
-            do_trial(name="braindrop-DN-%d-%d" % (trial, seed),
+            do_trial(name="scratch-braindrop-DN-%d-%d" % (trial, seed),
                      seed=seed, factory=factory, dump_file=False))
 
-
-# In[14]:
-
-
-from importlib import reload
-
-import matplotlib as mpl
-mpl.rcParams.update(mpl.rcParamsDefault)
-
-reload(sns)
-reload(plt)
-
 df = DataFrame(data)
-
-plt.figure()
-sns.violinplot(data=df, y="NRMSE", x="Test Case (#)")
-plt.show()
-
-
-# In[15]:
-
+df.to_pickle(datapath("braindrop-delay-network.pkl"))
 
 print(bs.bootstrap(np.asarray(df['NRMSE']), stat_func=bs_stats.mean, alpha=1-0.95))
-
