@@ -497,6 +497,7 @@ This is a significant improvement upon high-performance computing~(HPC) architec
 However, a more recent study by \citet{van2018performance} concluded much more conservatively that SpiNNaker is still a factor of $\numprint{e7}$--$\numprint{e9}$ away from the efficiency of the mammalian brain.\footnote{
 The lower-bound on this estimate comes from a hypothetical extrapolation of their results. Furthermore, the range becomes \numprint{e8}--\numprint{e10} if using the estimate of $10$--$20$\,fJ per synaptic event for the brain.}
 In this scenario SpiNNaker was outperformed by NEST running on an HPC cluster, and likewise a smaller-scale implementation of an associative memory on SpiNNaker performed comparably to NEST on an Intel Core i7-4710MQ processor~\citep{stockel2017binary}.
+Similarly, \citet{knight2018gpus} found that GPUs improved both the simulation time and energy-to-solution for cortical circuit simulations, compared to SpiNNaker and CPU-based HPC hardware.
 On the other hand, \citet{sugiarto2016high} estimated that both SpiNNaker and an FPGA provide a $\numprint{e2}$--$\numprint{e3}$-fold improvement over both CPUs and GPUs, on an image processing task. 
 Clearly it matters what one is actually scaling towards.
 
@@ -537,7 +538,7 @@ Requires advanced calibration techniques~\citep{kauderer2017calibrating}.
 \subsection{Others}
 \label{sec:neuromorphic-others}
 
-A number of excellent review articles are made available by \citet{bartolozzi1999neuromorphic}, \citet{indiveri2011neuromorphic}, \citet{cassidy2013design}, and \citet{eryilmaz2016neuromorphic}.
+A number of excellent review articles are made available by \citet{bartolozzi1999neuromorphic}, \citet{indiveri2011neuromorphic}, \citet{cassidy2013design}, \citet{eryilmaz2016neuromorphic}, and \citet{cummings2018}.
 
 Some of the earliest examples include \citep{sivilotti1985novel, boahen1989heteroassociative} and \citep{mead1988silicon}.
 
