@@ -149,6 +149,8 @@ Both the ideal and the spiking activity are filtered with a lowpass ($\tau = 200
 On Braindrop (see Figure~\ref{fig:integrator-neuromorphic}~(a), reproduced from \citet[][Figure~15]{braindrop2019}), we compensate for the distribution of synaptic time-constants, arising from transistor mismatch in the analog circuitry, using the methods of \citet{voelker2017iscas} and section~\ref{sec:mismatch}.
 On Loihi (see Figure~\ref{fig:integrator-neuromorphic}~(b)), we set $\tau = 200$\,ms, and use four times fewer neurons than Braindrop, as increasing the neuron count any further leads to a bug in the \texttt{nengo-loihi}~v0.4.0 software.
 
+\TODO{Also used ReLU for Loihi, and some hacking of the spike-generator.}
+
 In either case, the 95\% confidence intervals include the ideal across nearly the entire $10$\,s simulation.
 This implies that the sum of any error, whether related to spiking, representation, or otherwise, has a mean value of approximately zero.
 We remark that Loihi gives much more consistent trial-to-trial results, due to the all-digital nature of the chip, and lack of temperature-induced variability.
