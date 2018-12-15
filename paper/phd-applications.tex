@@ -108,8 +108,51 @@ By simulating this memory network at scales of up to \numprint{100000} neurons, 
 \section{Dynamical Systems Benchmarks}
 
 Compare Braindrop versus Loihi
+\TODO{Running on Eric's integrator-accuracy branch}
 
 \subsection{Integrator}
+
+\begin{figure}
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{braindrop-integrator}
+    \caption{Braindrop Chip}
+    \label{fig:dn-braindrop}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{loihi-integrator}
+    \caption{Loihi Emulator}
+    \label{fig:dn-loihi}
+  \end{subfigure}
+  \caption{ \label{fig:integrator-neuromorphic}
+    An integrator running on state-of-the-art neuromorphic hardware.
+    The ideal solution is plotted against the mean's 95\% confidence interval, bootstrapped from $200$ trial simulations.
+    (a)~Braindrop implementation, reproduced from \citet[][Figure~15]{braindrop2019}, using \numprint{1024} neurons. 
+    (b)~Loihi Emulator (v0.4.0) implementation, using \numprint{256} neurons.
+    See text for details.
+  }
+\end{figure}
+
+The integrator, $\dot{\V{x}}(t) = \V{u}(t)$, is a dynamical system used extensively by Spaun~\citep{eliasmith2012} and many other NEF and SPA models~\citep[][to name a few]{singh2004, trujillo2014a, rasmussen2017} for cognitive tasks involving working memory.
+This system persists information about the history of an input signal, starting from $t_0$ and extended indefinitely throughout time, in the form of a temporal summation:
+$$\V{x}(t) = \int_{t'=t_0}^{t} \V{u}(t') dt' \text{.}$$
+For example, beginning from an initial state of $\V{x}(t_0) = \V{0}$, if we hold the input constant at $\V{u}(t) = \V{v}$ for one second ($t_0 \le t \le t_0 + 1$), and then clamp the input to $\V{u}(t) = \V{0}$ thereafter ($t > t_0 + 1$), then $\V{x}(t) = \V{v}$ will store the vector $\V{v}$ indefinitely.
+More generally, any finite set of nonlinear differential equations can be described as the integration of an input vector that is some nonlinear function of the state-vector---augmented to also include $\V{u}(t)$---as in $\dot{\V{x}}(t) = \V{f}\left({\V{x}(t)}\right)$.
+The nonlinearity $\V{f}$ may then be supported by a pool of neurons encoding the state-vector, as explained in section~\ref{sec:nef} by Principles~1 and~2.
+Thus, the integrator is a fundamental benchmark for evaluating the ability to implement more complicated nonlinear dynamical transformations, such as those involved in adaptive motor control~\citep{dewolf2016}.
+
+In Figure~\ref{fig:integrator-neuromorphic}, we instantiate a one-dimensional integrator on both Braindrop and Loihi.
+In both cases, the input signal is a white-noise test signal, band-limited to $1$\,Hz.
+Both the ideal and the spiking activity are filtered with a lowpass ($\tau = 200$\,ms).
+On Braindrop (see Figure~\ref{fig:integrator-neuromorphic}~(a), reproduced from \citet[][Figure~15]{braindrop2019}), we compensate for the distribution of synaptic time-constants, arising from transistor mismatch in the analog circuitry, using the methods of \citet{voelker2017iscas} and section~\ref{sec:mismatch}.
+On Loihi (see Figure~\ref{fig:integrator-neuromorphic}~(b)), we set $\tau = 200$\,ms, and use four times fewer neurons than Braindrop, as increasing the neuron count any further leads to a bug in the \texttt{nengo-loihi}~v0.4.0 software.
+
+In either case, the 95\% confidence intervals include the ideal across nearly the entire $10$\,s simulation.
+This implies that the sum of any error, whether related to spiking, representation, or otherwise, has a mean value of approximately zero.
+We remark that Loihi gives much more consistent trial-to-trial results, due to the all-digital nature of the chip, and lack of temperature-induced variability.
+Advanced methods that can be used to provide temperature-invariant decodes in Braindrop have been recently developed by \citet{reidpint2019}, although they require external measurements of the device's temperature, and thus were not employed by this experiment.
 
 \subsection{Delay Network}
 
@@ -144,12 +187,14 @@ Compare Braindrop versus Loihi
   }
 \end{figure}
 
-\TODO{Running on Eric's integrator-accuracy branch}
 
 We instantiate the same Delay Network~(DN) from chapter~\ref{chapt:delays} on state-of-the-art neuromorphic hardware (see Figure~\ref{fig:dn-neuromorphic}).
-Three pools, each containing $128$ spiking neurons, are recurrently coupled to each other (and to themselves), and trained to optimally buffer a white-noise test signal---band-limited to $3$\,Hz---across a $100$\,ms sliding time-window.
+This system may be conceptualized as an extension of the integrator that persists not only the sum of the input signal, but arbitrary nonlinear transformations across finite windows of input history.
+This can be used as a basic building block for working memory models that must represent not only \emph{what} has occurred, but also \emph{when} it has occurred in relation to everything else.
+
+To implement the DN, three pools, each containing $128$ spiking neurons, are recurrently coupled to each other (and to themselves), and trained to optimally buffer a white-noise test signal---band-limited to $3$\,Hz---across a $100$\,ms sliding time-window.
 Output spikes are filtered using a lowpass synapse with $\tau = 20$\,ms, and weighted to decode both the state-vector and the window of history.
-On Braindrop~(see Figure~\ref{fig:dn-neuromorphic}~(a)), the chip is configured to use the default distribution of synaptic time-constants (mean $\tau \approx 18$\,ms).
+On Braindrop~(see Figure~\ref{fig:dn-neuromorphic}~(a), reproduced from \citet[][Figure~16]{braindrop2019}), the chip is configured to use the default distribution of synaptic time-constants (mean $\tau \approx 18$\,ms).
 \TODO{Grab and plot the distribution from the calibration data using the mapped xy coordinates for the 3 ensembles.}
 On Loihi~(see Figure~\ref{fig:dn-neuromorphic}~(b)), performance is maximized by using all-to-all weight matrices, and setting the recurrent time-constant to $\tau=10$\,ms.
 We also compare this to the reference Nengo simulator ($\tau=10$\,ms) running on a conventional desktop CPU to obtain a baseline level of performance.
