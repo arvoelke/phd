@@ -135,15 +135,16 @@ Compare Braindrop versus Loihi
   }
 \end{figure}
 
-The integrator, $\dot{\V{x}}(t) = \V{u}(t)$, is a dynamical system used extensively by Spaun~\citep{eliasmith2012} and many other NEF and SPA models~\citep[][to name a few]{singh2004, trujillo2014a, rasmussen2017} for cognitive tasks involving working memory.
-This system persists information about the history of an input signal, starting from $t_0$ and extended indefinitely throughout time, in the form of a temporal summation:
-$$\V{x}(t) = \int_{t'=t_0}^{t} \V{u}(t') dt' \text{.}$$
-For example, beginning from an initial state of $\V{x}(t_0) = \V{0}$, if we hold the input constant at $\V{u}(t) = \V{v}$ for one second ($t_0 \le t \le t_0 + 1$), and then clamp the input to $\V{u}(t) = \V{0}$ thereafter ($t > t_0 + 1$), then $\V{x}(t) = \V{v}$ will store the vector $\V{v}$ indefinitely.
-More generally, any finite set of nonlinear differential equations can be described as the integration of an input vector that is some nonlinear function of the state-vector---augmented to also include $\V{u}(t)$---as in $\dot{\V{x}}(t) = \V{f}\left({\V{x}(t)}\right)$.
+The integrator, $\theta \dot{\V{x}}(t) = \V{u}(t)$, is a dynamical system used extensively by Spaun~\citep{eliasmith2012} and many other NEF and SPA models~\citep[][to name a few]{singh2004, trujillo2014a, rasmussen2017} for cognitive tasks involving working memory.
+This system can persist information about the history of an input signal, starting from $t_0$ and extended indefinitely throughout time, as characterized by the temporal summation:
+$$\V{x}(t) = \frac{1}{\theta} \int_{t'=t_0}^{t} \V{u}(t') dt' \text{.}$$
+The parameter $\theta$ is a time-constant that controls how quickly the memory integrates.
+For example, beginning from an initial state of $\V{x}(t_0) = \V{0}$, if we hold the input constant at $\V{u}(t) = \V{v}$ for $\theta$ seconds ($t_0 \le t \le t_0 + \theta$), and then clamp the input to $\V{u}(t) = \V{0}$ thereafter ($t > t_0 + \theta$), then $\V{x}(t) = \V{v}$ will ``store'' the vector $\V{v}$ indefinitely.
+More generally, any finite set of nonlinear differential equations can be described as the integration of an input vector that is some nonlinear function of the state-vector---augmented to also include $\V{u}(t)$---as in $\theta \dot{\V{x}}(t) = \V{f}\left({\V{x}(t)}\right)$.
 The nonlinearity $\V{f}$ may then be supported by a pool of neurons encoding the state-vector, as explained in section~\ref{sec:nef} by Principles~1 and~2.
 Thus, the integrator is a fundamental benchmark for evaluating the ability to implement more complicated nonlinear dynamical transformations, such as those involved in adaptive motor control~\citep{dewolf2016}.
 
-In Figure~\ref{fig:integrator-neuromorphic}, we instantiate a one-dimensional integrator on both Braindrop and Loihi.
+In Figure~\ref{fig:integrator-neuromorphic}, we instantiate a one-dimensional integrator ($\theta = 1$\,s) on both Braindrop and Loihi.
 In both cases, the input signal is a white-noise test signal, band-limited to $1$\,Hz.
 Both the ideal and the spiking activity are filtered with a lowpass ($\tau = 200$\,ms).
 On Braindrop (see Figure~\ref{fig:integrator-neuromorphic}~(a), reproduced from \citet[][Figure~15]{braindrop2019}), we compensate for the distribution of synaptic time-constants, arising from transistor mismatch in the analog circuitry, using the methods of \citet{voelker2017iscas} and section~\ref{sec:mismatch}.
