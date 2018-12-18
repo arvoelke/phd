@@ -136,19 +136,23 @@ Compare Braindrop versus Loihi
 \end{figure}
 
 The integrator, $\theta \dot{\V{x}}(t) = \V{u}(t)$, is a dynamical system used extensively by Spaun~\citep{eliasmith2012} and many other NEF and SPA models~\citep[][to name a few]{singh2004, trujillo2014a, rasmussen2017} for cognitive tasks involving working memory.
-This system can persist information about the history of an input signal, starting from $t_0$ and extended indefinitely throughout time, as characterized by the temporal summation:
-$$\V{x}(t) = \frac{1}{\theta} \int_{t'=t_0}^{t} \V{u}(t') dt' \text{.}$$
-The parameter $\theta$ is a time-constant that controls how quickly the memory integrates.
-For example, beginning from an initial state of $\V{x}(t_0) = \V{0}$, if we hold the input constant at $\V{u}(t) = \V{v}$ for $\theta$ seconds ($t_0 \le t \le t_0 + \theta$), and then clamp the input to $\V{u}(t) = \V{0}$ thereafter ($t > t_0 + \theta$), then $\V{x}(t) = \V{v}$ will ``store'' the vector $\V{v}$ indefinitely.
+This system can persist information about the history of an input signal, starting from $t_0$ and extended indefinitely throughout time, as characterized by its solution:
+$$\V{x}(t) = \V{x}(t_0) + \frac{1}{\theta} \int_{t'=t_0}^{t} \V{u}(t')\, dt' \text{.}$$
+The parameter $\theta$ is a time-constant that controls how quickly the memory integrates new information.\footnote{
+This parameter is useful for dimensional analysis, and when considering the transfer function, $\frac{\V{X}(s)}{\V{U}(s)} = \left( \theta s \right)^{-1}$.}
+For example, beginning from an initial state of $\V{x}(t_0) = \V{0}$, if we hold the input constant at $\V{u}(t) = \V{v}$ for $\theta$ seconds ($t_0 < t \le t_0 + \theta$), and then clamp the input to $\V{u}(t) = \V{0}$ thereafter ($t > t_0 + \theta$), then $\V{x}(t) = \V{v}$ will ``store'' the vector $\V{v}$ indefinitely.
 More generally, any finite set of nonlinear differential equations can be described as the integration of an input vector that is some nonlinear function of the state-vector---augmented to also include $\V{u}(t)$---as in $\theta \dot{\V{x}}(t) = \V{f}\left({\V{x}(t)}\right)$.
-The nonlinearity $\V{f}$ may then be supported by a pool of neurons encoding the state-vector, as explained in section~\ref{sec:nef} by Principles~1 and~2.
-Thus, the integrator is a fundamental benchmark for evaluating the ability to implement more complicated nonlinear dynamical transformations, such as those involved in adaptive motor control~\citep{dewolf2016}.
+The nonlinearity $\V{f}(\cdot)$ may then be supported by a pool of neurons encoding the state-vector, as explained in section~\ref{sec:nef}.
+Thus, the integrator is a basic component that can be used to implement more complicated nonlinear dynamical transformations, such as those involved in adaptive motor control~\citep{dewolf2016}.
+We therefore use the integrator, implemented by a pool of spiking neurons using the methods of the NEF, as a benchmark for evaluating the ability of neuromorphic hardware to implement nonlinear dynamical systems.
 
-In Figure~\ref{fig:integrator-neuromorphic}, we instantiate a one-dimensional integrator ($\theta = 1$\,s) on both Braindrop and Loihi.
+In Figure~\ref{fig:integrator-neuromorphic}, we instantiate a one-dimensional integrator ($\theta = 1$\,s) on both Braindrop (1024 neurons) and Loihi (256 neurons).\footnote{
+We use four times fewer neurons on Loihi versus Braindrop, as increasing the pool size leads to a bug in the \texttt{nengo-loihi}~v0.4.0 software.}
 In both cases, the input signal is a white-noise test signal, band-limited to $1$\,Hz.
 Both the ideal and the spiking activity are filtered with a lowpass ($\tau = 200$\,ms).
 On Braindrop (see Figure~\ref{fig:integrator-neuromorphic}~(a), reproduced from \citet[][Figure~15]{braindrop2019}), we compensate for the distribution of synaptic time-constants, arising from transistor mismatch in the analog circuitry, using the methods of \citet{voelker2017iscas} and section~\ref{sec:mismatch}.
-On Loihi (see Figure~\ref{fig:integrator-neuromorphic}~(b)), we set $\tau = 200$\,ms, and use four times fewer neurons than Braindrop, as increasing the neuron count any further leads to a bug in the \texttt{nengo-loihi}~v0.4.0 software.
+The chip is configured to maximize the synaptic time-constants; the empirically measured mean is $179.3$\,ms, with a standard deviation of $53.8$\,ms.
+On Loihi (see Figure~\ref{fig:integrator-neuromorphic}~(b)), we set $\tau = 200$\,ms, and use the methods of \ref{sec:linear-extensions} to discretize the integrator according to the simulation time-step ($dt = 1$\,ms).
 
 \TODO{Also used ReLU for Loihi, and some hacking of the spike-generator.}
 
@@ -191,8 +195,9 @@ Advanced methods that can be used to provide temperature-invariant decodes in Br
 \end{figure}
 
 
-We instantiate the same Delay Network~(DN) from chapter~\ref{chapt:delays} on state-of-the-art neuromorphic hardware (see Figure~\ref{fig:dn-neuromorphic}).
-This system may be conceptualized as an extension of the integrator that persists not only the sum of the input signal, but arbitrary nonlinear transformations across finite windows of input history.
+We now instantiate the same Delay Network~(DN) from chapter~\ref{chapt:delays} on state-of-the-art neuromorphic hardware (see Figure~\ref{fig:dn-neuromorphic}).
+This system may be conceptualized as an entirely different kind of memory that persists not the sum of the input signal, but finite windows of input history.
+In other words, the DN ``buffers'' a sliding window of the input, which enables the computation of arbitrary nonlinear transformations across the window.
 This can be used as a basic building block for working memory models that must represent not only \emph{what} has occurred, but also \emph{when} it has occurred in relation to everything else.
 
 To implement the DN, three pools, each containing $128$ spiking neurons, are recurrently coupled to each other (and to themselves), and trained to optimally buffer a white-noise test signal---band-limited to $3$\,Hz---across a $100$\,ms sliding time-window.
