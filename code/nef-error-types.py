@@ -30,12 +30,12 @@ with nengo.Network() as model:
 with nengo.Simulator(model, dt=1e-5) as sim:
     sim.run(0.3)
 
-fudge1 = -0.01
-fudge2 = -0.008
-fudge3 = 0.068
-fudge4 = -0.007
-fudge5 = 0.202
-fudge6 = -0.008
+#fudge1 = -0.01
+#fudge2 = -0.008
+fudge3 = 0.1598
+fudge4 = 0.0005
+fudge5 = 0.1998
+fudge6 = -0.007
 fudge7 = -0.015
 
 t_mixed = 0.25
@@ -64,9 +64,6 @@ def pad_ylim(ax, amt):
     bot, top = ax.set_ylim()
     ax.set_ylim(bot - amt, top + amt)
 
-v.annotate(text='Transient', xy=(t_spike / 2 - 0.005, 1.25))
-v.annotate(text='Mixed', xy=(t_mixed + t_spike / 2 - 0.005, 1.25))
-
 # Voltage plot
 v.plot(sim.trange(), sim.data[p_v], alpha=0.5)
 v.set_ylabel("Voltage")
@@ -79,15 +76,23 @@ r.set_ylabel("Refractory (ms)", labelpad=14)
 arrowprops = dict(arrowstyle='<->', shrinkA=0, shrinkB=0)
 
 # Annotate (d)
-t1 = t_spike + fudge1
-y1 = filt_u[int(t1 / sim.dt) - 1]
-o.annotate(text='',
-           xy=(t1, 0),
-           xytext=(t1, y1),
-           arrowprops=arrowprops)
-o.annotate(text='(d)',
-           xy=(t1 + fudge2, y1 / 2),
-           fontweight='bold')
+#t1 = t_spike + fudge1
+#y1 = filt_u[int(t1 / sim.dt) - 1]
+#o.annotate(text='',
+           #xy=(t1, 0),
+           #xytext=(t1, y1),
+           #arrowprops=arrowprops)
+#o.annotate(text='(d)',
+           #xy=(t1 + fudge2, y1 / 2),
+           #fontweight='bold')
+o.annotate(text="(d) Transient",
+           xy=(t_spike+0.005, 1.2),
+           xytext=(t_spike+0.013, 1.2),
+           va='center', arrowprops=dict(arrowstyle='->'))
+o.annotate(text="(d) Mixed",
+           xy=(t_mixed-0.005, 0.6),
+           xytext=(t_mixed-0.03, 0.6),
+           va='center', arrowprops=dict(arrowstyle='->'))
 
 # Annotate (c)
 t2 = int(fudge3 / sim.dt) - 1
@@ -96,8 +101,7 @@ o.annotate(text='',
            xytext=(fudge3, filt_x_hat[t2]),
            arrowprops=arrowprops)
 o.annotate(text='(c)',
-           xy=(fudge3 + fudge4, (sim.data[p_x][t2] + filt_x_hat[t2]) / 2 + fudge7),
-           fontweight='bold')
+           xy=(fudge3 + fudge4, (sim.data[p_x][t2] + filt_x_hat[t2]) / 2 + fudge7))
 
 # Annotate (b)
 t3 = int(fudge5 / sim.dt) - 1
@@ -106,8 +110,7 @@ o.annotate(text='',
            xytext=(fudge5, filt_u[t3]),
            arrowprops=arrowprops)
 o.annotate(text='(b)',
-           xy=(fudge5 + fudge6, (filt_x_hat[t3] + filt_u[t3]) / 2 + fudge7),
-           fontweight='bold')
+           xy=(fudge5 + fudge6, (filt_x_hat[t3] + filt_u[t3]) / 2 + fudge7))
 
 # Output plot
 o.plot(sim.trange(), filt_x_hat,
@@ -159,7 +162,7 @@ def sample_across(t_slice):
         t = spike_times(J[is_active],
                         sim.data[p_v][i, is_active],
                         sim.data[p_r][i, is_active])
-        rel = t * a[is_active]
+        rel = 1 - t * a[is_active]
         samples.extend(rel)
     return samples
 
@@ -225,7 +228,7 @@ savefig("nef-error-types-d.pdf")
 
 ################################
 
-t_test = sim.trange() > 0.1
+t_test = sim.trange() > 0.15
 
 noise = sim.data[p_x][t_test, 0] - filt_x_hat[t_test]
 print("(c) Noise KS-Test:", kstest(noise / np.std(noise), 'norm'))
