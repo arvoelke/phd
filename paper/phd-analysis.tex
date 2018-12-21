@@ -74,6 +74,39 @@ Maybe additional biological detail can get around this limitation, or maybe the 
 \subsection{Optimality of Spike Coding}
 \label{sec:spike-coding}
 
+\begin{figure}
+  \centering
+  \begin{subfigure}{\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{nef-error-types-a}
+    \caption{Example Network Simulation}
+    \label{fig:nef-error-types-a}
+  \end{subfigure}
+  \begin{subfigure}{.33\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{nef-error-types-b}
+    \caption{Static Distortion}
+    \label{fig:nef-error-types-b}
+  \end{subfigure}%
+  \begin{subfigure}{.33\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{nef-error-types-c}
+    \caption{Spiking Noise}
+    \label{fig:nef-error-types-c}
+  \end{subfigure}%
+  \begin{subfigure}{.33\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{nef-error-types-d}
+    \caption{State-Discrepancy}
+    \label{fig:nef-error-types-d}
+  \end{subfigure}
+  \caption{ \label{fig:nef-error-types}
+    Summarizing the three types of error in a standard NEF network.
+(c) Noise KS-Test: KstestResult(statistic=0.06581452914138136, pvalue=1.1330796855568144e-75)
+(d) Maximum p-value: 6.984832323950607e-16
+  }
+\end{figure}
+
 Mention the spike-time decoder optimization (Temporal Solver) for more detailed neurons.
 
 Also Appendix from NEF text on synaptic versus somatic dynamics.
@@ -280,9 +313,12 @@ This quantity is calculated by solving the LIF ODE and rearranging to obtain:
 \end{equation}
 where $0 \le r_i \le \tau_\text{ref}$ is the time remaining in the refractory period.
 
-As shown in Fig.~\ref{fig:spike-time-intervals}, the default LIF model ($\tau_\text{RC} = 20$\,ms, $\tau_\text{ref} = 2$\,ms, and tuning curves uniformly distributed to achieve maximum firing rates of $200-400$\,Hz) closely follows the ideal uniform distribution for input frequencies up to $100$\,Hz. For $0$\,Hz (constant) inputs, the two distributions are the same (Kolmogorov-Smirnov statistic=0.0002, $p$-value=0.999999999999999)\footnote{When the sample comes from the same distribution, its Kolmogorov-Smirnov statistic approaches $0$ with probability $1$ as the number of samples goes to infinity.}.
-This acts as a sanity check on the numerics of our spiking LIF implementation\TODO{cite Nengo LIF improvements}, as we should expect that a constant input causes each neuron to spend an equal amount of time at each position within its ideal ISI.
-For changing inputs, however, the uniform assumption immediately breaks down ($p$-value $< \numprint{1e-67}$), but non-catastrophically, as the Kolmogorov-Smirnov statistic (i.e., the supremum between the empirical and ideal CDFs) remains bounded above by $0.0335$.
+As shown in Fig.~\ref{fig:spike-time-intervals}, the default LIF model ($\tau_\text{RC} = 20$\,ms, $\tau_\text{ref} = 2$\,ms, and tuning curves uniformly distributed to achieve maximum firing rates of $200-400$\,Hz) closely follows the ideal uniform distribution for input frequencies up to $100$\,Hz. For $0$\,Hz (constant) inputs, the two distributions are the same (Kolmogorov-Smirnov statistic\footnote{
+The maximum absolute distance between the empirical and model CDFs.
+If samples are drawn from the model distribution, its Kolmogorov-Smirnov statistic approaches $0$ with probability $1$ as the number of samples approaches infinity.}%
+$<0.0002$, $p$-value~$> 1-\numprint{e-15}$).
+This verifies the numerics of our spiking LIF implementation\TODO{cite Nengo LIF improvements}, as we should expect that a constant input causes each neuron to spend an equal amount of time at each position within its ideal ISI.
+For changing inputs, however, the uniform assumption immediately breaks down ($p$-value~$< \numprint{e-67}$), but non-catastrophically, as the Kolmogorov-Smirnov statistic remains bounded above by $0.0335$.
 
 Taken together, this means that any approximation error arising from the substitution of spiking LIF for non-spiking LIF models must arise from two sources: (1) the variability in equation \ref{eq:variance}, which is a function of $\tau$, the number of neurons, and the magnitude of the decoders, and (2) a systematic bias (Fig.~\ref{fig:spike-time-intervals}) resulting from the ISI positions being non-uniform with respect to the input stimuli.
 In summary, this provides a theoretical framework for understanding the differences between spiking and non-spiking neuron models in the context of some desired PSC.
