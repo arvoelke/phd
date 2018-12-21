@@ -113,7 +113,7 @@ o.annotate(text='(b)',
 o.plot(sim.trange(), filt_x_hat,
            label=r"$\hat{x}$")
 o.plot(sim.trange(), sim.data[p_x],
-           label=r"$\hat{x}(t)$")
+           label=r"$d^T a$")
 o.plot(sim.trange(), filt_u,
            linestyle='--', label=r"x", lw=2)
 
@@ -227,7 +227,7 @@ savefig("nef-error-types-d.pdf")
 
 t_test = sim.trange() > 0.1
 
-noise = filt_x_hat[t_test] - sim.data[p_x][t_test, 0]
+noise = sim.data[p_x][t_test, 0] - filt_x_hat[t_test]
 print("(c) Noise KS-Test:", kstest(noise / np.std(noise), 'norm'))
 
 plt.figure(figsize=(6, 3.9))
@@ -236,7 +236,7 @@ sns.kdeplot(noise, shade=True)
 lower, upper = plt.xlim()
 radius = 0.4  # max(-lower, upper)
 plt.xlim(-radius, radius)
-plt.xlabel(r"$x - \hat{x}(t)$")
+plt.xlabel(r"$d^T a - \hat{x}$")
 plt.ylabel("Density")
 
 sns.despine(left=True)
