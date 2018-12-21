@@ -32,9 +32,9 @@ with nengo.Simulator(model, dt=1e-5) as sim:
 
 fudge1 = -0.01
 fudge2 = -0.008
-fudge3 = 0.096
+fudge3 = 0.068
 fudge4 = -0.007
-fudge5 = 0.2
+fudge5 = 0.202
 fudge6 = -0.008
 fudge7 = -0.015
 
@@ -93,10 +93,10 @@ o.annotate(text='(d)',
 t2 = int(fudge3 / sim.dt) - 1
 o.annotate(text='',
            xy=(fudge3, sim.data[p_x][t2]),
-           xytext=(fudge3, filt_u[t2]),
+           xytext=(fudge3, filt_x_hat[t2]),
            arrowprops=arrowprops)
 o.annotate(text='(c)',
-           xy=(fudge3 + fudge4, (sim.data[p_x][t2] + filt_u[t2]) / 2),
+           xy=(fudge3 + fudge4, (sim.data[p_x][t2] + filt_x_hat[t2]) / 2 + fudge7),
            fontweight='bold')
 
 # Annotate (b)
