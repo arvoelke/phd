@@ -207,6 +207,7 @@ Next, we consider a continuous-time first-order lowpass filter with a time-delay
 H(s) = \frac{e^{-\lambda s}}{\tau s + 1} \text{.}
 \end{equation}
 This same model has been proposed by \citet[][equation~6.2]{roth2009modeling} as a more realistic alternative to equation~\ref{eq:lowpass}, that includes an axonal transmission delay of length $\lambda$ (on the order of $\tau$) to account for the finite-velocity propagation of action potentials.
+\TODO{\url{https://en.wikipedia.org/wiki/RC\_time\_constant\#Delay} time-delay is proportional to the square of the wire length}
 By commutativity of convolution, modeling the delay in the synapse (as in equation \ref{eq:delayed-lowpass}) is equivalent to modeling the delay in spike propagation.
 Equation~\ref{eq:delayed-lowpass} may also be used to account for feedback delays within some broader setting (e.g.,~when the feedback term is computed via some delayed system).
 
