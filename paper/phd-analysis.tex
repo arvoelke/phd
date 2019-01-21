@@ -296,14 +296,17 @@ Var \left[ \tilde{A}_i(t) \right] = \, \Aboxed{ a_i \left( \frac{(1 - r_i^2)(1 +
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=1.0\textwidth]{spike-time-intervals}
-\caption{\label{fig:spike-time-intervals} Empirical distribution of ISI positions---$s_i$ normalized by the instaneous rate $a_i$---for sinusoid stimuli of varying frequencies.
-  The ideal distribution (dashed) is uniform $[0, 1]$. In the ideal case, the spiking LIF model is equal to its non-spiking counterpart in the sense of expectation.
+\includegraphics[width=1.0\textwidth]{frequency-ks-test}
+\caption{\label{fig:frequency-ks-test}
+  Relationship between the uniformity of neural states (KS-Statistic) and the representational error (RMSE) for sinusoidal stimuli of varying frequencies.
+  (Left)~Empirical distribution of ISI positions---$s_i$ normalized by the instaneous rate $a_i$---is compared to the ideal uniform distribution using the Kolmogorov-Smirnov (KS) test ($p$-value~$< 0.0001$).
+  % In the ideal case, the spiking LIF model is equal to its non-spiking counterpart in the sense of expectation.
+  (Right)~The RMSE is highly correlated with the KS-Statistic, with a Pearson correlation coefficient of $R = 0.83$ ($p$-value~$< 0.0001$).
 }
 \end{figure}
 
 The previous analysis relies on the assumption that each neuron is ``uniformly ready to spike''.
-To validate this assumption from equation (\ref{eq:s}) that $S_i \sim U[0, 1/a_i]$, we empirically sampled this distribution for sinusoidal test stimuli of varying frequencies (Fig.~\ref{fig:spike-time-intervals}).
+To validate this assumption from equation (\ref{eq:s}) that $S_i \sim U[0, 1/a_i]$, we empirically sampled this distribution for sinusoidal test stimuli of varying frequencies (Fig.~\ref{fig:frequency-ks-test}).
 We define the \emph{ISI position} as $s_i \times a_i$. This is the realization of a random variable, in the range $[0, 1]$.
 Intuitively, this can be interpreted as the percent time remaining within the idealized inter-spike interval, given the current voltage of the neuron and its ideal spike rate.
 A value of $0$ implies the neuron is currently spiking and $1$ implies the neuron just spiked.
@@ -313,14 +316,13 @@ This quantity is calculated by solving the LIF ODE and rearranging to obtain:
 \end{equation}
 where $0 \le r_i \le \tau_\text{ref}$ is the time remaining in the refractory period.
 
-As shown in Fig.~\ref{fig:spike-time-intervals}, the default LIF model ($\tau_\text{RC} = 20$\,ms, $\tau_\text{ref} = 2$\,ms, and tuning curves uniformly distributed to achieve maximum firing rates of $200-400$\,Hz) closely follows the ideal uniform distribution for input frequencies up to $100$\,Hz. For $0$\,Hz (constant) inputs, the two distributions are the same (Kolmogorov-Smirnov statistic\footnote{
+As shown in Fig.~\ref{fig:frequency-ks-test}, the default LIF model ($\tau_\text{RC} = 20$\,ms, $\tau_\text{ref} = 2$\,ms, and tuning curves uniformly distributed to achieve maximum firing rates of $50-100$\,Hz) closely follows the ideal uniform distribution ($< 6$\% error) for input frequencies up to $100$\,Hz. For $0$\,Hz (constant) inputs, the two distributions are the same (Kolmogorov-Smirnov statistic\footnote{
 The maximum absolute distance between the empirical and model CDFs.
 If samples are drawn from the model distribution, its Kolmogorov-Smirnov statistic approaches $0$ with probability $1$ as the number of samples approaches infinity.}%
 $<0.0002$, $p$-value~$> 1-\numprint{e-15}$).
 This verifies the numerics of our spiking LIF implementation\TODO{cite Nengo LIF improvements}, as we should expect that a constant input causes each neuron to spend an equal amount of time at each position within its ideal ISI.
-For changing inputs, however, the uniform assumption immediately breaks down ($p$-value~$< \numprint{e-67}$), but non-catastrophically, as the Kolmogorov-Smirnov statistic remains bounded above by $0.0335$.
 
-Taken together, this means that any approximation error arising from the substitution of spiking LIF for non-spiking LIF models must arise from two sources: (1) the variability in equation \ref{eq:variance}, which is a function of $\tau$, the number of neurons, and the magnitude of the decoders, and (2) a systematic bias (Fig.~\ref{fig:spike-time-intervals}) resulting from the ISI positions being non-uniform with respect to the input stimuli.
+Taken together, this means that any approximation error arising from the substitution of spiking LIF for non-spiking LIF models must arise from two sources: (1) the variability in equation \ref{eq:variance}, which is a function of $\tau$, the number of neurons, and the magnitude of the decoders, and (2) a systematic bias (Fig.~\ref{fig:frequency-ks-test}) resulting from the ISI positions being non-uniform with respect to the input stimuli.
 In summary, this provides a theoretical framework for understanding the differences between spiking and non-spiking neuron models in the context of some desired PSC.
 This also provides some theoretical justification for using spiking LIF models following an offline optimization using static tuning curves -- a procedure that the NEF and Nengo use regularly.
 Lastly, this suggests criteria for optimizing the information-processing capabilities of spiking neurons in the context of high-frequency signals, as done in section~\ref{sec:poisson-spiking}.
