@@ -16,18 +16,19 @@ to engineer low-power digital and analog circuits that emulate its fundamental p
 The emerging field of neuromorphic computing has already
 witnessed many successes backed by large companies, small start-ups, and new research
 programs being established at various institutions all around the world.
-Applied Brain Research (ABR), Femtosense, Intel, IBM, and many others are establishing themselves as key players in the field~\citep{marketreport2018}, while a collaborative landscape is being fostered between a diverse set of academic communities attempting to use such hardware including the Telluride Neuromorphic Cognition Engineering Workshop~\citep{cohen2001report}, Capo Caccia Cognitive Neuromorphic Engineering Workshop, Nengo Summer School (ABR's ``Brain Camp''), and Intel's Neuromorphic Research Community (INRC).
+Applied Brain Research (ABR), Femtosense, Intel, IBM, and many others~\citep{marketreport2018}, are establishing themselves as key players in the field, while a collaborative landscape is being fostered between a diverse set of academic communities attempting to use such hardware including the Telluride Neuromorphic Cognition Engineering Workshop~\citep{cohen2001report}, Capo Caccia Cognitive Neuromorphic Engineering Workshop, Nengo Summer School (ABR's ``Brain Camp''), and Intel's Neuromorphic Research Community (INRC).
 Despite this growing excitement, there exist many challenges when it comes to using
-this hardware to perform some desired task.
+neuromorphic hardware to perform some desired task.
 Generally speaking, neuromorphic programming forces us to rethink our traditional,
 \citet{von1958}, understanding of computation, and redesign our algorithms to leverage distributed networks of noisy, heterogeneous units, that locally process their inputs and communicate via spikes -- also known as Spiking Neural Networks~(SNNs).
 Biological nervous systems already do this quite successfully, and so we seek to borrow existing
 principles and models from neuroscience, exploit their properties using tools from mathematics and engineering,
 and use software methods to synthesize the resulting networks ``in silico''.
-By virtue of emulating core principles of brain function, this realizes algorithms that consume far less power, and scale much more readily to massively-parallelized computing architectures running in biological real-time.
+To what end?
+By virtue of emulating core principles of brain function, this realizes algorithms that consume far less power, and scale more readily to massively-parallelized computing architectures running in biological real-time.
 But such algorithms must also be practically useful.
-To flip this on its head: we must also be able to look at what some individual piece of hardware can achieve,
-and adjust our tools and theory to systematically harness its capabilities.
+To flip this on its head: we require frameworks to describe what the hardware is doing at the lowest level,
+and tools to systematically harness its capabilities to perform useful computations at the highest level.
 Analagous to how a single compiler can translate the same C++ code
 to dozens of physically distinct digital architectures, we strive to systematically describe
 how the same dynamical computations can be mapped onto distinct spiking neuromorphic architectures.
