@@ -51,15 +51,15 @@ have a long ways to go, this thesis aims to highlight a promising path for the n
 When confronted with ambitious goals such as replicating human intelligence, computer scientists will most often point towards
 the popularity of deep learning~\citep{lecun2015deep} and its recent successes such as AlphaGo~\citep{gibney2016google}.
 First and foremost, we seek to embrace the methods of deep learning, by incorporating its architectures and training methodoligies into our toolbox.
-This is in fact the mandate of Nengo DL~\citep{rasmussen2018nengodl}, a Python package combining Nengo and Tensorflow into a hybridized framework that automates backpropagation across both spiking, non-spiking, and NEF-style recurrent neural networks -- broadly referred to as the class of Artificial Neural Networks~(ANNs).
+This is in fact the mandate of Nengo DL~\citep{rasmussen2018nengodl}, a Python package that combines Nengo and Tensorflow into a hybridized framework that automates backpropagation across both spiking, non-spiking, and NEF-style recurrent neural networks -- broadly referred to as the class of Artificial Neural Networks~(ANNs).
 However, we do not believe that deeper networks, better training heuristics, nor larger datasets, will be enough to achieve our aforementioned goal.
 Concerns for conventional deep learning approaches include: the amount of power required to scale traditional ANNs to the size of the human brain, the difficulties tuning hyperparameters at scale, and the existence of adversarial attacks on networks trained via backpropagation.
 But even more fundamentally, the majority of ANNs in use today, including AlphaGo, are applied to \emph{static} inputs to produce \emph{static} outputs.
 For a board game such as Go, this is forgiveable, as the entire state of the game is encapsulated by the current state of the board itself, and so there is technically no need to consider any history in order to optimize across future states.\footnote{
 Practically speaking, there could still be a benefit, for a sub-optimal player, to knowing the history of the game in order to better predict the opponent's strategy.}
-Nevertheless, this points towards a broader underlying concern: time is not being treated as a fundamental unit of computation in many of the most successful methods, which may limit their applicability to many real-world problems.
-For instance, human vision is a continuous-time process, while convolutional ANNs are deployed in visual processing tasks to classify objects in single frames, without internal knowledge of how these objects might move or behave.
-Specifically, when processing video, frames are typically sampled at some arbitrary interval and then processed independently from one another.
+Nevertheless, this points towards a thematic concern: time is not being treated as the dimension of computation in many of the most successful methods, which may limit their applicability to many real-world problems.
+For instance, convolutional ANNs are most often deployed in visual processing tasks by classifying objects in single frames.  %, without internal knowledge of how these objects might move or behave.
+When processing video, frames are typically sampled at some arbitrary interval and then processed independently from one another.
 We will discuss some exceptions later that we embrace.
 But at large, most ANNs do not begin with time as a physical dimension intrinsic to the dynamics of the system's input, output, or processing units;
 time is neither a variable in the neuron models, synapse models, nor any of the computational elements.
@@ -70,11 +70,12 @@ time is neither a variable in the neuron models, synapse models, nor any of the 
 On the other hand, the human brain is a physical system that must continuously process information over time.
 This is crucial for a cognitive agent embodied in a dynamic environment wherein all interactions depend on internally and externally evolving states.
 The brain naturally learns from and interacts with its environment over many different time-scales. 
-For instance, our brains are not programmed to be static object recognition machines. Rather, we have evolved to interact with objects in continuously changing environments, from which the phenomenon of object recognition emerges as a byproduct.
+For instance, our brains are not programmed to recognize static objects at discrete moments in time.
+Rather, we have evolved to interact with objects in continuously changing environments, from which the perception of object recognition emerges.
 From a very young age, children can intuitively infer the physics of moving objects, and learn how to interact with them to achieve desired outcomes.
 This continues well through adulthood, up to the level of coordinating our thoughts and behaviours, shaped by our cumulative experience with the world.
-Everything and everyone that we connect with plays a part in what we become.
-This occurs so naturally that we often take it for granted, but our brains are constructing explicit and implicit dynamical models of reality, and applying these models
+% Everything that we connect with helps to shape our brains to conceptualize these changes.
+This occurs so naturally that we often take it for granted, but at a very basic basic level, our brains are necessarily constructing explicit and implicit dynamical models of reality, and applying these models
 to perform behaviourally relevant computations in real-time.
 
 Consider a real-world example such as driving a car. We must constantly integrate new information with our existing understanding of where we are, where we are headed, and what might happen along the way.
@@ -90,7 +91,7 @@ Each neuron locally processes some signal by encoding its input current into spi
 These action potentials evoke post-synaptic currents~(PSCs) that decay exponentially on the order of milliseconds.
 The time-scales over which these mechanisms interface with the world, and interact with each other, determines, and constrains, literally everything that we can do.
 Memories emerge from these dynamics, as changes in neural activity and synaptic weights reflect the history of internal representations along a multitude of time-scales.
-Most impressively of all, the collection of approximately one-hundred billion neurons, connected by over one-hundred trillion synapses, process these signals sparsely across space and time using around $20$\,W~\citep{koch2014} -- about the same energy as a typical household CFL bulb.
+Most impressively of all, the collection of approximately one-hundred billion neurons, connected by over one-hundred trillion synapses, process these signals sparsely across space and time using around twenty watts~\citep{koch2014} -- about the same energy as a typical household CFL bulb.
 
 This ``signal processing view'' of computation is fundamentally different from conventional views of computation targeted for conventional computers.
 In the former view, time is intrinsic to the state of all physical ``devices'' performing the computation~(i.e.,~neurons and synapses), which are themselves necessarily tied to the timing and dynamics of the overall function.
