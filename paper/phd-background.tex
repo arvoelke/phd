@@ -1,6 +1,21 @@
 \chapter{Background}
 \label{chapt:background}
 
+We begin with a very brief historical overview of many of the most popular architectural approaches and methods to building neurally-inspired computational systems, that are also dynamical in nature.
+This is not intended to provide a comprehensive record of all such findings, but rather to help situate this work and shine a spotlight on many of the key properties that motivate our eventual approach.
+References to reviews that provide more detailed accounts of these methods and its variants are included throughout.
+
+One of the earliest citations in the neural network literature can be traced back to Rosenblatt's invention of the perceptron~\citep{rosenblatt1958perceptron}.
+The perceptron is equivalent to a single-layer feed-forward neural network, where the input vector is multiplied by a learned weight-matrix, and then projected through static nonlinear activation units (e.g., a threshold function).
+This static nonlinearity is intended to correspond to the behaviour of an artificial ``neuron'', and the matrix corresponds to the synaptic weights of each neuron (often including a bias term that controls the activation threshold).
+There was a great deal of excitement spurred by Rosenblatt's claims that the perceptron would soon ``be able to walk, talk, see, write, reproduce itself and be conscious of its existence''~\citep{historyofperceptrons}.
+But soon after, a famous book by \citet{minsky1969perceptrons} pointed out a serious limitation of this architecture: it can only classify linearly-separable patterns -- that is, it can only compute functions whose outputs distinguish its inputs based on whether the vector falls on one side of a hyperplane or the other.
+The XOR function is perhaps the simplest example of a function that \emph{cannot} be computed by a perceptron.
+
+Fortunately, multi-layer feed-forward networks do not suffer this severe limitation.
+By repeating this process just once more, that is by stacking only two perceptrons together, the network becomes able to compute any bounded continuous function---a result known as the universal approximation theorem~\citep{hornik1991approximation}---assuming the nonlinear activation units are bounded, continuous, and non-constant.
+This insight, together with the stacking of additional layers to compose increasingly-complicated functions, the use of ``backpropagation''~\citep{werbos1974beyond, rumelhart1986learning} to learn all of the weights from examples, when combined with increasingly-powerful CPUs and GPUs, all coalesced to usher in the era of ``deep learning''~\citep{lecun2015deep}.  
+
 \section{Recurrent Neural Networks}
 
 \citep{pascanu2013difficulty}
