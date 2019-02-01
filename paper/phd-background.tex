@@ -1,22 +1,41 @@
 \chapter{Background}
 \label{chapt:background}
 
-We begin with a very brief historical overview of many of the most popular architectural approaches and methods to building neurally-inspired computational systems, that are also dynamical in nature.
-This is not intended to provide a comprehensive record of all such findings, but rather to help situate this work and shine a spotlight on many of the key properties that motivate our eventual approach.
-References to reviews that provide more detailed accounts of these methods and its variants are included throughout.
 
 One of the earliest citations in the neural network literature can be traced back to Rosenblatt's invention of the perceptron~\citep{rosenblatt1958perceptron}.
-The perceptron is equivalent to a single-layer feed-forward neural network, where the input vector is multiplied by a learned weight-matrix, and then projected through static nonlinear activation units (e.g., a threshold function).
-This static nonlinearity is intended to correspond to the behaviour of an artificial ``neuron'', and the matrix corresponds to the synaptic weights of each neuron (often including a bias term that controls the activation threshold).
-There was a great deal of excitement spurred by Rosenblatt's claims that the perceptron would soon ``be able to walk, talk, see, write, reproduce itself and be conscious of its existence''~\citep{historyofperceptrons}.
-But soon after, a famous book by \citet{minsky1969perceptrons} pointed out a serious limitation of this architecture: it can only classify linearly-separable patterns -- that is, it can only compute functions whose outputs distinguish its inputs based on whether the vector falls on one side of a hyperplane or the other.
-The XOR function is perhaps the simplest example of a function that \emph{cannot} be computed by a perceptron.
+The perceptron is equivalent to a single-layer, feed-forward, neural network, where the input vector is multiplied by a matrix, and then projected through static nonlinear activation units (e.g., a threshold function\footnote{A constant bias term is usually added to the weights, to control the activation threshold of each unit.}).
+This static nonlinearity is intended to correspond to the abstract behaviour (i.e., average activation level) of an artificial ``neuron'', while the matrix corresponds to the synaptic weights of each neuron -- hence the term ``weight-matrix''.
+The output(s) of the network provide a binary classification of the input vector -- the interpretation of which is task-dependent.
+The weight-matrix is learned from example data, in a black-box manner, by applying a simple delta rule that, in effect, performs gradient descent on a loss function across the training data.
 
-Fortunately, multi-layer feed-forward networks do not suffer this severe limitation.
-By repeating this process just once more, that is by stacking only two perceptrons together, the network becomes able to compute any bounded continuous function---a result known as the universal approximation theorem~\citep{hornik1991approximation}---assuming the nonlinear activation units are bounded, continuous, and non-constant.
-This insight, together with the stacking of additional layers to compose increasingly-complicated functions, the use of ``backpropagation''~\citep{werbos1974beyond, rumelhart1986learning} to learn all of the weights from examples, when combined with increasingly-powerful CPUs and GPUs, all coalesced to usher in the era of ``deep learning''~\citep{lecun2015deep}.  
+A great deal of excitement was fueled by claims that the perceptron would soon ``be able to walk, talk, see, write, reproduce itself and be conscious of its existence''~\citep{historyofperceptrons}.
+But soon after, a famous book by \citet{minsky1969perceptrons} pointed out a serious limitation of this architecture: it can only classify linearly-separable patterns -- that is, it can only compute functions whose outputs distinguish its inputs based on whether the vector falls on one side of a hyperplane or the other.
+The XOR function is perhaps the simplest example of a function that \emph{cannot} be computed in such a manner.
+Many have credited this book as bringing upon the ``AI winter'' of the 1970s: neural network architectures were soon abandoned in favour of symbol-based architectures and so-called production systems, in which general aspects of human-like intelligence are produced by the manipulation of abstract symbolic representations~\citep{historyofperceptrons, newell1972human}.
+
+To compute more complicated nonlinear functions, additional layers are required.
+As such, multi-layer feed-forward networks do not suffer this severe limitation.
+By merely by stacking two perceptrons together (i.e., constructing two ``layers''), the network becomes able to compute any bounded continuous function---a result known as the universal approximation theorem~\citep{hornik1991approximation}---assuming the nonlinear activation units are bounded, continuous, and non-constant.
+This insight, together with the stacking of deeper layers to compose more increasingly-complicated functions, the use of ``backpropagation''~\citep{werbos1974beyond, rumelhart1986learning}---performing gradient descent across multiple layers via the chain rule---to learn all of the weight-matrices, combined with increasingly-powerful CPUs and GPUs to process large datasets, all coalesced to usher in the reviving era of ``deep learning''~\citep{lecun2015deep}.  
+
+Deep learning has brought about many impressive and rapid advances to the field of artificial intelligence.
+Due to its black-box nature, neither domain expertise nor understanding of the network's internal function are required in order to apply it to a large number of problems, ranging from image recognition, to speech recognition, natural language understanding, question answering, and language translation~\citep{lecun2015deep}.
+This architecture has been found to excel at classifying static input vectors, and learning latent (i.e., hidden) low-dimensional representations from raw high-dimensional data.
+However, the field is well-aware that a feed-forward architecture is incapable of learning temporal relationships in the input data across long time-scales; the network's static response means it has no memory of inputs beyond that which is currently being presented~\citep{bengio1994learning}.
+The most general solution to overcome this problem is to introduce recurrent connections into the network, thus allowing the network to persist information about past inputs arbitrarily into the future. 
+Such networks are called Recurrent Neural Networks~(RNNs).
+
+We begin with a brief overview of many of the most popular architectural approaches and methods to building RNNs.
+This is not intended to provide a comprehensive record of all such findings, but rather to help situate this work and shine a spotlight on many of the key properties that motivate our eventual approach.
+References to reviews that provide more detailed accounts of these methods and its variants are included throughout.
+When then summarize the three principles of the Neural Engineering Framework~\citep[][NEF]{eliasmith2003a} while contrasting this approach with those discussed thus far.
+This leads into a high-level overview of a few promising neuromorphic architectures that have been made available to us through various collaborations: SpiNNaker~\citep{furber2014spinnaker}, Braindrop~\citep{braindrop2019}, and Loihi~\citep{davies2018loihi} -- all of which support the compilation of NEF networks, and are the targets of many of our example applications.
+Finally, we provide some necessary mathematical background on dynamical systems.
 
 \section{Recurrent Neural Networks}
+
+The RNN is distinctly different in that it is a \emph{dynamical system}; its internal state nonlinearly evolves according to the history of some input presented over time.
+This enables the network to learn patterns in the data that span both space and time arbitrarily -- the challenge is in learning the weights.
 
 \citep{pascanu2013difficulty}
 \citep{salehinejad2017recent}
