@@ -19,7 +19,7 @@ By merely stacking two perceptrons together (i.e., introducing a ``hidden layer'
 This insight, together with the stacking of deeper layers to compose increasingly-complicated functions, the use of ``backpropagation''~\citep{werbos1974beyond, rumelhart1986learning}---performing gradient descent across multiple layers via the chain rule---to learn all of the weight-matrices, combined with increasingly-powerful CPUs and GPUs to process large datasets, all coalesced to usher in the reviving era of ``deep learning''~\citep{sejnowski2018deep}.
 
 Deep learning has undoubtedly brought about many rapid and impressive advances to the field of artificial intelligence.
-Due to its black-box nature, neither domain expertise nor understanding of the network's internal function are required in order to achieve state-of-the-art performance on a large number of problems, including: image recognition, speech recognition, natural language understanding, question answering, and language translation~\citep{lecun2015deep}.
+Due to its black-box nature, neither domain expertise nor understanding of the network's internal function are required in order to achieve state-of-the-art performance on a large number of important problems, including: image recognition, speech recognition, natural language understanding, question answering, and language translation~\citep{lecun2015deep}.
 The basic recipe is conceptually simple: obtain one of the many popular off-the-shelf toolboxes for deep learning, throw as much training data at the network as your CPUs or GPUs can handle, and then try it out on some novel test data.
 Deep learning excels at constructing static vector functions, that generalize to new data, by automatically discovering the latent (i.e., hidden) low-dimensional representations that are most relevant to the task at hand.
 However, the field is well-aware that a feed-forward architecture is incapable of learning temporal relationships in the input data~\citep{bengio1994learning}.
@@ -29,30 +29,53 @@ These networks are called Recurrent Neural Networks~(RNNs).
 
 We begin with a brief overview of many of the most popular architectural approaches and methods to building RNNs.
 This is not intended to provide a comprehensive record of all such findings, but rather to help situate this work and shine a spotlight on many of the key ingredients that motivate our eventual approach.
-References to reviews that provide more detailed accounts of these methods and its variants are included throughout.
+Reviews and references that provide more detailed accounts of these methods and its variants are included throughout.
 We then describe, in detail, the three principles of the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a} while contrasting this approach with those discussed thus far.
 This leads into a high-level overview of a few promising neuromorphic architectures that have been made available to us through various collaborations: SpiNNaker~\citep{furber2014spinnaker}, Braindrop~\citep{braindrop2019}, and Loihi~\citep{davies2018loihi} -- all of which support the compilation of NEF networks, and are the targets of many of our example applications.
 Finally, we provide some necessary mathematical background on dynamical systems.
 
 \section{Recurrent Neural Networks}
 
-The Recurrent Neural Network (RNN) is the most computationally-powerful brand of neural network that we know how to physically realize.
-By using recurrent connections to maintain state information, RNNs are able to compute functions outside the class of computations afforded by deep feed-forward networks: \emph{dynamical systems} -- functions whose state evolves nonlinearly according to the history of its inputs presented over time.
-This enables the network to leverage patterns that span both space and time along arbitrarily large spatiotemporal scales.
+The Recurrent Neural Network (RNN) is the most computationally-powerful brand of neural network that we know how to physically implement.
+By using recurrent connections to persist state information through time, RNNs are able to compute functions outside the computational class afforded by deep feed-forward networks: \emph{dynamical systems} -- functions whose state evolves nonlinearly according to the history of its input.
+This enables the network to exploit patterns that span both space and time along arbitrarily large spatiotemporal scales.
 
-Specifically, RNNs are a universal approximator for any finite-dimensional, causal, dynamical system~\citep{schafer2006recurrent}.
-The finite-dimensional constraint means that the state of the dynamical system must be describable by a vector $\mathbb{R}^d$ for some finite $d \in \mathbb{N}$, and the causality constraint means that the system does not require knowledge of its future inputs (although it is free to make predictions).
+Specifically, RNNs are a universal approximator for any finite-dimensional, causal, discrete-time, dynamical system~\citep{schafer2006recurrent}.
+That is,
+\begin{equation}
+\begin{aligned} \label{eq:discrete-dynamical-system}
+\V{x}\left[ t + 1 \right] &= \V{f}\left(\V{x}\left[ t \right], \V{u}\left[ t \right] \right) \\
+\V{y}\left[ t + 1 \right] &= \V{g}\left(\V{x}\left[ t \right] \right)
+\end{aligned}
+\end{equation}
+where $\V{x} \in \mathbb{R}^d$ is a finite-dimensional ($d \in \mathbb{N}$) state-vector, $\V{u}$ is some input vector, and $\V{y}$ is some output vector -- all indexed at discrete points in time.
+The causality constraint implies that the system does not require knowledge of its future inputs (although it is free to make predictions).
+The state updates according to a nonlinear mixing of the input with itself.
+The output is a static mapping (i.e., ``readout'') of the state.
+% Intuitively, the input and recurrent connections correspond to $\V{f}\left(\cdot, \cdot\right)$ while the outputs correspond to $\V{g}\left(\cdot\right)$.
+Crucially, an RNN with sufficiently many nonlinear units can approximate any instantiation of equation~\ref{eq:discrete-dynamical-system} arbitrarily well.
 
 On the other hand, the human brain itself, assuming its mechanisms obey the laws of physics, must also necessarily be a dynamical system~\citep{mckenna1994brain}.
-Moreover, unless the brain is a quantum computer---which has been argued to be irrelevant~\citep{litt2006brain}---a ``hypercomputer'' or a ``super-Turing'' computer---which is argued to require unphysical resources~\citep{broersma2018computability}---the dynamics of the brain must also be finite-dimensional and causal.
-Therefore, the class of computations made available by RNNs is at least as large as the class of computations that can be achieved by biological brains.
-Constraints on the physical devices leveraged by the brain (i.e.,~timing, connectivity, noise, and so forth) are likely to impose limitations which make the former a strict superset of the latter.
-In summary, while deep networks are fundamentally incapable of emulating human brains, RNNs are, at least in theory, up to the task; the challenge is in imposing the right constraints that will allow one to learn the weights, while being scalable to the computations performed by the human brain. % order of \numprint{e11}~neurons and \numprint{e14}~weights.
+Unless the brain is a quantum computer---which is argued to be irrelevant to brain function~\citep{litt2006brain}---a ``hypercomputer'' or a ``super-Turing'' computer---which is argued to require unphysical resources~\citep{broersma2018computability}---its dynamics must also be finite-dimensional.
+Causality follows from assuming the brain does not violate the second law of thermodynamics~\citep{evans1996causality}.
+In essense, we assume that the brain is a physical machine with finite spatiotemporal resources and limited precision.
+% \footnote{The discrete-time nature of these equations is not of relevance to this discussion; as we are dealing with approximations of a physically-realizable system, a continuous-time version may be discretized with sufficiently small time-step to obtain a system in the form of equation~\ref{eq:discrete-dynamical-system}.}
+Therefore, the class of computations made available by RNNs is at least as large as the class of computations that can be carried out by the brain.
+Constraints on the physical devices leveraged by the brain (i.e.,~constraints on timing, connectivity, precision, and so forth) are likely to impose limitations that make RNNs strictly more powerful.
+
+In summary, the field of neural network theory has progressed from: the perceptron, which had the problem of not being powerful enough; to the multi-layer feed-forward network, which is a universal approximator to static functions; and finally to the RNN, which is a universal approximator to physically-implementable dynamical systems, for which we consider the brain to be an instance.
+Thus, while deep networks are fundamentally incapable of reproducing human intelligence, RNNs are, at least in theory, up to the task.
+Then why has this not yet been achieved?
+The challenge is in imposing the right set of constraints that will allow one to learn the weights with some training procedure, all while remaining implementable within some available resource and power budget. % order of \numprint{e11}~neurons and \numprint{e14}~weights.
+This challenge has lead to the creation of many different kinds of RNNs with various methods of training -- a selection of which are described in the following sections.
 
 \citep{pascanu2013difficulty}
 \citep{salehinejad2017recent}
 
 \subsection{Traditional Approaches}
+
+One approach to the challenge of training RNNs is to face the issue head on: apply backpropagation through time~\citep[BPTT;][]{werbos1990backpropagation}.
+Intuitively, the idea is to 
 
 Backpropagation through time (unrolling)
 
