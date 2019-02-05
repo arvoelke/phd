@@ -48,7 +48,7 @@ That is,
 \V{y}\left[ t + 1 \right] &= \V{g}\left(\V{x}\left[ t \right] \right)
 \end{aligned}
 \end{equation}
-where $\V{x} \in \mathbb{R}^d$ is a finite-dimensional ($d \in \mathbb{N}$) state-vector, $\V{u}$ is some input vector, and $\V{y}$ is some output vector -- all indexed at discrete points in time.
+where $\V{x} \in \mathbb{R}^d$ is a finite-dimensional ($d \in \mathbb{N}$) state-vector, $\V{u}$ is some input vector, and $\V{y}$ is some output vector -- all indexed at discrete units of time.
 The state updates according to a nonlinear mixing of the input with itself.
 The output is a static mapping (i.e., ``readout'') of the state.
 The causality constraint implies that these functions do not require knowledge of future inputs (although they are free to make predictions).
@@ -66,12 +66,12 @@ Constraints on the physical devices leveraged by the brain (i.e.,~constraints on
 In summary, the field of neural network theory has progressed from: the perceptron, which had the problem of not being powerful enough; to the multi-layer feed-forward network, which is a universal approximator to static functions; and finally to the RNN, which is a universal approximator to physically-implementable dynamical systems, for which we consider the brain to be an instance.
 Thus, while deep networks are fundamentally incapable of reproducing human intelligence, RNNs are, at least in theory, up to the task.
 
-Then why have RNNs not yet successfully displayed human levels of intelligence?
+% Then why have RNNs not yet successfully displayed human levels of intelligence?
 For tasks that involve sequential inputs, such as speech and language, RNNs are often the best choice~\citep{lecun2015deep}.
-Some recent instances have demonstrated impressive human-like intelligence in generating captions from images~\citep{vinyals2015show}, recognizing speech in multiple languages~\citep{amodei2016deep}, and decoding human emotions from video~\citep{ebrahimi2015recurrent}.
+Recent instances have demonstrated impressive human-like intelligence in generating captions from images~\citep{vinyals2015show}, recognizing speech in multiple languages~\citep{amodei2016deep}, and decoding human emotions from video~\citep{ebrahimi2015recurrent}.
 However, the largest RNN that we are aware of to be successfully trained is a 6.6~million neuron model of human cognition---just shy of 0.01\% the size of the human brain---using the methods of the NEF~\citep{choo2018}.
-The next largest (non-NEF) RNN that we can find with published numbers is a ``large scale'' speech recognition example from Google, which consists of \numprint{6800} neurons in its largest instantiation~\citep[][Table~1]{sak2014long}.
-As we will see, the fundamental issue facing each method is the practical difficulty in scaling across time with larger networks.
+The next largest (non-NEF) RNN that we can find with published numbers is a ``large scale'' speech recognition example from Google, consisting of \numprint{6800} units in its largest instantiation~\citep[][Table~1]{sak2014long}.
+The fundamental issue facing RNNs is the practical difficulty in scaling across time with larger networks.
 % Generally, the challenge is in imposing the right set of constraints that will allow one to learn the weights with some training procedure, all while remaining implementable within some available resource and power budget. % order of \numprint{e11}~neurons and \numprint{e14}~weights.
 This problem has motivated the invention of many different kinds of RNNs with various methods of training -- a selection of which are described in the following sections.
 For more information we point the reader to a review by \citet{salehinejad2017recent}.
