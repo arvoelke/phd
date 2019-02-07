@@ -75,7 +75,6 @@ In practice, for tasks that involve sequential inputs, such as speech and langua
 Recent instances have demonstrated impressive human-like intelligence in generating captions from images~\citep{vinyals2015show}, recognizing speech in multiple languages~\citep{amodei2016deep}, and decoding human emotions from video~\citep{ebrahimi2015recurrent}.
 However, the largest RNN that we are aware of to be successfully trained is a 6.6~million neuron model of human cognition---just shy of 0.01\% the size of the human brain---using the methods of the NEF~\citep{choo2018}.
 The next largest (non-NEF) RNN that we can find with published resource counts is a ``large scale'' speech recognition example from Google, consisting of \numprint{6800} units in its largest instantiation~\citep[][Table~1]{sak2014long} -- on the order of \numprint{e7} times smaller than the human brain.
-The fundamental issue facing RNNs is the practical difficulty in training larger networks with long-range temporal dependencies~\citep{bengio1994learning}.
 As informed by the ``no free lunch theorem'' for RNNs~\citep{wiklicky1994non}, there exists no universal training algorithm that will find the correct solution to all tasks.
 It is instead necessary to constrain the solution space with some prior knowledge of the task.
 % Generally, the challenge is in imposing the right set of constraints that will allow one to learn the weights with some training procedure, all while remaining implementable within some available resource and power budget. % order of \numprint{e11}~neurons and \numprint{e14}~weights.
@@ -97,20 +96,24 @@ But recently, many research groups have independently demonstrated that SNNs can
 
 While these approaches are theoretically sound, BPTT encounters many problems in practice~\citep{bengio1994learning}.
 Chief among these are the so-called ``vanishing and exploding gradient problems'', in which gradients shrink or grow unboundedly as they are propagated back in time.
-These problems are intimately related to the ``credit-assignment problem'', in which a learner has a combinatorial explosion of points in time to assign credit to for the current error; in the case of storing a single bit of information over time, the gradient is inherently instable~\citep{bengio1994credit}.
+These problems are intimately related to the ``credit-assignment problem'', in which a learner witnesses a combinatorial explosion of points in time to assign credit to for the current error; in the case of storing a single bit of information over time, the gradient is inherently unstable~\citep{bengio1994credit}.
+Thus, a standard RNN trained by BPTT will often fail to learn tasks that require a longer term memory -- the precise use-case that RNNs were designed to cover in the first place.
 Solutions proposed by \citet{pascanu2013difficulty} that involve clipping and constraining the gradients alleviate these problems to some extent, but the issue still rears its head in toy tasks that are of relevance to theoretical neuroscience~\citep{depasquale2018full}.
-To face the problem of learning across longer time-scales, additional constraints are often employed.
+To face the problem of learning across longer time-scales, additional constraints are often employed, such as those in the following section.
 
 \subsection{Structured Approaches}
 
 The Long Short-Term Memory~\citep[LSTM;][]{hochreiter1997long} network addresses the difficulty of storing information across long intervals of time by incorporating an explicit memory unit into the network.
-Specifically, an LSTM ``cell'' is a group of nonlinearities, coupled to one another in a specific way, such that its default behaviour is to store its current input indefinitely by propagating an internal state variable back to itself on the next time-step (i.e.,~using an internal feedback connection).
-Nonlinear gating controls whether the input should be integrated, or whether the memory is to be forgotten.
+The basic computational element is an LSTM ``cell'': a group of five nonlinearities and three multiplicative gates, linearly coupled to one another in a specific fashion, such that its default behaviour is to store its current input indefinitely by propagating an internal state variable back to itself on the next time-step (i.e.,~using an internal feedback connection).
+Multiplicative gating controls whether the input should be integrated, whether the memory is to decay with some leakage, and whether the contents of the memory should be outputted.
 Importantly, all of these mechanisms are differentiable, and so BPTT can be applied to learn all of these gating parameters automatically.
-Thus, the LSTM can be viewed as a particular way of configuring and initializing an RNN in a manner that biases it towards latching onto values and persisting them for long periods of time.
+Thus, the LSTM can be viewed as a particular way of configuring and initializing an RNN in a manner that biases it towards latching onto values and persisting them for long, yet controlled, periods of time.
 
-The standard practice is to create layers of LSTM cells, and then stack several of them on top of one another~\citep{graves2013speech}.
-This enhances the temporal complexity of the network's dynamics through a composition of time-scales, analogous to the way that deep feed-forward networks have more complex representational capabilities through the composition of spatial scales.
+The standard practice is to create layers of LSTM cells, and then stack several of these layers on top of one another, using weight matrices to connect each layer to the next~\citep{graves2013speech}.
+This enhances the temporal complexity of the network's dynamics through a composition of time-scales, analogous to the manner in which deep feed-forward networks provide more complex internal representations via composition of spatial scales.
+
+A spiking analog to LSTMs has also been proposed by \citet{bellec2018long}, in which adaptive neurons take on the role of an LSTM cell, since the adaptive state of the neuron is essentially a controlled leaky integrator.
+When BPTT is applied to such an SNN, they have shown it can approach the performance of a non-spiking LSTM network.
 
 This has inspired several related efforts, including:
 GRU, qRNN
