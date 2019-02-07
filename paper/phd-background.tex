@@ -4,9 +4,9 @@
 
 One of the earliest citations in the neural network literature can be traced back to Rosenblatt's invention of the perceptron~\citep{rosenblatt1958perceptron}.
 The perceptron is equivalent to a single-layer, feed-forward, neural network, where the input vector is multiplied by a matrix, and then projected through static nonlinear activation units (e.g., a threshold function\footnote{A constant bias term is usually added to the weights, to control the activation threshold of each unit.}).
-This static nonlinearity is intended to correspond to the abstract behaviour (i.e., average activation level) of an artificial ``neuron'', while the matrix corresponds to the synaptic weights of each neuron -- hence the term ``weight-matrix''.
+This static nonlinearity is intended to correspond to the abstract behaviour (i.e., average activation level) of an artificial ``neuron'', while the matrix corresponds to the synaptic weights of each neuron -- hence the term ``weight matrix''.
 The output(s) of the network provide a binary classification of the input vector -- the interpretation of which is task-dependent.
-The weight-matrix is learned from example data, in a black-box manner, by applying a simple delta rule that, in effect, performs gradient descent on a loss function across the training data.
+The weight matrix is learned from example data, in a black-box manner, by applying a simple delta rule that, in effect, performs gradient descent on a loss function across the training data.
 
 A great deal of excitement was fueled by claims that the perceptron would soon ``be able to walk, talk, see, write, reproduce itself and be conscious of its existence''~\citep{historyofperceptrons}.
 But soon after, a famous book by \citet{minsky1969perceptrons} pointed out a serious limitation of this architecture: it can only classify linearly-separable patterns -- that is, it can only compute functions whose outputs distinguish its inputs based on whether the vector falls on one side of a hyperplane or the other.
@@ -20,10 +20,13 @@ This insight, together with the stacking of deeper layers to compose increasingl
 
 Deep learning has undoubtedly brought about many rapid and impressive advances to the field of artificial intelligence.
 Due to its black-box nature, neither domain expertise nor understanding of the network's internal function are required in order to achieve state-of-the-art performance on a large number of important problems, including: image recognition, speech recognition, natural language understanding, question answering, and language translation~\citep{lecun2015deep}.
-The basic recipe is conceptually simple: obtain one of the many popular off-the-shelf toolboxes for deep learning, and then throw as much training data at the network as your CPUs or GPUs can handle.
+The basic recipe is conceptually simple: obtain one of the many popular off-the-shelf toolboxes for deep learning, pick your favourite network architecture, set its hyperparameters, and then throw as much training data at the network as your CPUs or GPUs can handle.
 Deep learning excels at constructing static vector functions, that generalize to new data, by automatically discovering the latent (i.e., hidden) low-dimensional representations that are most relevant to the task at hand.
-However, the field is well-aware that a feed-forward architecture is incapable of learning temporal relationships in the input data, which is necessary for tasks such as video, speech, and language understanding with long-range dependencies~\citep{bengio1994learning}.
-Regardless of the depth of the network, a feed-forward network will always have some finite input response, which leaves no trace or ``memory'' of previous inputs within the state of the network.
+However, the opacity of its optimization procedure comes as a double-edged sword: while it is easy to apply deep learning to many problems with minimal hand-engineering, it becomes unclear what effect most hyperparameter changes will have on overall performance~\citep{bergstra2012random}.
+For example, it has been observed that using a rectified linear~(ReLU) activiation unit for each nonlinearity can dramatically reduce training times on a variety of benchmarks~\citep{glorot2011deep}, yet this observation still does not have any theoretical explanation that could inform the optimal choice of nonlinearity or related hyperparameters.
+
+Despite its breakthroughs, the field is well-aware that a feed-forward architecture is incapable of learning temporal relationships in the input data, which is necessary for tasks involving video, speech, and language understanding with long-range dependencies~\citep{bengio1994learning}.
+Regardless of the depth of the network, a feed-forward network will always have some finite input response, which leaves a finite ``memory'' of previous inputs within the state of the network.
 The most general solution to overcome this problem is to introduce recurrent connections into the network, which transmit current state information back to itself, thus allowing the network to capture information about past inputs and reuse it in the future. 
 These networks are called Recurrent Neural Networks~(RNNs).
 
@@ -37,8 +40,8 @@ Finally, we provide some necessary mathematical background on dynamical systems.
 \section{Recurrent Neural Networks}
 
 The Recurrent Neural Network~(RNN) is the most computationally-powerful brand of neural network that we know how to physically implement.
-By using recurrent connections to persist state information through time, RNNs are able to compute functions outside the computational class afforded by deep feed-forward networks: \emph{dynamical systems} -- functions whose state evolves nonlinearly according to the history of its input.
-This enables the network to exploit patterns that span both space and time along arbitrary spatiotemporal scales.
+By using recurrent connections to persist state information through time, thus endowing the network with an internal memory, RNNs are able to compute functions outside the computational class afforded by deep feed-forward networks: \emph{dynamical systems} -- functions whose state evolves nonlinearly according to the history of its input.
+This enables the network to exploit patterns in the input that span time along arbitrary temporal scales.
 
 Specifically, RNNs serve as a universal approximator to any finite-dimensional, causal, discrete-time, dynamical system~\citep{schafer2006recurrent}.
 That is,
@@ -48,15 +51,16 @@ That is,
 \V{y}\left[ t + 1 \right] &= \V{g}\left(\V{x}\left[ t \right] \right)
 \end{aligned}
 \end{equation}
-where $\V{x} \in \mathbb{R}^d$ is a finite-dimensional ($d \in \mathbb{N}$) state-vector, $\V{u}$ is some input vector, and $\V{y}$ is some output vector -- all indexed at discrete units of time.
-The state updates according to a nonlinear mixing of the input with itself.
+where $\V{x} \in \mathbb{R}^d$ is a finite-dimensional ($d \in \mathbb{N}$) state-vector, $\V{u}$ is some input vector, and $\V{y}$ is some output vector -- all indexed at discrete units of time, $t$.
+The state updates according to a nonlinear mixing of itself with the input.
 The output is a static mapping (i.e., ``readout'') of the state.
 The causality constraint implies that these functions do not require knowledge of future inputs (although they are free to make predictions).
 % Intuitively, the input and recurrent connections correspond to $\V{f}\left(\cdot, \cdot\right)$ while the outputs correspond to $\V{g}\left(\cdot\right)$.
 Crucially, an RNN with sufficiently many nonlinear units can approximate any instantiation of equation~\ref{eq:discrete-dynamical-system} arbitrarily well.
 
-On the other hand, the human brain itself, assuming its mechanisms obey the laws of physics, must also necessarily be a dynamical system~\citep{mckenna1994brain, port1995mind}.
-Unless the brain harnesses quantum physics---which is argued to be irrelevant to cognitive function~\citep{litt2006brain}---is a ``hypercomputer'' or a ``super-Turing'' computer---which is argued to require unphysical resources~\citep{broersma2018computability}---its dynamics must also be finite-dimensional.
+On the other hand, the human brain itself, is a highly recurrent system~\citep{dayan2001theoretical}.
+Assuming its mechanisms obey the laws of physics, it must also necessarily be a dynamical system~\citep{mckenna1994brain, port1995mind}.
+And unless the brain harnesses quantum physics---which is argued to be irrelevant to cognitive function~\citep{litt2006brain}---is a ``hypercomputer'' or a ``super-Turing'' computer---which is argued to require unphysical resources~\citep{broersma2018computability}---its dynamics must also be finite-dimensional.
 Causality follows from assuming the brain does not violate the second law of thermodynamics~\citep{evans1996causality}.
 In essense, we assume that the brain is a physical ``machine'' with finite spatiotemporal resources and limited precision.
 % \footnote{The discrete-time nature of these equations is not of relevance to this discussion; as we are dealing with approximations of a physically-realizable system, a continuous-time version may be discretized with sufficiently small time-step to obtain a system in the form of equation~\ref{eq:discrete-dynamical-system}.}
@@ -64,32 +68,52 @@ From this position, it follows that the class of computations made available by 
 Constraints on the physical devices leveraged by the brain (i.e.,~constraints on timing, connectivity, precision, and so forth) are likely to impose limitations that make RNNs strictly more powerful in theory.
 
 In summary, the field of neural network theory has progressed from: the perceptron, which had the problem of not being powerful enough; to the multi-layer feed-forward network, which is a universal approximator to static functions; and finally to the RNN, which is a universal approximator to physically-implementable dynamical systems, for which we consider the brain to be an instance.
-Thus, while deep networks are fundamentally incapable of reproducing human intelligence, RNNs are, at least in theory, up to the task.
+Thus, while feed-forward networks are fundamentally incapable of reproducing human intelligence, RNNs are, at least in theory, up to the task.
 
 % Then why have RNNs not yet successfully displayed human levels of intelligence?
-For tasks that involve sequential inputs, such as speech and language, RNNs are often the best choice~\citep{lecun2015deep}.
+In practice, for tasks that involve sequential inputs, such as speech and language, RNNs are often the best choice~\citep{lecun2015deep}.
 Recent instances have demonstrated impressive human-like intelligence in generating captions from images~\citep{vinyals2015show}, recognizing speech in multiple languages~\citep{amodei2016deep}, and decoding human emotions from video~\citep{ebrahimi2015recurrent}.
 However, the largest RNN that we are aware of to be successfully trained is a 6.6~million neuron model of human cognition---just shy of 0.01\% the size of the human brain---using the methods of the NEF~\citep{choo2018}.
-The next largest (non-NEF) RNN that we can find with published numbers is a ``large scale'' speech recognition example from Google, consisting of \numprint{6800} units in its largest instantiation~\citep[][Table~1]{sak2014long}.
-The fundamental issue facing RNNs is the practical difficulty in scaling across time with larger networks.
+The next largest (non-NEF) RNN that we can find with published resource counts is a ``large scale'' speech recognition example from Google, consisting of \numprint{6800} units in its largest instantiation~\citep[][Table~1]{sak2014long} -- on the order of \numprint{e7} times smaller than the human brain.
+The fundamental issue facing RNNs is the practical difficulty in training larger networks with long-range temporal dependencies~\citep{bengio1994learning}.
+As informed by the ``no free lunch theorem'' for RNNs~\citep{wiklicky1994non}, there exists no universal training algorithm that will find the correct solution to all tasks.
+It is instead necessary to constrain the solution space with some prior knowledge of the task.
 % Generally, the challenge is in imposing the right set of constraints that will allow one to learn the weights with some training procedure, all while remaining implementable within some available resource and power budget. % order of \numprint{e11}~neurons and \numprint{e14}~weights.
-This problem has motivated the invention of many different kinds of RNNs with various methods of training -- a selection of which are described in the following sections.
+This has motivated the invention of many different types of RNNs and training methods, a selection of which are described in the following sections.
 For more information we point the reader to a review by \citet{salehinejad2017recent}.
 
-\citep{pascanu2013difficulty}
+\subsection{Backpropagation Through Time}
 
-\subsection{Traditional Approaches}
+The traditional approach to building an RNN is to take a single-layer feed-forward network, and recurrently connect the output of each neuron to all other neurons in the same layer with a square weight matrix.
+To simulate the network, the weighted activations propagated by the recurrent feedback loop are delayed by a single time-step, and added to the weighted inputs on the next step.
+To train the network, we apply backpropagation through time~\citep[BPTT;][]{werbos1990backpropagation}.
+Intuitively, the idea is to ``unroll'' the network in time, and treat it as an infinitely-deep feed-forward network where the input at the $i^\text{th}$ time-step together with the output from the $(i-1)^\text{th}$ layer are supplied to the $i^\text{th}$ layer.
+This may optionally be stacked to form multiple layers, akin to a multi-layer feed-forward network where each layer is locally recurrent.
 
-One approach to the challenge of training RNNs is to face the issue head on: apply backpropagation through time~\citep[BPTT;][]{werbos1990backpropagation}.
-Intuitively, the idea is to 
+This approach also extends to more biologically-plausible realizations of the RNN, in which the continuous (i.e.,~real-valued) neural activations are replaced by spiking neurons that emit binary spikes over time, and weight matrices are replaced by synaptic filters that appropriately weight and exponentially decay incoming spikes over time.
+These networks are named Spiking Neural Networks~(SNNs), and are the subject matter of later sections.
+The issue in this context is that spikes (i.e.,~Dirac impulses) are non-differentiable with respect to time.
+But recently, many research groups have independently demonstrated that SNNs can also be trained with backpropagation by softening the gradient in a variety of creative ways~\citep{hunsberger2015spiking, hunsberger2016training, marblestone2016toward, neftci2017neuromorphic, bellec2018long, hunsberger2018, huh2018gradient, severa2018whetstone, rasmussen2018nengodl, neftci2019surrogate}.
 
-Backpropagation through time (unrolling)
-
-Neural variants: Hunsburger, nengo\_dl, Maass, Hugh \& Sjenowski
+While these approaches are theoretically sound, BPTT encounters many problems in practice~\citep{bengio1994learning}.
+Chief among these are the so-called ``vanishing and exploding gradient problems'', in which gradients shrink or grow unboundedly as they are propagated back in time.
+These problems are intimately related to the ``credit-assignment problem'', in which a learner has a combinatorial explosion of points in time to assign credit to for the current error; in the case of storing a single bit of information over time, the gradient is inherently instable~\citep{bengio1994credit}.
+Solutions proposed by \citet{pascanu2013difficulty} that involve clipping and constraining the gradients alleviate these problems to some extent, but the issue still rears its head in toy tasks that are of relevance to theoretical neuroscience~\citep{depasquale2018full}.
+To face the problem of learning across longer time-scales, additional constraints are often employed.
 
 \subsection{Structured Approaches}
 
-LSTM, GRU, qRNN
+The Long Short-Term Memory~\citep[LSTM;][]{hochreiter1997long} network addresses the difficulty of storing information across long intervals of time by incorporating an explicit memory unit into the network.
+Specifically, an LSTM ``cell'' is a group of nonlinearities, coupled to one another in a specific way, such that its default behaviour is to store its current input indefinitely by propagating an internal state variable back to itself on the next time-step (i.e.,~using an internal feedback connection).
+Nonlinear gating controls whether the input should be integrated, or whether the memory is to be forgotten.
+Importantly, all of these mechanisms are differentiable, and so BPTT can be applied to learn all of these gating parameters automatically.
+Thus, the LSTM can be viewed as a particular way of configuring and initializing an RNN in a manner that biases it towards latching onto values and persisting them for long periods of time.
+
+The standard practice is to create layers of LSTM cells, and then stack several of them on top of one another~\citep{graves2013speech}.
+This enhances the temporal complexity of the network's dynamics through a composition of time-scales, analogous to the way that deep feed-forward networks have more complex representational capabilities through the composition of spatial scales.
+
+This has inspired several related efforts, including:
+GRU, qRNN
 Neural Turing Machine
 
 \subsection{Unsupervised Approaches}
