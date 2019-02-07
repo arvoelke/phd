@@ -109,11 +109,14 @@ Multiplicative gating controls whether the input should be integrated, whether t
 Importantly, all of these mechanisms are differentiable, and so BPTT can be applied to learn all of these gating parameters automatically.
 Thus, the LSTM can be viewed as a particular way of configuring and initializing an RNN in a manner that biases it towards latching onto values and persisting them for long, yet controlled, periods of time.
 
-The standard practice is to create layers of LSTM cells, and then stack several of these layers on top of one another, using weight matrices to connect each layer to the next~\citep{graves2013speech}.
-This enhances the temporal complexity of the network's dynamics through a composition of time-scales, analogous to the manner in which deep feed-forward networks provide more complex internal representations via composition of spatial scales.
-
 A spiking analog to LSTMs has also been proposed by \citet{bellec2018long}, in which adaptive neurons take on the role of an LSTM cell, since the adaptive state of the neuron is essentially a controlled leaky integrator.
 When BPTT is applied to such an SNN, they have shown it can approach the performance of a non-spiking LSTM network.
+
+In theory, the LSTM essentially circumvents the problems described in \citet{bengio1994learning} by restructuring the gradient that is needed to store bits of information.
+The standard practice is to create layers of LSTM cells, and then stack several of these layers on top of one another, using weight matrices to connect each layer to the next~\citep{graves2013speech}.
+This enhances the temporal complexity of the network's dynamics through a composition of time-scales, analogous to the manner in which deep feed-forward networks provide more complex internal representations via composition of spatial scales.
+This has found much success in [examples], and has lead to a widespread adoption of LSTM networks as the RNN of choice (citation).
+\TODO{Examples of when LSTMs fail?}
 
 This has inspired several related efforts, including:
 GRU, qRNN
