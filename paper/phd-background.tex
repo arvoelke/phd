@@ -105,12 +105,13 @@ To face the problem of learning across longer time-scales, additional constraint
 
 The Long Short-Term Memory~\citep[LSTM;][]{hochreiter1997long} network addresses the difficulty of storing information across long intervals of time by incorporating an explicit memory unit into the network.
 The basic computational element is an LSTM ``cell'': a group of five nonlinearities and three multiplicative gates, linearly coupled to one another in a specific fashion, such that its default behaviour is to store its current input indefinitely by propagating an internal state variable back to itself on the next time-step (i.e.,~using an internal feedback connection).
-Multiplicative gating controls whether the input should be integrated, whether the memory is to decay with some leakage, and whether the contents of the memory should be outputted.
+Multiplicative gating controls whether the input should be integrated, whether the memory is to decay with some leakage, and whether the contents of the memory should be outputted~\citep{gers1999learning}.
 Importantly, all of these mechanisms are differentiable, and so BPTT can be applied to learn all of these gating parameters automatically.
 Thus, the LSTM can be viewed as a particular way of configuring and initializing an RNN in a manner that biases it towards latching onto values and persisting them for long, yet controlled, periods of time.
 
-A spiking analog to LSTMs has also been proposed by \citet{bellec2018long}, in which adaptive neurons take on the role of an LSTM cell, since the adaptive state of the neuron is essentially a controlled leaky integrator.
+A spiking analog to LSTMs has also been proposed by \citet{bellec2018long}, in which adaptive neurons take on the role of an LSTM cell, since the adaptive state of the neuron is functionally similar to a controlled leaky integrator.
 When BPTT is applied to such an SNN, they have shown it can approach the performance of a non-spiking LSTM network.
+The structure of LSTMs have also been compared to that of cortical microcircuits in biology~\citep{costa2017cortical}.
 
 In theory, the LSTM essentially circumvents the problems described in \citet{bengio1994learning} by restructuring the gradient that is needed to store bits of information.
 The standard practice is to create layers of LSTM cells, and then stack several of these layers on top of one another, using weight matrices to connect each layer to the next~\citep{graves2013speech}.
