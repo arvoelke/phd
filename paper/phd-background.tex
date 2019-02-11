@@ -116,23 +116,28 @@ The standard practice is to create layers of LSTM cells, and then stack several 
 This enhances the temporal complexity of the network's dynamics through a composition of time-scales, analogous to the manner in which deep feed-forward networks provide richer internal representations via composition of spatial scales.
 Recently, this has found success in sequence learning, machine translation, and speech~\citep{graves2013speech, sutskever2014sequence, cho2014learning, bahdanau2014neural}, leading to a widespread adoption of LSTM networks as the RNN of choice~\citep{lecun2015deep}.
 
-A spiking analog to LSTMs have also been proposed by \citet{bellec2018long}, in which adaptive neurons take on the functional role of LSTM cells, since the adaptive state of the neuron is functionally similar to a controlled leaky integrator.
+A spiking analog to LSTMs have also been proposed by \citet{bellec2018long}, in which adaptive neurons take on the functional role of LSTM cells.
+The intuition behind why this works is that the adaptive state of the neuron is functionally similar to that of a controlled leaky integrator.
 When BPTT is applied to such an SNN, it has been shown to approach the performance of a non-spiking LSTM network.
 The structure of LSTM cells have also been compared to that of cortical microcircuits in biology, providing a post hoc explanation for the utility of LSTMs~\citep{costa2017cortical}.
 
 This success has prompted many variants of LSTMs, including the bidirectional LSTM~\citep{graves2005framewise}, hierarchical S-LSTM~\citep{zhu2015long}, grid LSTM~\citep{kalchbrenner2015grid}, phased LSTM~\citep{neil2016phased}, and others~\citep{salehinejad2017recent}.
 At the same time, this has inspired several related architectures that augment an RNN with memory cells to facilitate long-range temporal interactions, including the gated recurrent unit~\citep[GRU;][]{cho2014properties, chung2014empirical}, neural Turing machine~\citep{graves2014neural}, memory network~\citep{weston2014memory}, and orthogonal GRU~\citep{jing2018gated}.
 In section~\TODO{reference LSTM-DelayCell comparison section}, we propose another kind of memory cell based on our work, and compare their performance in terms of memory capacity to LSTMs.
-
-\subsection{Unsupervised Approaches}
-
-SORN, Numenta
+Results on a chaotic time-series prediction benchmark suggest that interleaving LSTMs together with our novel memory cell, trained via BPTT, greatly improve an RNN's ability to integrate nonlinear delay-differential equations.
 
 \subsection{Reservoir Computing}
 
-LSM, ESN
+Reservoir Computing~(RC) is a strategy for training RNNs that relaxes the optimization problem by keeping the recurrent weights fixed.
+That is, only the static ``readout'' weights to a linear output layer are modified, thus sidestepping the issues in BPTT.
+This method and architecture are referred to as an Echo State Network~\citep[ESN;][]{jaeger2001echo}, or Liquid State Machine~\citep[LSM;][]{maass2002real}, depending on whether the neural nonlinearities are static or spiking models, respectively.
+The intuition is that randomized feedback, when initialized in an appropriate manner, causes traces of the input to dynamically reverberate, or ``echo'', through the state of the network; a common metaphor is throwing rocks into a bucket of water and watching the ripples interact through time.\footnote{To demonstrate the relevance of this metaphor, \citet{fernando2003pattern} went so far as to actually implement an LSM using a bucket of water.}
 
-\subsection{Supervised State-Space Learning}
+There are two great insights driving the adoption of RC: (1) randomized feedback provides a suitable set of time-varying basis signals that can be linearly combined to approximate some output signal, and (2) by leaving the recurrent weights fixed, the optimization procedure is greatly simplified; training the readout weights amounts to a least-squares problem.
+Additional details are provided in section~\ref{sec:relationships} after introducing the NEF.
+In secion~\ref{sec:delay-rc}, we compare the performance of RC to the NEF on a delay-line benchmark.
+
+\subsection{State-Space Approaches}
 
 Duggins and activity-space extensions
 
@@ -148,6 +153,7 @@ Den\`eve, Memmesheimer, Slotine
 
 \subsection{Others}
 
+SORN, Numenta
 Friedemann Zen
 Recurrent Information Optimization with Local, Metaplastic Synaptic Dynamics (ShiNung Ching)
 System Level Approach (SLA) https://arxiv.org/abs/1701.05880
@@ -427,6 +433,7 @@ Furthermore, the class of state-space models is isomorphic to the class of all f
 Given the ability of Principle~2 to compute nonlinear functions~(i.e.,~equation~\ref{eq:trans-decode}), Principle~3 also naturally generalizes to nonlinear dynamical systems, but this is outside the scope of this work; we refer the reader to \citet{voelker2017iscas} and \citet{voelker2017neuromorphic} for recent nonlinear extensions.
 
 \subsection{Relationships to Other Approches}
+\label{sec:relationships}
 
 Recurrent neural networks~(RNNs) are notoriously difficult to train and interpret.
 The paradigm of Reservoir Computing~(RC) has managed to overcome some of these limitations, by driving a fixed and randomly connected ensemble of neurons, and learning the desired output via linear decoding.
