@@ -122,36 +122,50 @@ When BPTT is applied to such an SNN, it has been shown to approach the performan
 The structure of LSTM cells have also been compared to that of cortical microcircuits in biology, providing a post hoc explanation for the utility of LSTMs~\citep{costa2017cortical}.
 
 This success has prompted many variants of LSTMs, including the bidirectional LSTM~\citep{graves2005framewise}, hierarchical S-LSTM~\citep{zhu2015long}, grid LSTM~\citep{kalchbrenner2015grid}, phased LSTM~\citep{neil2016phased}, and others~\citep{salehinejad2017recent}.
-At the same time, this has inspired several related architectures that augment an RNN with memory cells to facilitate long-range temporal interactions, including the gated recurrent unit~\citep[GRU;][]{cho2014properties, chung2014empirical}, neural Turing machine~\citep{graves2014neural}, memory network~\citep{weston2014memory}, and orthogonal GRU~\citep{jing2018gated}.
+At the same time, this has inspired several related architectures that augment an RNN with differentiable memory cells to facilitate long-range temporal interactions, including the gated recurrent unit~\citep[GRU;][]{cho2014properties, chung2014empirical}, neural Turing machine~\citep{graves2014neural}, memory network~\citep{weston2014memory}, and orthogonal GRU~\citep{jing2018gated}.
 In section~\TODO{reference LSTM-DelayCell comparison section}, we propose another kind of memory cell based on our work, and compare their performance in terms of memory capacity to LSTMs.
 Results on a chaotic time-series prediction benchmark suggest that interleaving LSTMs together with our novel memory cell, trained via BPTT, greatly improve an RNN's ability to integrate nonlinear delay-differential equations.
 
-\subsection{Reservoir Computing}
+\subsection{Randomized Approaches}
 
 Reservoir Computing~(RC) is a strategy for training RNNs that relaxes the optimization problem by keeping the recurrent weights fixed.
-That is, only the static ``readout'' weights to a linear output layer are modified, thus sidestepping the issues in BPTT.
-This method and architecture are referred to as an Echo State Network~\citep[ESN;][]{jaeger2001echo}, or Liquid State Machine~\citep[LSM;][]{maass2002real}, depending on whether the neural nonlinearities are static or spiking models, respectively.
-The intuition is that randomized feedback, when initialized in an appropriate manner, causes traces of the input to dynamically reverberate, or ``echo'', through the state of the network; a common metaphor is throwing rocks into a bucket of water and watching the ripples interact through time.\footnote{To demonstrate the relevance of this metaphor, \citet{fernando2003pattern} went so far as to actually implement an LSM using a bucket of water.}
+That is, only the static ``readout'' weights to a linear output layer are modified, while the recurrent weights are left untrained, thus sidestepping the issues in BPTT.
+This method and architecture are referred to as the Echo State Network~\citep[ESN;][]{jaeger2001echo}, or Liquid State Machine~\citep[LSM;][]{maass2002real}, depending on whether the neural nonlinearities are static or spiking models, respectively.
+The intuition is that the randomized feedback, when initialized in an appropriate manner, causes traces of the input to dynamically reverberate, or ``echo'', throughout the state of the network; a common metaphor is depicted by throwing rocks into a bucket of water and observing the ripples interact through time.\footnote{To demonstrate the relevance of this metaphor, \citet{fernando2003pattern} went so far as to actually implement an LSM using a bucket of water.}
+These traces can then be decoded to reconstruct the output signal, thus approximating a nonlinear transfer function of the input signal.
 
-There are two great insights driving the adoption of RC: (1) randomized feedback provides a suitable set of time-varying basis signals that can be linearly combined to approximate some output signal, and (2) by leaving the recurrent weights fixed, the optimization procedure is greatly simplified; training the readout weights amounts to a least-squares problem.
+There are two great insights driving the adoption of RC: (1) randomized feedback provides an overcomplete basis of nonlinear time-varying signals that can be linearly combined to approximate some output signal, and (2) by leaving the recurrent weights fixed, the optimization procedure is greatly simplified; training the readout weights amounts to a least-squares problem.
 Additional details are provided in section~\ref{sec:relationships} after introducing the NEF.
-In secion~\ref{sec:delay-rc}, we compare the performance of RC to the NEF on a delay-line benchmark.
+In section~\ref{sec:delay-rc}, we compare the performance of RC to the NEF on a delay-line benchmark.
 
-\subsection{State-Space Approaches}
+\subsection{Engineered Approaches}
 
-Duggins and activity-space extensions
+A very different set of approaches to training RNNs is rooted in the application of engineering and control-theoretic methods to modelling neurobiological systems~\citep{eliasmith1999developing}.
+We call these top-down methods ``engineered approaches''.
+These methods all assume that some model of the system's desired dynamics (i.e.,~$\V{x}$ in equation~\ref{eq:discrete-dynamical-system}) are known apriori.
+That is, rather than supposing our only knowledge is raw input-output data, in many real-world scenarios we have some model of the dynamical system that actually generated the data.
+In practice, this might be some physical model of the dynamical system under consideration, an approximate model that has been identified~\citep{nelles2013nonlinear}, or even some partial observation of the dynamical state.
+Often times, the dynamical system is simply a description of a particular computation that we know to be useful, such as a controller for a robotic arm, or the examples given in section~\ref{sec:dynamics-language}.
 
-FORCE, full-FORCE
+Instances of this approach include the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a, duggins2017incorporating}, first-order reduced and controlled error~\citep[FORCE;][]{sussillo2009generating, nicola2016supervised, depasquale2018full}, balanced spiking networks~\citep{boerlin2013predictive, thalmeier2016learning, alemi2018learning}, and relatives~\citep{jaeger2014controlling, gilra2017predicting}.
+Reviews of many of these methods are given by \citet{deneve2016efficient} and \citet{abbott2016building}.
 
-Wilten Nicola
+It is important to note that, although all of these approaches are engineered from a top-down perspective, there is no reason BPTT (or any other optimization method) cannot also be applied to fine-tune the resulting RNN end-to-end from example input-output pairs -- a hybrid approach that is embraced by the NEF and its software stack~\citep{rasmussen2018nengodl}.
+The point is that prior knowledge of the task can help place appropriate constraints on the initial state of the RNN, and provide transparency into the relationships between network parameters, configuration, and function.
+As we will show, such transparency enables theoretical insights into neural computation, and practical advances on RNN benchmarks, that would otherwise be quite difficult to obtain with a pure black-box approach.
 
-Aditya \& Gerstner, PES
+In section~\ref{sec:nef} we provide a detailed account of the NEF, and in section~\ref{sec:relationships} we draw comparisons to FORCE.
+In essence, full-FORCE~\citep{depasquale2018full} can be viewed an an instance of the NEF where the learning is applied online rather than offline, and randomized feedback is thrown into the equation for the same purposes as in RC.
+Similarly, \citet{jaeger2014controlling} can be viewed as a variation of the NEF~\citep{aubin2017}.
 
-\subsection{Balanced Networks}
+Balanced spiking networks share many commonalities with the NEF, primarily a procedure for mapping a dynamical state vector onto a population of spiking neurons, via a low-rank weight matrix that takes into account the dynamical models of the neurons and synapses.
+The main benefit of the balanced network approach is that precision scales as $\bigoh{n}$, compared to $\bigoh{\sqrt{n}}$ for the NEF, where $n$ is the number of neurons, by carefully coordinating the variance in spike-timing~\citep[][Figure~11]{boahen2017neuromorph}.
+However, this scheme relies on assumptions of near-instantaneous communication between all neurons~\citep{boerlin2013predictive}, linear neurons with minimal leakage and no refractory period, and nonlinearities in the synapses to implement nonlinear dynamics~\citep{thalmeier2016learning}.
+It is unclear how the scaling holds up when these assumptions are violated, which is of great importance when considering the targets of modelling biological systems and mapping onto neuromorphic hardware.
+As outlined in section~\ref{sec:nef-suitability}, the NEF is correct under fairly weak assumptions, which leads to it being robust and extensibile.
+These key factors are what contribute to it being our toolkit of choice when it comes to training RNNs for the neuromorphic hardware summarized in section~\ref{sec:neuromorphic}.
 
-Den\`eve, Memmesheimer, Slotine
-
-\subsection{Others}
+\subsection{Other Approaches}
 
 SORN, Numenta
 Friedemann Zen
@@ -567,6 +581,7 @@ The conclusions from this section are similar to those drawn by \citet[][see sup
 
 
 \section{Neuromorphic Computing}
+\label{sec:neuromorphic}
 
 The term \emph{neuromorphic computing}---also known as neuromorphic engineering---refers broadly to the use of specialized hardware to emulate computational principles of biological nervous systems~\citep{mead1989analog, liu2002analog}.
 Here, we focus more specifically on the synthesis of spiking neural networks~(SNNs)---in both analog and digital hardware---for low-power, dynamical, brain-like, computation~\citep{boahen2017neuromorph}.
