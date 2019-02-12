@@ -3,34 +3,35 @@
 
 
 One of the earliest citations in the neural network literature can be traced back to Rosenblatt's invention of the perceptron~\citep{rosenblatt1958perceptron} based on the work of \citet{mcculloch1943logical}.
-The perceptron is equivalent to a single-layer, feed-forward, neural network, where the input vector is multiplied by a matrix, and then projected through static nonlinear activation units (e.g., a threshold function, sigmoid, rectified linear, or similar).\footnote{A constant bias term is usually added to the weights, to control the activation threshold of each unit.}
+The perceptron is equivalent to a single-layer, feed-forward, neural network, where the input vector is multiplied by a matrix, and then projected through static nonlinear activation units (e.g., a threshold function, sigmoid function, rectified linear function, or similar).\footnote{A constant bias term is usually added to the weights, to control the activation threshold of each unit.}
 This static nonlinearity is intended to correspond to the abstract behaviour (i.e., average activation level) of an artificial ``neuron'', while the matrix corresponds to the synaptic weights of each neuron -- hence the term ``weight matrix''.
 The output(s) of the network provide a classification of the input vector -- the interpretation of which is task-dependent.
 The weight matrix is learned from example data, in a black-box manner, by applying a simple delta rule that, in effect, performs gradient descent on a loss function across the training data.
 
 A great deal of excitement was fueled by claims that the perceptron would soon ``be able to walk, talk, see, write, reproduce itself and be conscious of its existence''~\citep{historyofperceptrons}.
-But soon after, a famous book by \citet{minsky1969perceptrons} pointed out a serious limitation of this architecture: it can only classify linearly-separable patterns -- that is, it can only compute functions whose outputs distinguish its inputs based on whether the vector falls on one side of a hyperplane or the other.
+But soon after, a famous book by \citet{minsky1969perceptrons} pointed out a serious limitation of this architecture: it can only classify linearly-separable patterns -- that is, it can only compute functions whose outputs distinguish its inputs based on whether the vector falls onto one side of a hyperplane or the other.
 The XOR function is perhaps the simplest example of a function that \emph{cannot} be computed in such a manner.
 As a brief aside, many have credited this book as bringing upon the ``AI winter'' of the 1970s: neural network architectures were soon abandoned in favour of symbol-based architectures and so-called production systems, in which general aspects of human-like intelligence are reproduced by the manipulation of abstract symbolic representations~\citep{historyofperceptrons, newell1972human}.
 
 Fortunately, additional layers permit the computation of more complicated nonlinear functions.
 That is, multi-layer feed-forward networks do not suffer the severe limitation of requiring linear-separability.
 By merely stacking two perceptrons together (i.e., introducing a ``hidden layer''), the network becomes able to compute any bounded continuous function---a result known as the universal approximation theorem~\citep{hornik1989multilayer}---assuming the nonlinear activation units are bounded and continuous themselves.
-This insight, together with the stacking of deeper layers to compose increasingly-complicated functions with fewer neurons, the use of ``backpropagation''~\citep{werbos1974beyond, rumelhart1986learning}---performing gradient descent across multiple layers via the chain rule---to learn all of the weight-matrices, combined with increasingly-powerful CPUs and GPUs to process large datasets, all coalesced to usher in the reviving era of ``deep learning''~\citep{sejnowski2018deep}.
+This insight, together with the stacking of deeper layers to compose increasingly-complicated functions with fewer neurons, the use of ``backpropagation''~\citep{werbos1974beyond, rumelhart1986learning}---performing gradient descent across multiple layers via the chain rule---to learn all of the weight matrices, combined with increasingly-powerful GPUs to process large datasets, all coalesced to usher in the reviving era of ``deep learning''~\citep{sejnowski2018deep}.
 
 Deep learning has undoubtedly brought about many rapid and impressive advances to the field of artificial intelligence.
 Due to its black-box nature, neither domain expertise nor understanding of the network's internal function are required in order to achieve state-of-the-art performance on a large number of important problems, including: image recognition, speech recognition, natural language understanding, question answering, and language translation~\citep{lecun2015deep}.
-The basic recipe is conceptually simple: obtain one of the many popular off-the-shelf toolboxes for deep learning, pick your favourite network architecture, set its hyperparameters, and then throw as much training data at the network as your CPUs or GPUs can handle.
-Deep learning excels at constructing static vector functions, that generalize to new data, by automatically discovering the latent (i.e., hidden) low-dimensional representations that are most relevant to the task at hand.
-However, the opacity of its optimization procedure comes as a double-edged sword: while it is easy to apply deep learning to many problems with minimal hand-engineering, it becomes unclear what effect most hyperparameter changes will have on overall performance~\citep{bergstra2012random}.
-For example, it has been observed that using a rectified linear~(ReLU) activiation unit for each nonlinearity can dramatically reduce training times on a variety of benchmarks~\citep{glorot2011deep}, yet this observation still does not have any theoretically-grounded explanation that could inform the optimal selection of nonlinearities or related hyperparameters.
+The basic recipe is conceptually simple: obtain one of the many popular off-the-shelf toolboxes for deep learning, pick your favourite network architecture, set its hyperparameters, and then throw as much training data at the network as your GPU(s) can handle.
+Deep learning excels at constructing static vector functions, that generalize to new examples, by automatically discovering the latent (i.e., hidden) low-dimensional representations that are most relevant to the task at hand.
+However, the opacity of its optimization procedure comes as a double-edged sword: while it is easy to apply deep learning to many problems with minimal hand-engineering, it is unclear even to experts what effect most hyperparameter changes will have in advance on overall performance~\citep{bergstra2012random}.
+For example, it has been observed that using a rectified linear~(ReLU) activiation unit for each nonlinearity can dramatically reduce the training time on a variety of benchmarks~\citep{glorot2011deep}, yet, as far as we know, this observation still does not have any theoretically-grounded framework that could assist in selecting nonlinearities or related hyperparameters for some given task.
 
-Despite its breakthroughs, the field is well-aware that a feed-forward architecture is incapable of learning temporal relationships in the input data, which is necessary for tasks involving video, speech, and language understanding with long-range dependencies~\citep{bengio1994learning}.
+Despite its breakthroughs, the field is well-aware that a feed-forward architecture is incapable of learning temporal relationships that span arbitrarily across the input data, which is necessary for tasks involving video, speech, and language understanding with long-range dependencies~\citep{bengio1994learning}.
 Regardless of the depth of the network, a feed-forward network will always have some finite input response, which leaves a finite ``memory'' of previous inputs within the state of the network.
-The most general solution to overcome this problem is to introduce recurrent connections into the network, which transmit current state information back to itself, thus allowing the network to capture information about past inputs and reuse it in the future. 
+In other words, the functions that are computable with such a network cannot access inputs that go beyond the depth of the network.
+The most general solution to overcome this problem is to introduce recurrent connections into the network, which transmit current state information back to itself, thus allowing the network to capture information about previous inputs and reuse it in the future. 
 These networks are called Recurrent Neural Networks~(RNNs).
 
-We begin with a brief theoretical discussion of the computational power of RNNs, followed by an overview of many of the most popular architectural approaches and methods to building RNNs.
+We begin with a brief theoretical discussion on the computational power of RNNs, followed by an overview of many of the most popular architectural approaches and methods to building RNNs.
 This is not intended to provide a comprehensive record of all such findings, but rather to help situate this work and shine a spotlight on many of the key ingredients that motivate our eventual approach.
 Reviews and references that provide more detailed accounts of these methods and its variants are included throughout.
 We then describe, in detail, the three principles of the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a} while contrasting this approach with those discussed thus far.
@@ -40,7 +41,7 @@ Finally, we provide some necessary mathematical background on dynamical systems.
 \section{Recurrent Neural Networks}
 
 The Recurrent Neural Network~(RNN) is the most computationally-powerful brand of neural network that we know how to physically implement.
-By using recurrent connections to persist state information through time, thus endowing the network with an internal memory, RNNs are able to compute functions outside the computational class afforded by deep feed-forward networks: \emph{dynamical systems} -- functions whose state evolves nonlinearly according to the history of its input.
+By using recurrent connections to persist state information through time, thus endowing the network with an internal memory, RNNs are able to compute functions outside the computational class afforded by deep feed-forward networks: \emph{dynamical systems} -- functions whose state evolves nonlinearly according to the history of its inputs.
 This enables the network to exploit patterns in the input that span time along arbitrary temporal scales.
 
 Specifically, RNNs serve as a universal approximator to any finite-dimensional, causal, discrete-time, dynamical system~\citep{schafer2006recurrent}.
@@ -74,7 +75,9 @@ Thus, while feed-forward networks are fundamentally incapable of reproducing hum
 In practice, for tasks that involve sequential inputs, such as speech and language, RNNs are often the best choice~\citep{lecun2015deep}.
 Recent instances have demonstrated impressive human-like intelligence in generating captions from images~\citep{vinyals2015show}, recognizing speech in multiple languages~\citep{amodei2016deep}, and decoding human emotions from video~\citep{ebrahimi2015recurrent}.
 However, the largest RNN that we are aware of to be successfully trained is a 6.6~million neuron model of human cognition---just shy of 0.01\% the size of the human brain---using the methods of the NEF~\citep{choo2018}.
-The next largest (non-NEF) RNN that we can find with published resource counts is a ``large scale'' speech recognition example from Google, consisting of \numprint{6800} units in its largest instantiation~\citep[][Table~1]{sak2014long} -- on the order of \numprint{e7} times smaller than the human brain.
+The next largest (non-NEF) RNN that we can find with published resource counts is a ``large scale'' speech recognition example from Google that consists of \numprint{6800} units in its largest instantiation~\citep[][Table~1]{sak2014long} -- on the order of \numprint{e6}--\numprint{e7} times smaller than the human brain, depending on how one counts a ``neuron'' in such a network.
+
+Clearly, the practical and theoretical challenges lie in scaling.
 As informed by the ``no free lunch theorem'' for RNNs~\citep{wiklicky1994non}, there exists no universal training algorithm that will find the correct solution to all tasks.
 It is instead necessary to constrain the solution space with prior knowledge.
 % Generally, the challenge is in imposing the right set of constraints that will allow one to learn the weights with some training procedure, all while remaining implementable within some available resource and power budget. % order of \numprint{e11}~neurons and \numprint{e14}~weights.
@@ -124,7 +127,7 @@ The structure of LSTM cells have also been compared to that of cortical microcir
 This success has prompted many variants of LSTMs, including the bidirectional LSTM~\citep{graves2005framewise}, hierarchical S-LSTM~\citep{zhu2015long}, grid LSTM~\citep{kalchbrenner2015grid}, phased LSTM~\citep{neil2016phased}, and others~\citep{salehinejad2017recent}.
 At the same time, this has inspired several related architectures that augment an RNN with differentiable memory cells to facilitate long-range temporal interactions, including the gated recurrent unit~\citep[GRU;][]{cho2014properties, chung2014empirical}, neural Turing machine~\citep{graves2014neural}, memory network~\citep{weston2014memory}, and orthogonal GRU~\citep{jing2018gated}.
 In section~\TODO{reference LSTM-DelayCell comparison section}, we propose another kind of memory cell based on our work, and compare their performance in terms of memory capacity to LSTMs.
-Results on a chaotic time-series prediction benchmark suggest that LSTMs, when interleaved with our novel memory cell, and trained via BPTT, are capable of learning systems described by nonlinear delay-differential equations.
+Results on a chaotic time-series prediction benchmark suggest that LSTMs, when interleaved with our novel memory cell, and trained via BPTT, become capable of learning systems described by nonlinear delay-differential equations.
 
 \subsection{Randomized Approaches}
 
@@ -150,24 +153,25 @@ Often, the dynamical system is simply a description of a particular computation 
 
 Instances of this approach include the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a, duggins2017incorporating}, first-order reduced and controlled error~\citep[FORCE;][]{sussillo2009generating, depasquale2018full} and its spiking relatives~\citep{nicola2016supervised, thalmeier2016learning}, balanced spiking networks~\citep{boerlin2011spike, boerlin2013predictive, schwemmer2015constructing, alemi2018learning}, and closely-related methods~\citep{jaeger2014controlling, gilra2017predicting}.
 Reviews of many of these methods are given by \citet{deneve2016efficient} and \citet{abbott2016building}, and we discuss some of the critical points below.
+In all cases, these methods provide a procedure for taking a description of some desired dynamical state-vector, and then training a recurrent network of spiking or non-spiking neurons, with varying constraints on the target models' level of biological detail, to represent that state.
 
-It is important to note that, although all of these approaches are engineered from a top-down perspective, one can still apply BPTT (or any other optimization method) to fine-tune the resulting RNN end-to-end from example input-output pairs -- a hybrid approach that is embraced by the NEF and its software stack~\citep{rasmussen2018nengodl}.
-The point is that prior knowledge of the task can help place appropriate constraints on the initial state of the RNN, and provide transparency into the relationships between network parameters, configuration, and function.
-Such transparency enables theoretical insights into neural computation, and, as we will show, practical advances on RNN benchmarks that would otherwise be quite difficult to obtain with a pure black-box approach.
+It is important to note that, although all of these approaches are engineered from a top-down modelling perspective, one can still apply BPTT (or any other optimization method) to fine-tune the resulting RNN end-to-end from example input-output pairs -- a hybrid approach that is embraced by the NEF and its software stack~\citep{rasmussen2018nengodl}.
+The point is that prior knowledge of the task can help place appropriate constraints on the initial configuration of the RNN to assist BPTT, and provide transparency into the relationships between network parameters, configuration, and function.
+This transparency enables theoretical insights into neural computation, and, as we will show, practical advances on RNN benchmarks that would otherwise be quite difficult to obtain with a pure black-box approach.
 
 In section~\ref{sec:nef} we provide a detailed account of the NEF, and in section~\ref{sec:relationships} we draw architectural comparisons to both RC and FORCE.
-Its extension, full-FORCE~\citep{depasquale2018full}, can be viewed an an instance of the NEF, where training is performed online rather than offline, and randomized feedback is thrown in to serve the same purposes as in RC.
-The methods of \citet{thalmeier2016learning} provide a means of realizing FORCE and full-FORCE networks in biologically plausible spiking networks using a precise spike-time coding mechanism, similar to ~\citet{boerlin2013predictive}, but supported by nonlinearities in the synapses.
-On the other hand, \citet{jaeger2014controlling} can be viewed as an extension of RC that is essentially an offline variant of FORCE or a non-spiking NEF network~\citep{aubin2017}.
+Its extension, full-FORCE~\citep{depasquale2018full}, can be viewed an an instance of the NEF with full-rank weight matrices~\citep{tripp2006neural}, where training is performed online rather than offline, and randomized feedback is thrown in to serve the same purposes as in RC.
+The methods of \citet{thalmeier2016learning} provide a means of realizing FORCE and full-FORCE networks in biologically plausible spiking networks using a precise spike-time coding mechanism, similar to ~\citet{boerlin2013predictive}, supported by nonlinearities in the synapses.
+On the other hand, \citet{jaeger2014controlling} can be viewed as an extension of RC that is essentially an offline variant of FORCE, or a non-spiking NEF network~\citep{aubin2017}.
 
 Balanced spiking networks also share many commonalities with the NEF, primarily a procedure for mapping a dynamical state vector onto a population of spiking neurons, via a low-rank weight matrix that accounts for the dynamics of the neurons and synapses.
 The main benefit of the balanced network approach is that precision scales as $\bigoh{n}$, compared to $\bigoh{\sqrt{n}}$ for the NEF, where $n$ is the number of neurons, by carefully coordinating the variance in spike-timing~\citep[][Figure~11]{boahen2017neuromorph}.
 However, this scheme only applies to linear dynamical systems, relies on assumptions of near-instantaneous communication between all neurons, and requires linear neurons with minimal leakage and no refractory period~\citep{boerlin2013predictive}.
 \citet{schwemmer2015constructing} has extended these methods to support more biologically plausible models, but the scaling benefits do not appear to persist beyond $100$--$400$ neurons~[personal communication].
-In general, it is unclear how far these assumptions can be relaxed before scaling regresses to $\bigoh{\sqrt{n}}$, which is of great importance when considering our targets of modelling biological systems and mapping onto neuromorphic hardware -- both targets regularly violate these assumption.
+In general, it is unclear how far these assumptions can be relaxed before scaling regresses to $\bigoh{\sqrt{n}}$, which is of relevance when considering our targets of modelling biological systems and mapping onto neuromorphic hardware -- both of these targets regularly violate the above assumptions.
 
 Given the subtle distinctions between these similar sets of approaches,
-section~\ref{sec:nef-suitability} analyzes the suitability of the NEF for universal spike-based computation on neuromorphic hardware.
+section~\ref{sec:nef-suitability} rigorously analyzes the suitability of the NEF for universal spike-based computation on neuromorphic hardware.
 The NEF is mathematically correct under fairly weak assumptions, which leads to it being robust and extensible.
 These key factors contribute to the NEF being our toolkit of choice when it comes to training RNNs for the purposes of deployment on the neuromorphic hardware summarized in section~\ref{sec:neuromorphic}.
 
