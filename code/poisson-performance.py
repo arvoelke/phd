@@ -79,22 +79,15 @@ def go(freq,
         p_ideal = nengo.Probe(u, synapse=tau)
 
     with nengo.Simulator(model, dt=dt) as sim:
+        rng = np.random.RandomState(seed=seed)
         if isinstance(neuron_type, nengo.LIF):
+            from nengolib.neurons import init_lif
+            init_lif(sim, x, rng=rng)
+        elif isinstance(neuron_type, nengo.SpikingRectifiedLinear):
             # https://github.com/nengo/nengo/issues/1415
-            # uniform is a decent approximation for the voltage
-            # after the mixing time
             sim.signals[sim.model.sig[x.neurons]['voltage']] = (
-                np.random.RandomState(seed=seed).rand(n_neurons))
-        
-            # For some extra assurances, run
-            # until every neuron has spiked at least once
-            sim.run(1. / np.max(sim.data[x].max_rates))
-            
-            # Then clear that probe data
-            # https://github.com/nengo/nengo/issues/963
-            for probe in sim.model.probes:
-                sim._probe_outputs[probe] = []
-            
+                rng.rand(x.n_neurons))
+
         sim.run_steps(n_steps)
 
     return nengo.utils.numpy.rmse(
@@ -103,11 +96,18 @@ def go(freq,
 
 n_trials = 10
 
+def get_models(seed):
+    return (
+        nengo.SpikingRectifiedLinear(),
+        PoissonLIF(seed=seed),
+        nengo.LIF(),
+    )
+
 ########################
 
 data = defaultdict(list)
 for seed in range(n_trials):
-    for neuron_type in (PoissonLIF(seed=seed), nengo.neurons.LIF()):
+    for neuron_type in get_models(seed):
         for freq in np.linspace(1, 101, 11):
             data['Model'].append(type(neuron_type).__name__)
             data['Frequency (Hz)'].append(freq)
@@ -116,13 +116,14 @@ for seed in range(n_trials):
 
 plt.figure(figsize=(14, 6))
 sns.lineplot(data=DataFrame(data), x="Frequency (Hz)", y="RMSE", hue="Model")
+sns.despine(offset=15)
 savefig("poisson-frequency-scaling.pdf")
 
 ########################
 
 data = defaultdict(list)
 for seed in range(n_trials):
-    for neuron_type in (PoissonLIF(seed=seed), nengo.neurons.LIF()):
+    for neuron_type in get_models(seed):
         for n_neurons_over_freq in np.linspace(10, 1001, 11):
             freq = 10
             data['Model'].append(type(neuron_type).__name__)
@@ -130,7 +131,14 @@ for seed in range(n_trials):
             data['Seed'].append(seed)
             data['RMSE'].append(go(freq, neuron_type, n_neurons_over_freq=n_neurons_over_freq, seed=seed))
 
+n_neurons = np.unique(data['# Neurons'])
+c = 5  # fudge-factor to shift the line vertically
+
 plt.figure(figsize=(14, 6))
+plt.plot(n_neurons, c / np.sqrt(n_neurons), linestyle='--',
+         c='black', label=r"$\frac{1}{\sqrt{n}}$")
 sns.lineplot(data=DataFrame(data), x="# Neurons", y="RMSE", hue="Model")
 plt.xscale('log')
+plt.yscale('log')
+sns.despine(offset=15)
 savefig("poisson-neuron-scaling.pdf")
