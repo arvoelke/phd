@@ -72,6 +72,18 @@ Maybe additional biological detail can get around this limitation, or maybe the 
 
 \citep{boahen2017neuromorph}
 
+\subsection{Scalability of Precision}
+
+\TODO{Discuss all of the scaling.}
+We usually set $n$ to about $50 \times q$, as this has been found to provide tolerable performance in practice~\citep{braindrop2019}. 
+More neurons may be required depending on the difficulty of the function and the frequency of the inputs.
+For a fixed amount of noise in a represention implemented by an ensemble of $n$ neurons, the current best-known lower-bound predicts the dimensionality $d$ scales as $\Omega \left( n^{\frac{2}{3}} \right)$ for $n$ neurons~citep[][p.~60]{jgosmann2018}.
+Although we don't know the upper-bound, we conjecture that it is $\bigoh{n}$.
+That is, the dimensionality should not be able to scale faster than the neuron count.
+If it could, then each neuron would represent $\omega(1)$ dimensions, which seems physically implausible given access to only $\bigoh{1}$ state variables.
+This limitation could be broken by dendritic computation, for instance if each neuron had access to $\bigoh{n}$ variables distributed along the dendritic tree.
+
+
 \subsection{Correctness of Spike Coding}
 \label{sec:spike-coding}
 
