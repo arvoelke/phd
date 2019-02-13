@@ -3,6 +3,26 @@
 
 This section is taken from \citet{voelker2018}.
 
+A particularly important dynamical system that has not been implemented using the NEF is the pure continuous-time delay line.
+This system must represent a rolling window of input history.
+We provide a novel derivation of an optimal low-dimensional linear approximation to a continuous-time delay, and prove that the resulting \emph{delay network} nonlinearly encodes its input across the delay interval.
+This network uses a scale-invariant representation, with a level of accuracy that depends on the input frequency, chosen dimensionality (i.e.,~the order of the approximation), and particular synapse model.
+Low-dimensional representations (e.g.,~$\le 27$) of low-frequency signals (e.g.,~$\le 50$\,Hz) are pervasive in biological systems~\citep{cunningham2014dimensionality, waernberg2017low, pulvermuller1997high, singer1999neuronal}.
+To our knowledge, this work is the first to demonstrate that such a temporal code may be accurately implemented using a spiking dynamical network.
+
+Reservoir Computing approaches, such as Liquid State Machines~\citep{maass2002real} and Echo State Networks~\citep{jaeger2001echo}, may be used to approximate a delay line.
+However, since these networks use randomly chosen feedback weights, it is likely that they do not {\it efficiently} produce the dynamics of a pure delay.
+Rather, these networks represent a random variety of nonlinear memory traces~\citep{lukovsevicius2012reservoir}.
+Discrete approaches to short-term memory, such as those taken by \citet{white2004short} and \citet{ganguli2008memory}, while optimal in an information-theoretic sense, rely fundamentally on single time-step delays between rate-based neurons.
+In contrast, the method that we propose here works independently of the simulation time-step, and is optimal assuming the population of spiking neurons---coupled with some model of the synapse---accurately represents a low-dimensional, low-frequency, vector space.
+Furthermore, our framework is extended to account for arbitrary linear synapses, which improves our understanding of the relationship between synapse models and network-level computation.
+A detailed comparison of our method to Reservoir Computing remains the subject of future work.
+
+A distinguishing feature of this work is that we begin the problem with a mathematical description of the ideal dynamics for the delay line, and then proceed by mapping this description onto a spiking neural network (using the NEF and its extensions).
+This is in contrast to methods that use online learning or backpropagation through time with rate-based neurons~\citep{de1992gamma, sussillo2009generating} or spiking neurons~\citep{nicola2016supervised, huh2017gradient, gilra2017predicting, alemi2017learning}.
+That is, we do not require any sophisticated training regimes involving online learning or backpropagation; our delay network is trained offline using convex optimization~(i.e.,~regularized least-squares), which yields a more complete understanding of its employed representation and dynamics.
+
+
 A fundamental dynamical system that has not yet been discussed within the NEF literature is the continuous-time delay line of $\theta$ seconds,\footnote{
 \citet{voelker2015computing} proposed a NEF model, but did not include detailed analysis or extensions.
 % Here, we elaborate on this network in considerable detail.

@@ -138,7 +138,7 @@ The intuition is that randomized feedback, when initialized in an appropriate ma
 These traces can then be decoded to reconstruct the output signal in a manner that approximates a nonlinear transfer function of the input signal.
 Details are provided in section~\ref{sec:relationships} after introducing the NEF.
 
-There are two great insights driving the adoption of RC: (1) randomized feedback provides an overcomplete basis of nonlinear time-varying signals that can be linearly combined to approximate some target signal, and (2) by leaving the recurrent weights fixed, the optimization procedure is greatly simplified; training the readout weights amounts to a least-squares problem.
+There are two great insights driving the adoption of RC: (1)~randomized feedback provides an overcomplete basis of nonlinear time-varying signals that can be linearly combined to approximate some target signal, and (2)~by leaving the recurrent weights fixed, the optimization procedure is greatly simplified; training the readout weights amounts to a least-squares problem.
 However, the benefits of RC do not come without limitations involving memory capacity. \TODO{Cite some key results.}
 In particular, section~\ref{sec:delay-rc} compares the performance of RC to the NEF on a continuous-time memory benchmark, thus highlighting severe scaling issues with RC.
 
@@ -170,70 +170,56 @@ However, this scheme only applies to linear dynamical systems, relies on assumpt
 \citet{schwemmer2015constructing} has extended these methods to support more biologically plausible models, but the scaling benefits do not appear to persist beyond $100$--$400$ neurons~[personal communication].
 In general, it is unclear how far these assumptions can be relaxed before scaling regresses to $\bigoh{\sqrt{n}}$, which is of relevance when considering our targets of modelling biological systems and mapping onto neuromorphic hardware -- both of these targets regularly violate the above assumptions.
 
-Given the subtle distinctions between these similar sets of approaches,
+Given the subtle distinctions between these overlapping approaches,
 section~\ref{sec:nef-suitability} rigorously analyzes the suitability of the NEF for universal spike-based computation on neuromorphic hardware.
 The NEF is mathematically correct under fairly weak assumptions, which leads to it being robust and extensible.
-These key factors contribute to the NEF being our toolkit of choice when it comes to training RNNs for the purposes of deployment on the neuromorphic hardware summarized in section~\ref{sec:neuromorphic}.
+These key factors contribute to the NEF being our tool of choice when it comes to training RNNs for the purposes of deployment on the neuromorphic hardware summarized in section~\ref{sec:neuromorphic}.
 
 \TODO{Mention all of the methods for converting ANNs to SNNs at some point (apart from backprop on SNNs). Including \citep{rueckauer2017conversion} and related background and sigma-delta and \citep{yousefzadehconversion2019} and etc.}
 
 \section{Neural Engineering Framework}
 \label{sec:nef}
 
-\TODO{Quickly compare and contextualize against the above}
+In this section, we provide a detailed overview of the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a} that has been adapted from \citet{voelker2018}.
 
-\citep{dynamicspatent}
-\citep{sussillo2013opening}
-
-\citep{hunsberger2015spiking, hunsberger2016training, hunsberger2018, rasmussen2018nengodl}
-
-One of the central challenges in computational neuroscience is understanding how dynamic stimuli can be processed by neural mechanisms to drive behavior.
-Recurrent connections, cellular responses, and synaptic responses are ubiquitous sources of dynamics throughout the mammalian brain that must work in concert to support dynamic information processing~\citep{kandel2000principles}.
+One of the central challenges in computational neuroscience involves improving our understanding of how dynamic stimuli can be processed by neural mechanisms to drive behaviour.
+Recurrent connections, cellular responses, and synaptic responses, are all ubiquitous sources of dynamics throughout the mammalian brain that must work in concert to support dynamic information processing~\citep{kandel2000principles}.
 How these low-level mechanisms interact in order to encode information about the history of a stimulus, across time, is the subject of considerable study.
 One approach to better understanding these mechanisms is to construct models that capture central features of neural dynamics, while implementing higher-level information processing.
 
-
 %The ways in which these low-level mechanisms might interact, in order to usefully encode information about a stimulus \emph{across time}, are generally unclear in the context of high-level cognition~\citep{?}.
 
-% Biology has appeared to solve this problem by imposing structure in the brain, with neuroanatomical constraints that differ considerably by brain area~\citep[][pp.~207--227]{kandel2000principles}.
-% We interpret this pragmatically as a need to: (1) incorporate prior knowledge of a desired function into the structure of a network, and (2) constrain a network's topology using known properties of the underlying dynamical mechanisms.
-
-The Neural Engineering Framework~\citep[NEF;][]{eliasmith1999developing, eliasmith2003a} proposes a method to model such dynamical systems in networks of spiking neurons~\citep[see][for reviews of other methods]{abbott2016building, deneve2016efficient}.
-The NEF has been used to construct a wide variety of neural models, including a 2.3 million neuron functioning model of the human brain, named ``Spaun'', capable of performing perceptual, motor, and cognitive tasks~\citep{eliasmith2012}.
+The NEF proposes a method to model such dynamical systems in artificial networks of spiking neurons.
+The NEF has been used to construct a wide variety of neural models, including a 6.6~million neuron functioning model of the human brain, named ``Spaun'', that is capable of performing perceptual, motor, and cognitive tasks~\citep{eliasmith2012, choo2018}.
 This model incorporates many kinds of observed neural dynamics, including oscillations, sustained activity, and point attractor dynamics.
-The flexibility of the NEF has lead to it being deployed on mixed-analog-digital neuromorphic chips~\citep{choudhary2012silicon, corradi2014, voelker2017iscas, voelker2017neuromorphic} and digital architectures~\citep{bekolay2013, wang2014compact, mundy2015efficient, berzish2016}.
+The flexibility of the NEF has lead to it being deployed on mixed-analog-digital neuromorphic chips~\citep{choudhary2012silicon, corradi2014, voelker2017iscas, voelker2017neuromorphic, braindrop2019} and digital architectures~\citep{bekolay2013, wang2014compact, mundy2015, berzish2016, wang2017neuromorphic, blouw2018a}.
 Consequently, the NEF provides a practical method for programming neuromorphics, thus helping the field realize its promise of a low-energy computing platform that emulates core principles of the nervous system~\citep{boahen2017neuromorph}.
 
-However, the NEF typically assumes an exponential model of the post-synaptic current~(PSC) evoked by an action potential, which has a biologically implausible, instantaneous rise-time.
+Biological brains possess a significant amount of structure, with neuroanatomical constraints that differ considerably between functional areas. %~\citep[][pp.~207--227]{kandel2000principles}.
+We interpret this observation pragmatically, as a call to: (1)~incorporate prior knowledge of a desired set of tasks into the network's construction, and (2)~constrain a network's function using available models of the underlying dynamical mechanisms.
+However, the standard formulation of the NEF makes a number of simplifying assumptions regarding these mechanisms.
+For example, the NEF typically assumes an exponential model of the post-synaptic current~(PSC) evoked by an action potential, which has a biologically implausible, instantaneous rise-time.
 This model is also known as a first-order lowpass filter.
-In contrast, the synapse models used in mixed-analog-digital neuromorphic chips are nonideal, featuring higher-order dynamics due to parasitic capacitances~\citep{voelker2017iscas}.
-Similarly, the synapse models commonly used in biological models incorporate distinct rise- and fall-times due to separate time scales of transmitter binding and unbinding, as well as axonal transmission delays due to the finite-velocity propagation of action potentials~\citep{roth2009modeling}.
-To widen the scope of the NEF, we characterize the network-level effects of these higher-order synapse models, and harness them to implement certain classes of dynamical systems with improved accuracy.
+In contrast, the synapse models in mixed-analog-digital neuromorphic chips are nonideal, featuring higher-order dynamics due to parasitic capacitances~\citep{voelker2017iscas}.
+Similarly, the synapse models commonly used in biological models incorporate distinct rise- and fall-times due to separate time-scales of transmitter binding and unbinding, as well as axonal transmission delays due to the finite-velocity propagation of action potentials~\citep{roth2009modeling}.
+Chapter~\ref{chapt:nef-extensions} widens the scope of the NEF, by characterizng the network-level effects of these higher-order synapse models, and harnessing them to implement certain classes of dynamical systems with improved accuracy.
+Chapter~\ref{chapt:delays} explores a novel NEF-based computation that equips RNNs with an improved ability to compute nonlinear functions across windows of memory.
+In this section, we provide the basic building blocks adapted from the original proposal by \citet{eliasmith2003a}, before analyzing its merits in Chapter~\ref{chapt:analysis}.
 
-A particularly important dynamical system that has not been implemented using the NEF is the pure continuous-time delay line.
-This system must represent a rolling window of input history.
-We provide a novel derivation of an optimal low-dimensional linear approximation to a continuous-time delay, and prove that the resulting \emph{delay network} nonlinearly encodes its input across the delay interval.
-This network uses a scale-invariant representation, with a level of accuracy that depends on the input frequency, chosen dimensionality (i.e.,~the order of the approximation), and particular synapse model.
-Low-dimensional representations (e.g.,~$\le 27$) of low-frequency signals (e.g.,~$\le 50$\,Hz) are pervasive in biological systems~\citep{cunningham2014dimensionality, waernberg2017low, pulvermuller1997high, singer1999neuronal}.
-To our knowledge, this work is the first to demonstrate that such a temporal code may be accurately implemented using a spiking dynamical network.
+In the context of RNNs, the NEF offers a top-down means of training the weights of a recurrent network of spiking (or non-spiking) neurons to implement some particular dynamical system.
+This is achieved efficiently through two important means: (1)~weight matrices are factorized into $n \times q$ (i.e.,~low-rank) \emph{encoding} and \emph{decoding} matrices, where $q$ is the dimensionality of the dynamical state-vector, and (2)~the optimization problem is reformulated to a simple batched least-squares problem that can be solved offline without needing to explicitly model the spike generation.
+These insights lead to procedures for training and simulation that are efficiently implemented---scaling as $\bigoh{n}$ in time and space---by the Nengo~2.X simulator~\citep{bekolay2013}.
+Backpropagation through time can be applied to improve the performance of these networks using Nengo~DL~\citep{hunsberger2015spiking, hunsberger2016training, hunsberger2018, rasmussen2018nengodl}.
 
-Reservoir Computing approaches, such as Liquid State Machines~\citep{maass2002real} and Echo State Networks~\citep{jaeger2001echo}, may be used to approximate a delay line.
-However, since these networks use randomly chosen feedback weights, it is likely that they do not {\it efficiently} produce the dynamics of a pure delay.
-Rather, these networks represent a random variety of nonlinear memory traces~\citep{lukovsevicius2012reservoir}.
-Discrete approaches to short-term memory, such as those taken by \citet{white2004short} and \citet{ganguli2008memory}, while optimal in an information-theoretic sense, rely fundamentally on single time-step delays between rate-based neurons.
-In contrast, the method that we propose here works independently of the simulation time-step, and is optimal assuming the population of spiking neurons---coupled with some model of the synapse---accurately represents a low-dimensional, low-frequency, vector space.
-Furthermore, our framework is extended to account for arbitrary linear synapses, which improves our understanding of the relationship between synapse models and network-level computation.
-A detailed comparison of our method to Reservoir Computing remains the subject of future work.
-
-A distinguishing feature of this work is that we begin the problem with a mathematical description of the ideal dynamics for the delay line, and then proceed by mapping this description onto a spiking neural network (using the NEF and its extensions).
-This is in contrast to methods that use online learning or backpropagation through time with rate-based neurons~\citep{de1992gamma, sussillo2009generating} or spiking neurons~\citep{nicola2016supervised, huh2017gradient, gilra2017predicting, alemi2017learning}.
-That is, we do not require any sophisticated training regimes involving online learning or backpropagation; our delay network is trained offline using convex optimization~(i.e.,~regularized least-squares), which yields a more complete understanding of its employed representation and dynamics.
-
-The Neural Engineering Framework~\citep[NEF;][]{eliasmith1999developing, eliasmith2003a} consists of three mathematical principles used to describe neural computation.
+At the same time, this top-down approach provides considerable transparency into the relationship between the neural nonlinearities and network function~\citep[][Chapter 7]{eliasmith2003a}.
+In addition it becomes tractable to relate the time-constants of the low-level mechanisms to the emergent dynamics of the network.
+The NEF consists of three mathematical principles used to describe neural computation.
 The NEF is most commonly applied to building dynamic (i.e.,~recurrent) spiking neural networks, but also applies to non-spiking and feed-forward networks.
 Its primary strength lies in providing a well-understood and efficient means of engineering spiking neural models, and programming neuromorphic hardware, to perform mathematically described computations~\citep{eliasmith2013build, boahen2017neuromorph}.
 In this section, we provide an overview of these methods applied to training both feed-forward and recurrent connection weights, in order to implement linear dynamical systems -- although these methods extend to nonlinear dynamical systems as well~\citep{voelker2017iscas, voelker2017neuromorphic}.
-We present this framework in a manner that is consistent with the Nengo~2.4.0 simulator~\citep{bekolay2013}, which implements the NEF among other approaches.
+We present this framework in a manner that is consistent with the  which implements the NEF among other approaches.
+
+
 
 \subsection{Principle 1 -- Representaiton}
 \label{sec:principle1}
@@ -453,6 +439,8 @@ Given the ability of Principle~2 to compute nonlinear functions~(i.e.,~equation~
 \subsection{Relationships to Other Approches}
 \label{sec:relationships}
 
+\citep{sussillo2013opening}
+
 Recurrent neural networks~(RNNs) are notoriously difficult to train and interpret.
 The paradigm of Reservoir Computing~(RC) has managed to overcome some of these limitations, by driving a fixed and randomly connected ensemble of neurons, and learning the desired output via linear decoding.
 The First-Order Reduced and Controlled Error~(FORCE) method improves the performance of RC networks, by simultaneously re-encoding the learned output back into the reservoir. 
@@ -588,9 +576,9 @@ The conclusions from this section are similar to those drawn by \citet[][see sup
 \label{sec:neuromorphic}
 
 The term \emph{neuromorphic computing}---also known as neuromorphic engineering---refers broadly to the use of specialized hardware to emulate computational principles of biological nervous systems~\citep{mead1989analog, liu2002analog}.
-Here, we focus more specifically on the synthesis of spiking neural networks~(SNNs)---in both analog and digital hardware---for low-power, dynamical, brain-like, computation~\citep{boahen2017neuromorph}.
+Here, we focus more specifically on the synthesis of Spiking Neural Networks~(SNNs)---in both analog and digital hardware---for low-power, dynamical, brain-like, computation~\citep{boahen2017neuromorph}.
 
-This chapter provides a brief overview of the landscape, with an emphasis placed on state-of-the-art hardware made available to the Centre for Theoretical Neuroscience, at the University of Waterloo, for academic research, namely: SpiNNaker~\citep{furber2014spinnaker}, Braindrop~\citep{braindrop2019}, and Loihi~\citep{davies2018loihi}.
+This section provides a brief overview of the landscape, with an emphasis placed on state-of-the-art hardware made available to the Centre for Theoretical Neuroscience, at the University of Waterloo, for academic research, namely: SpiNNaker~\citep{furber2014spinnaker}, Braindrop~\citep{braindrop2019}, and Loihi~\citep{davies2018loihi}.
 At the same time, this overlaps with the efforts of many companies, including: Applied Brain Research~(ABR), Femtosense, Intel, IBM, Numenta, Qualcomm, BrainChip, General Vision, HRL Laboratories, Brain Corporation, Knowm, Samsung, and Vicarious FP~\citep{marketreport2018, femtosense} -- although we focus primarily on ABR's marriage of Nengo and the NEF with neuromorphic hardware from Femtosense (i.e.,~Braindrop) and Intel (i.e.,~Loihi).
 A non-exhaustive list of other architectures, many of which implement NEF networks, are provided in section~\ref{sec:neuromorphic-others}.
 
@@ -599,7 +587,7 @@ There is no logical nor physical reason to believe that neurons and synapses som
 Instead, neuromorphic architectures aim to implement specific classes of algorithms, realized via massively-parallelized event-driven computations that are sparse in both space and time, using dramatically less power~\citep{tang2017sparse}.
 
 The human brain has been estimated to consume as little as $10$--$20$\,fJ on average per ``synaptic event''~\citep{cassidy2014real, boahen2017neuromorph}, totalling approximately $20$\,W across its {\textasciitilde{}}\numprint{e11}~neurons and {\textasciitilde{}}\numprint{e14}~synapses~\citep{koch2014}.
-After $30$ years of work~\citep{cassidy2013design}, the state-of-the-art in neuromorphic computing is on the verge of reaching this level of performance, with Braindrop, Loihi, and TrueNorth~\citep{merolla2014million}, each coming within a factor of \numprint{e1}--\numprint{e3} for roughly equivalent measures of energy per synaptic operation and typical network configurations~\citep{braindrop2019}.
+After more than $30$ years of work~\citep{cassidy2013design}, the state-of-the-art in neuromorphic computing is on the verge of reaching this performance metric, with Braindrop, Loihi, and TrueNorth~\citep{merolla2014million}, each coming within a factor of \numprint{e1}--\numprint{e3} for roughly equivalent measures of energy per synaptic operation and typical network configurations~\citep{braindrop2019}.
 Such potential energy savings are not only tremendous, but a prerequisite to reach the exascale (\numprint{e18}) level of computation achieved by the human brain -- unless one has access to a super-computing cluster powered by a nuclear power plant producing on the order of \numprint{e9}~watts~\citep{furber2012build, neurogrid2014}.
 However, such power measurements are not straight-forward to interpret, as there are many other factors such as the cost of scaling, flexibility of the hardware, and open questions surrounding whether the energy per synaptic event is the best metric for evaluating system performance, and how much speed, accuracy, and biological detail is necessary~\citep{eliasmith2013build} -- all of which make fair benchmarking an incredibly challenging problem~\citep{stewart2015closed}.
 
@@ -607,7 +595,7 @@ However, improved power-efficiency often comes at the cost of reduced programmab
 the more you know about the problem that you are trying to solve, the more that can be ``baked in'' to the hardware to save energy and space, while sacrificing flexibility.
 This fundamental trade-off between being able to solve fewer problems more efficiently, versus more problems less efficiently, is one that the community as a whole is still trying to navigate.
 It appears likely there will be no one-size-fits-all solution, and rather a variety of strategies will be needed to mirror the degrees of architectural specificity observed in the human brain.
-Yet, there are many common features between neuromorphic hardware architectures, including: parallelism, memory colocated with computational elements, heterogeneity, sparsity, structured connectivity, minimization of spike traffic and synaptic events, and real-time interfacing.
+Yet, there are many common features between neuromorphic hardware architectures, including: dynamic spike-generation, massive parallelism, memory colocated with computational elements, heterogeneity, sparsity, structured connectivity, minimization of spike traffic and synaptic events, and real-time interfacing.
 These features are anticipated to provide robust, scalable, and energy-efficient solutions to the domain of tasks where our brains excel: processing sensory information, language and cognition, and motor behaviours -- all dynamically coupled to the time-scales of our environment.
 
 To fully unlock the potential of such hardware, we require significant advances at the intersection of computer science, computational neuroscience, cognitive modelling, electrical engineering, physics, and mathematics.
