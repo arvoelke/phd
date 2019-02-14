@@ -408,35 +408,9 @@ This, in turn, enables useful computations that nonlinearly transform the state-
   \caption{ \label{fig:lti-system}
     Block diagram for an LTI system.
     The integrator is driven by the signal $\dot{\V{x}}(t)$.
+    Reproduced from \citet[][Figure~1]{voelker2018}.
   }
 \end{figure}
-
-Principle~3 is a method of harnessing the dynamics of the synapse model for network-level information processing.
-We begin by focusing our discussion of NEF dynamics on the neural implementation of continuous, linear time-invariant~(LTI) systems:
-\begin{equation} \label{eq:lti}
-\begin{split}
-\dot{\V{x}}(t) &= A\V{x}(t) + B\V{u}(t) \text{,} \\
-\V{y}(t) &= C\V{x}(t) + D\V{u}(t) \text{,}
-\end{split}
-\end{equation}
-where the time-varying signal $\V{x}(t)$ represents the system state, $\dot{\V{x}}(t)$ its time-derivative, $\V{y}(t)$ the output, $\V{u}(t)$ the input, and the time-invariant matrices $(A\text{,}\, B\text{,}\, C\text{,}\, D)$ fully describe the system~\citep{brogan1982modern}.
-This form of an LTI system is commonly referred to as the \emph{state-space model}, but there are many other equivalent forms, which we refer to later.
-
-For LTI systems, the \emph{dynamical primitive}---that is, the source of the dynamics---is the integrator (see Figure~\ref{fig:lti-system}).
-However, the dynamical primitive at our disposal is the \emph{leaky} integrator, given by the canonical first-order lowpass filter modeling the synapse:
-\begin{align} \label{eq:lowpass}
-h(t) = \frac{1}{\tau} e^{-\frac{t}{\tau}} = \mathcal{L}^{-1}\left\{ \frac{1}{\tau s + 1} \right\} \text{,}
-\end{align}
-where $\mathcal{L}^{-1}\{ \cdot \}$ denotes the inverse Laplace transform.\footnote{
-For comparison, the Laplace transform of the integrator is $\mathcal{L}\left\{ 1 \right\} = \frac{1}{s}$.}
-To be more precise, our approach is to represent the state-vector $\V{x}(t)$ in a population of spiking neurons (Principle~1;~equation~\ref{eq:encoding}), such that this vector is obtained by filtering some linearly decoded spike-trains with a leaky integrator (Principle~2;~equation~\ref{eq:trans-decode}).
-Thus, the goal of Principle~3 is to determine the transformations required to implement equation~\ref{eq:lti}, given that $\V{x}(t)$ is obtained by some convolution with a leaky integrator, rather than the perfect integrator depicted in Figure~\ref{fig:lti-system}.
-
-Principle~3 states that in order to implement equation~\ref{eq:lti} in a population of neurons that represents $\V{x}(t)$, we must compensate for the effect of ``replacing'' the integrator with a leaky integrator (compare Figures~\ref{fig:lti-system} and~\ref{fig:lti-system-mapped}), that is, by driving the synapse with $\tau \dot{\V{x}}(t) + \V{x}(t)$ instead of only $\dot{\V{x}}(t)$.
-This compensation is achieved as follows: implement the recurrent transformation $(\tau A + I)\V{x}(t)$, and the input transformation $\tau B \V{u}(t)$, but use the same output transformation $C\V{x}(t)$, and the same passthrough transformation $D\V{u}(t)$~\citep[][pp.~221--225]{eliasmith2003a}.
-%Because Principles~1 and~2 tell us how to represent states (i.e.,~$\V{x}(t)$) and transformations of these states (e.g.,~$(\tau A + I)\V{x}(t)$) we can use these principles to compute the necessary signals.
-Specifically, this may be implemented in a spiking dynamical network by representing $\V{x}(t)$ via Principle~1 and then using Principle~2 to decode the needed transformations.
-The resulting model is summarized in Figure~\ref{fig:lti-system-mapped}.
 
 \begin{figure}
   \centering
@@ -471,22 +445,53 @@ The resulting model is summarized in Figure~\ref{fig:lti-system-mapped}.
     Block diagram for an LTI system, equivalent to Figure~\ref{fig:lti-system}, with the integrator replaced by a first-order lowpass filter.
     % The exact same state-vector $\V{x}(t)$ is represented by a population of neurons (via Principles~1 and 2).
     The lowpass is driven by the signal $\tau \dot{\V{x}}(t) + \V{x}(t)$ to ensure that it implements the same system as in Figure~\ref{fig:lti-system}.
+    Reproduced from \citet[][Figure~2]{voelker2018}.
   }
 \end{figure}
 
-The correctness of this ``mapping'' procedure relies on three assumptions: (1)~the synapse model is equation~\ref{eq:lowpass}, (2)~the network is simulated in continuous time (or the discrete time-step is sufficiently small), and (3)~the necessary representations and transformations are sufficiently accurate, such that the approximation error $\bigoh{ \frac{1}{\sqrt{n}} }$ from equation~\ref{eq:trans-decode} is negligible.
-In other words, assuming $n$ is sufficiently large, the architecture of Figure~\ref{fig:lti-system-mapped} is equivalent to Figure~\ref{fig:lti-system}, but using the leaky integrator instead of an integrator as the dynamical primitive~\citep{eliasmith2003a}.
-Consequently, both systems compute the exact same signals $\V{x}(t)$ and $\V{y}(t)$.
-In section~\ref{sec:principle3-proof}, we provide a novel proof of this equivalence.
-In sections~\ref{sec:discrete-lowpass}--\ref{sec:general}, we extend Principle~3 to remove the first and second assumptions.
+Principle~3 is a method of harnessing the dynamics of the synapse model for network-level information processing.
+We begin by focusing our discussion of NEF dynamics on the neural implementation of continuous, linear time-invariant~(LTI) systems (see Figure~\ref{fig:lti-system}):
+\begin{equation} \label{eq:lti}
+\begin{split}
+\dot{\V{x}}(t) &= A\V{x}(t) + B\V{u}(t) \text{,} \\
+\V{y}(t) &= C\V{x}(t) + D\V{u}(t) \text{,}
+\end{split}
+\end{equation}
+where the time-varying signal $\V{x}(t)$ represents the system state, $\dot{\V{x}}(t)$ its time-derivative, $\V{y}(t)$ the output, $\V{u}(t)$ the input, and the time-invariant matrices $(A\text{,}\, B\text{,}\, C\text{,}\, D)$ fully describe the system~\citep{brogan1982modern}.
+This form of an LTI system is commonly referred to as the \emph{state-space model}, but there are many other equivalent forms, which we refer to later.
+
+For LTI systems, the \emph{dynamical primitive}---that is, the source of the dynamics---is the integrator (see Figure~\ref{fig:lti-system}).
+However, in the architecture that we consider (see Figure~\ref{fig:lti-system-mapped}), the dynamical primitive at our disposal is the \emph{leaky} integrator, given by the canonical first-order lowpass filter modeling the synapse:
+\begin{align} \label{eq:lowpass-laplace}
+h(t) = \frac{1}{\tau} e^{-\frac{t}{\tau}} = \mathcal{L}^{-1}\left\{ \frac{1}{\tau s + 1} \right\} \text{,}
+\end{align}
+where $\mathcal{L}^{-1}\{ \cdot \}$ denotes the inverse Laplace transform.\footnote{
+For comparison, the Laplace transform of the integrator is $\mathcal{L}\left\{ 1 \right\} = \frac{1}{s}$.}
+To be more precise, our approach is to represent the state-vector $\V{x}(t)$ in a population of spiking neurons (Principle~1;~equation~\ref{eq:encoding}), such that a filtered transformation of this vector is obtained by filtering some linearly decoded spike-trains with a leaky integrator (Principle~2;~equation~\ref{eq:trans-decode}).
+Thus, the goal of Principle~3 is to determine the transformations required to implement equation~\ref{eq:lti}, given that the required $\V{x}(t)$ is obtained by some convolution with a leaky integrator, rather than the perfect integrator depicted in Figure~\ref{fig:lti-system}.
+
+Principle~3 states that in order to implement equation~\ref{eq:lti} in a population of neurons that represents $\V{x}(t)$, we must compensate for the effect of ``replacing'' the integrator with a leaky integrator (compare Figures~\ref{fig:lti-system} and~\ref{fig:lti-system-mapped}) by driving the synapse with $\tau \dot{\V{x}}(t) + \V{x}(t)$ instead of only $\dot{\V{x}}(t)$.
+This compensation is achieved as follows: implement the recurrent transformation $(\tau A + I)\V{x}(t)$, and the input transformation $\tau B \V{u}(t)$, but use the same output transformation $C\V{x}(t)$, and the same passthrough transformation $D\V{u}(t)$~\citep[][pp.~221--225]{eliasmith2003a}.
+%Because Principles~1 and~2 tell us how to represent states (i.e.,~$\V{x}(t)$) and transformations of these states (e.g.,~$(\tau A + I)\V{x}(t)$) we can use these principles to compute the necessary signals.
+Specifically, this may be implemented in a spiking dynamical network by representing $\V{x}(t)$ via Principle~1 and then using Principle~2 to decode the needed transformations.
+
+The resulting model is summarized in Figure~\ref{fig:lti-system-mapped}.
+Notably, both systems compute the exact same signals $\V{x}(t)$ and $\V{y}(t)$; the difference is the dynamical primitive, and the transformation needed to account for this change.
+The neural architecture that realizes this model consists of a population of neurons representing $\V{x}(t)$, recurrently coupled to itself, with weights implementing the above transformations determined by equation~\ref{eq:factored-weights}, and each synapse filtering its spike-trains via convolution with equation~\ref{eq:lowpass-laplace}.
+We depict and compare this architecture to related work in the following section.
+
+The correctness of this ``mapping'' procedure relies on three assumptions: (1)~the synapse model is equation~\ref{eq:lowpass-laplace}, (2)~the network is simulated in continuous time (or the discrete time-step is sufficiently small), and (3)~the necessary representations and transformations are sufficiently accurate, such that the approximation error from equation~\ref{eq:trans-decode} is negligible.
+In other words, assuming $n$ is sufficiently large, the system described by equation~\ref{eq:lti} may be implemented by a continuous-time SNN that realizes the model of Figure~\ref{fig:lti-system-mapped}.
+In section~\ref{sec:synaptic-extensions}, we provide a novel proof of this fact, and extend Principle~3 to relax the first and second assumptions.
 % Methods of coping with the third assumption for small $n$ remain a currently active area of research.
 % In section~\ref{sec:results}, we demonstrate the success of this approach given low-frequency inputs in spiking networks.
 
 Principle~3 is useful for accurately implementing a wide class of dynamical systems (e.g.,~integrators, oscillators, attractor networks, etc.) to solve specific problems that frequently arise in neural modeling~\citep[e.g.,][]{eliasmith2000b, singh2004, eliasmith2005b, singh2006}.
-% This provides a precise mathematical understanding of the role of equation~\ref{eq:lowpass} in neural models and the computations that it supports.
+We provide details on such examples in section~\ref{sec:dynamics-language}.
+% This provides a precise mathematical understanding of the role of equation~\ref{eq:lowpass-laplace} in neural models and the computations that it supports.
 % This mapping allows one to alter the synaptic $\tau$ without affecting the overall dynamics.
 Furthermore, the class of state-space models is isomorphic to the class of all finite-dimensional causal linear filters, or equivalently all rational (finite-order) proper transfer functions, which is a large and useful class of dynamical systems employed widely in control applications~\citep{brogan1982modern}.
-Given the ability of Principle~2 to compute nonlinear functions~(i.e.,~equation~\ref{eq:trans-decode}), Principle~3 also naturally generalizes to nonlinear dynamical systems, but this is outside the scope of this work; we refer the reader to \citet{voelker2017iscas} and \citet{voelker2017neuromorphic} for recent nonlinear extensions.
+Given the ability of Principle~2 to compute nonlinear functions~(i.e.,~equation~\ref{eq:trans-decode}), Principle~3 also naturally generalizes to nonlinear dynamical systems, as illustrated in section~\ref{sec:nonlinear-extensions}.
 
 \subsection{Relationships to Other Approches}
 \label{sec:relationships}
