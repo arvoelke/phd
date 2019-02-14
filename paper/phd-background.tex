@@ -52,7 +52,9 @@ That is,
 \V{y}\left[ t + 1 \right] &= \V{g}\left(\V{x}\left[ t \right] \right) \text{,}
 \end{aligned}
 \end{equation}
-where $\V{x} \in \mathbb{R}^d$ is a finite-dimensional ($d \in \mathbb{N}$) state-vector, $\V{u}$ is some input vector, and $\V{y}$ is some output vector -- all indexed at discrete units of time, $t$.
+where $\V{x} \in \mathbb{R}^d$ is a finite-dimensional ($d \in \mathbb{N}$) state-vector, $\V{u}$ is some input vector, and $\V{y}$ is some output vector -- all indexed at discrete units of time, $t$.\footnote{
+There is a similar theorem for continuous-time dynamical systems~\citep{funahashi1993approximation}.
+}
 The state updates according to a nonlinear mixing of itself with the input.
 The output is a static mapping (i.e., ``readout'') of the state.
 The causality constraint implies that these functions do not require knowledge of future inputs (although they are free to make predictions).
@@ -496,21 +498,20 @@ Given the ability of Principle~2 to compute nonlinear functions~(i.e.,~equation~
 \subsection{Relationships to Other Approches}
 \label{sec:relationships}
 
-\citep{sussillo2013opening}
-
-Recurrent neural networks~(RNNs) are notoriously difficult to train and interpret.
-The paradigm of Reservoir Computing~(RC) has managed to overcome some of these limitations, by driving a fixed and randomly connected ensemble of neurons, and learning the desired output via linear decoding.
-The First-Order Reduced and Controlled Error~(FORCE) method improves the performance of RC networks, by simultaneously re-encoding the learned output back into the reservoir. 
+Recurrent neural networks are notoriously difficult to train and interpret in practice.
+The paradigm of Reservoir Computing~\citep[RC;][]{jaeger2001echo, maass2002real} has managed to overcome some of these limitations, by driving a fixed and randomly-connected ensemble of neurons, and learning the desired output via linear decoding.
+The First-Order Reduced and Controlled Error~\citep[FORCE;][]{sussillo2009generating} method improves the performance of RC networks, by simultaneously re-encoding the learned output back into the reservoir. 
 Despite the success of these approaches, it remains difficult to interpret the high-dimensional representations employed by the reservoir, or to incorporate prior knowledge into the reservoir to improve task performance.
-Random feedback ultimately leads to an inefficient use of neural resources for dynamical systems that are predominantly low-dimensional.
-Here, we show that the Neural Engineering Framework~(NEF) provides a principled way to optimize a particular RNN architecture, by mapping the desired dynamical state onto a latent representation within a factorable connection weight matrix.
-This enables us to train networks that outperform RC, FORCE, and state-of-the-art ``full-FORCE'' methods---using either spiking or rate-based neurons---on a delay line task, while reducing the simulation time and memory by a factor of $\bigoh{n}$.
-Our approach can learn both online and offline, readily incorporates detailed synapse models, supports various spiking and rate-based neuron models, and may be compiled onto analog and digital neuromorphic hardware.
+Full-FORCE~\citep{depasquale2018full} solves the latter problem, by allowing the desired state-vector to be encoded into the network in the form of ``hints'' during training, but does so without accounting for the dynamics introduced by the synaptic $\tau$, as done by the NEF in Principle~3.
 
-Recurrent neural networks~(RNNs) employ interconnected nonlinear units in order to implement dynamical systems.
-Such systems persist information across time, by nonlinearly mixing their current state---represented by some $n$-dimensional vector of neural activations---with their current input.
-While it is known that RNNs can approximate any dynamical system arbitrarily well~\citep{funahashi1993approximation}, they have encountered several limitations in practice.
-Chief among these is the difficulty of training RNNs at larger scales, due to the inherent credit-assignment problem in optimizing the recurrent weights using back-propagation through time~\citep{bengio1994learning}.
+In all of these cases, however, random feedback ultimately leads to an inefficient use of neural resources for dynamical systems that are predominantly low-dimensional.
+That is, if we know the dynamics of the system that we would like to implement, then the NEF already does just that.
+Many have argued that dynamics in biological systems are unions of low-dimensional attractor manifolds~\citep{sussillo2013opening, cunningham2014dimensionality, waernberg2017low}.
+The NEF imposes such a low-dimensional structure on the weight matrices themselves.
+Learning these dimensions is a somewhat separate matter; the NEF does not \emph{limit} itself to situations where the dynamics are known apriori -- techniques from system identification~\citep{nelles2013nonlinear} can be applied, the optimization can be applied in the time-domain to a raw teaching signal without needing closed-form equations for the dynamics~\citep{duggins2017incorporating}, or backpropagation can be applied~\citep{rasmussen2018nengodl}.
+Likewise, random feedback and FORCE learning can also be applied, in which case it becomes essentially the same as FORCE learning (details below).
+The NEF embraces all such methods, but makes a preference for those that are efficient and amenable to analysis.
+However, we find the approach of introducing random high-dimensional feedback to often unnecessary be unnecessary for our purposes (section~\ref{sec:delay-rc}), and furthermore re-encoding the target output into the network as a training signal can lead to a loss in accuracy in simple cases (section~\ref{sec:force-comparison}).
 
 \begin{figure}
   \centering
@@ -524,10 +525,9 @@ Chief among these is the difficulty of training RNNs at larger scales, due to th
   }
 \end{figure}
 
-To bypass this problem, Reservoir Computing~(RC) has taken a specialized approach to training RNNs (see Figure~\ref{fig:architectures}a).
-In essence, RC networks relax the training problem by leaving the recurrent weights fixed.
-The two major variants of RC networks are Echo State Networks~\citep[ESNs;][]{jaeger2001echo} and Liquid State Machines~\citep[LSMs;][]{maass2002real}, which differ primarily by their use of rate-based and spiking neurons, respectively.
-In either case, RC networks make a conceptual separation between a fixed {\it reservoir} of randomly connected neural units, and a learned {\it readout}.
+\TODO{Remove $s$ and replace $J$ with $W$ in figure.}
+
+In the case of RC networks, they make a conceptual separation between a fixed {\it reservoir} of randomly-connected neural units, and a learned {\it readout}.
 The reservoir is driven by {\it encoding} the input signal, $u(t) \in \mathbb{R}$ using a random vector, $\V{e}^\text{in} \in \mathbb{R}^n$.
 The units within the reservoir are recurrently connected using a random matrix, $J \in \mathbb{R}^{n \times n}$.
 And a feed-forward readout vector, $\V{d} \in \mathbb{R}^{n}$, is optimized to {\it decode} some target, $y(t) \in \mathbb{R}$.

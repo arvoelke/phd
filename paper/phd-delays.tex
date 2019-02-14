@@ -442,6 +442,10 @@ INRC motivation slide.
 \subsection{Optimized Reservoir Computing}
 \label{sec:delay-rc}
 
+Here, we show that the Neural Engineering Framework~(NEF) provides a principled way to optimize a particular RNN architecture, by mapping the desired dynamical state onto a latent representation within a factorable connection weight matrix.
+This enables us to train networks that outperform RC, FORCE, and state-of-the-art ``full-FORCE'' methods---using either spiking or rate-based neurons---on a delay line task, while reducing the simulation time and memory by a factor of $\bigoh{n}$.
+Our approach can learn both online and offline, readily incorporates detailed synapse models, supports various spiking and rate-based neuron models, and may be compiled onto analog and digital neuromorphic hardware.
+
 RC networks often include a sparsity constraint of $20\%$ connectivity, which is still $\bigoh{n^2}$, in order to improve accuracy~\citep{lukovsevicius2012reservoir}.
 We also considered ESNs with constant sparsity~\citep{lukovsevivcius2012practical}, similar to our NEF networks, but found that they did not perform comparably to our results in section~\ref{sec:delay_benchmark}.
 
@@ -526,6 +530,7 @@ Furthermore, we found that the ESN breaks down for numbers of neurons as few as 
 \TODO{Discuss ESN radius which linearlizes the tanh unit, and what this means: necessary for capacity but limits nonlinear decode. DN solves both problems simultaneously.}
 
 \subsection{Optimized FORCE Learning}
+\label{sec:force-comparison}
 
 \TODO{Include FORCE in the benchmark comparison}
 
