@@ -508,8 +508,8 @@ The NEF imposes such a low-dimensional structure on the weight matrices themselv
 Learning these dynamics is a somewhat separate matter; the NEF does not \emph{limit} itself to situations where the dynamics are known apriori.
 Techniques from system identification~\citep{nelles2013nonlinear}, optimization in the time-domain using a teacher signal~\citep{duggins2017incorporating}, or backpropagation through time~\citep{rasmussen2018nengodl}, may all be applied to learn the dynamics from raw data.
 Likewise, Nengo supports the use of random feedback and online RLS learning with full weight matrices, with or without spikes, thus reducing the NEF network to a full-FORCE network.
-The NEF embraces all such methods, but makes a preference for those that are amenable to theoretical analysis while being useful and efficient in practice.
-We find the approach of introducing random high-dimensional feedback to often be unnecessary for our purposes (section~\ref{sec:delay-rc}), and furthermore re-encoding the target output into the network as a teaching signal can lead to a loss in accuracy in simple cases (section~\ref{sec:force-comparison}).
+The NEF is compatible with all such methods, but makes a preference for those that are amenable to theoretical analysis while being useful and efficient in practice.
+We find the approach of introducing random high-dimensional feedback to often be unnecessary for our purposes (section~\ref{sec:delay-rc}), and furthermore re-encoding the target output into the network as a teaching signal can be counter-productive (i.e.,~reduce accuracy) even in simple cases (section~\ref{sec:force-comparison}).
 
 \begin{figure}
   \centering
@@ -535,7 +535,7 @@ And a feed-forward readout vector, $\V{d} \in \mathbb{R}^{n}$, is optimized to d
 %\V{b}(t) &= J \V{a}(t) + \V{e}^\text{in} u(t) \\
 %y(t) &= \V{d}^T \V{a}(t) \text{.}
 %\end{align}
-Intuitively, the reservoir expands the input into a set of nonlinear temporal features---referred to as {\it echoes}---while the readout combines these dynamical traces to approximate the desired target.
+Intuitively, the reservoir expands the input into a set of nonlinear temporal basis functions---referred to as {\it echoes}---while the readout combines these dynamical traces to approximate the desired target.
 Since the readout is typically a linear combination of the reservoir's activity, the decoders may be learned via least-squares regression.
 This is equivalent to the optimization performed by the NEF on the output transformation, but on data that is collected by explicitly simulating the network over time.
 In contrast, the reservoir is untrained with dynamical properties that remain fixed, independently of the desired task.
@@ -544,15 +544,18 @@ While RC solves the issue of training RNNs, the problem of efficient scaling rem
 Indeed, as noted by RC theorists, ``just simply creating a reservoir at random is unsatisfactory'' and ``setting up the reservoir such that a good state expansion emerges is an ill-understood challenge in many respects''~\citep{lukovsevicius2012reservoir}.
 Generally, the computational power of RC relies upon having a sufficiently large reservoir representing a high-dimensional superset of the required dynamics, ultimately resulting in an inefficient use of resources for many systems.
 This becomes problematic when considering the time and memory required to simulate RC networks, which scales as $\bigoh{ n^2 }$, thus making large-scale simulations of the brain computationally prohibitive.
+\TODO{Cite memory limits on random networks.}
 In section~\ref{sec:delay-rc} we show that rate-based reservoirs (ESNs) can be outperformed in accuracy, time, and memory, by \emph{spiking} NEF networks of the same size.
 %We use the example of a delay line to highlight these limitations.
 
-The First-Order Reduced and Controlled Error~\citep[FORCE;][]{sussillo2009generating} method extends ESNs by learning a low-rank component of the recurrent weight matrix, that {\it re-encodes} the desired output back into the network (see Figure~\ref{fig:architectures}b).
-Specifically, the recurrent weights include an additional outer-product term, $\V{e} \V{d}^T \in \mathbb{R}^{n \times n}$, where $\V{e} \in \mathbb{R}^n$ is a fixed random vector, and the vector $\V{d} \in \mathbb{R}^n$ are the same decoders from before.
-By design, these weights decode the desired output, $y(t)$, and subsequently encode it back into the reservoir, alongside the random mixing from $W$.
+The First-Order Reduced and Controlled Error~\citep[FORCE;][]{sussillo2009generating} method extends ESNs by learning a low-rank component of the recurrent weight matrix.
+This can be decomposed into a separate feedback loop, that \emph{autoencodes} the desired output back into the network (see Figure~\ref{fig:architectures}b).
+Specifically, the recurrent weights include an additional outer-product term, $\V{e} \V{d}^T \in \mathbb{R}^{n \times n}$, where $\V{e} \in \mathbb{R}^n$ is a fixed random vector, and $\V{d} \in \mathbb{R}^n$ is the same decoding vector from before.
+By design, these weights decode an approximation of the desired output, $y(t)$, and subsequently encode it back into the reservoir, alongside the random mixing from $W$.
 This additional loop improves the performance the network, assuming the underlying dynamics are at least partially driven by a static function of the filtered and randomly encoded target signal.
 However, this is not always the case.
-In section~\ref{sec:force-comparison}, we show that this choice of re-encoding the output signal is sometimes not only suboptimal, but can reduce accuracy compared to an equivalent reservoir computer (i.e.,~without the additional FORCE-learned feedback).
+In section~\ref{sec:force-comparison}, we show that this choice of re-encoding the output signal is sometimes not only suboptimal, but can actually reduce accuracy compared to an equivalent reservoir computer (i.e.,~without the additional FORCE-learned feedback).
+The NEF provides a theoretical explanation for why this can sometimes be the case.
 These same observations apply to the full-FORCE method~\citep{depasquale2018full}, which learns a full-rank matrix that encodes the same state as in FORCE, but using additional degrees of freedom, similar to \citet{tripp2006neural}.
 
 The Neural Engineering Framework~\citep[NEF;][]{eliasmith1999developing,eliasmith2003a} provides an alternative method for building dynamical neural networks (see Figure~\ref{fig:architectures}c).
@@ -560,7 +563,7 @@ Rather than relying on random feedback, or always re-encoding the output (in the
 This can be understood as constructing an RC network with an optimized reservoir, although the approaches were developed independently.
 In the NEF, the desired dynamical state, $\V{x}(t) \in \mathbb{R}^q$, is either expressed in closed form as a set of dynamical equations (in continuous-time or discrete-time), or provided via time-series data as is more typical within RC.
 Then, the recurrent weight matrix is factored into $ED^T \in \mathbb{R}^{n \times n}$, where $E \in \mathbb{R}^{n \times q}$ is a fixed encoding matrix, $D \in \mathbb{R}^{n \times q}$ is a learned decoding matrix, and a filtered combination of input and recurrent activations represent $\V{x}(t)$.
-A central observation made by the NEF is that the optimal $D$ can be determined from $\V{x}(t)$, the selection of neuron models, the models of postsynaptic current~(PSC), and whether the simulation is analog or digital.
+A central observation made by the NEF is that the optimal $D$ can be determined from $\V{x}(t)$, the selection of neuron models, the models of postsynaptic current~(PSC), and whether the simulation is analog or digital~\citep{voelker2018}.
 %\begin{equation}\label{eq:boxed}
 %\V{s}(t) = \sum_{i=0}^k c_i \V{x}^{(i)}(t) \text{,} \quad \V{s}[t] = \sum_{i=0}^k \bar{c}_i \V{x}^{[i]}[t] \text{,}
 %\end{equation}
@@ -569,18 +572,18 @@ In the same way as FORCE, the NEF may include $\V{d}$ as a column of $D$, and $\
 This assumption is made if and only if it is helpful~\citep[i.e.,~to perform integration;][]{singh2004}.
 If all relevant state-variables are identified, and all target models are ideally leveraged, then the high-dimensional dynamics introduced by $W$ serve absolutely no purpose.
 
-Now we shift focus to discuss the method(s) of training in some detail.
+Now we shift focus to discuss the method(s) of training in some detail (see Table~\ref{tab:learning-types}).
 Within the NEF, the important distinction between ESNs and LSMs is captured simply by the choice of $G_i \left[ \cdot \right]$ (see equation~\ref{eq:encoding}).
-In either case, we can identify the neural activity of the reservoir with $a_i(t)$, where $\V{x}(t)$ is some \emph{unknown} (latent) state that depends on both $\V{u}(t)$ and the dynamical properties of the reservoir.
+In either case, we can identify the neural activity of the reservoir with $a_i(t)$, where $\V{x}(t)$ is some \emph{unknown} (latent) state that depends on both $u(t)$ and the dynamical properties of the reservoir.
 Note that characterizing $\V{x}(t)$ is precisely the problem faced when trying to understand what information RC networks are representing.
 Regardless, the linear readout amounts to the following approximate nonlinear function of $\V{x}(t)$:
 \begin{equation} \label{eq:rc}
-\hat{\V{y}}(t) = \sum_{i=1}^n (a_i \ast h)(t) \V{d}^\V{f}_i \text{.}
+y(t) \approx \sum_{i=1}^n (a_i \ast h)(t) \V{d}^\V{f}_i \text{.}
 \end{equation}
 This has the same form as equation~\ref{eq:decoding} from Principle~2 of the NEF.
 The important difference lies in how the decoders $D^\V{f}$ are trained.
 Rather than solving for $D^\V{f}$ using equation~\ref{eq:decoder_solution}, the network is explicitly simulated to obtain the exact temporal basis functions.
-In general, the RC training method relies on \emph{explicit} simulation, since $\V{x}(t)$ is unknown. In the NEF the simulation is typically \emph{implicit} within Principle~2, but can also be made explicit in the same way (see Table~\ref{tab:learning-types}).
+In general, the RC training method relies on \emph{explicit} simulation, since $\V{x}(t)$ is unknown. In the NEF the simulation is typically \emph{implicit} within Principle~2, but can also be made explicit in exactly the same manner.
 
 \begin{table} 
 \centering
@@ -609,27 +612,31 @@ In general, the RC training method relies on \emph{explicit} simulation, since $
 %\end{tabular} \\
 \end{table}
 
-The NEF, by default, avoids explicit simulation because it is more costly (especially as the time-step $dt$ becomes small), which is of practical importance when engineering large-scale networks~\citep[e.g.,][]{eliasmith2012}.
-However, the method does have the benefit of automatically refining the distortion error in the decoding induced by the substitution made by equation~\ref{eq:rates}.
-Furthermore, the readout can learn to compensate for other approximation errors and even mischaracterizations of the state-variable.
-On one hand, this can streamline construction of the network, while on the other it can mask costly mistakes being made by the modeller.
+The NEF, by default, avoids explicit simulation because it is more costly (especially as the time-step becomes small), which is of practical importance when engineering large-scale networks~\citep[e.g.,][]{eliasmith2012}.
+However, the method does have the benefit of automatically refining any additional, non-Gaussian, error in the decoding introduced by the substitution of equation~\ref{eq:rates}.
+Furthermore, the readout can learn to compensate for other sources of error and even mischaracterizations of the state-variable.
+On the one hand, this can simplify the engineering work involved in training the network, while on the other hand it can mask the effects of costly modelling mistakes.
 
-For the non-adaptive, non-spiking, case the training method adds absolutely no improvement---assuming the representation has been correctly characterized.
-Overall, the explicit training method is most suitable for applications where the latent state-variables are not easily characterized---often referred to informally as ``training from data''.
-Nevertheless, this perspective is beneficial in conceptualizing the role of the recurrent population as a dynamical reservoir.
+For the non-adaptive, non-spiking, case the explicit training method adds absolutely no improvement, assuming the representation has been correctly characterized.
+Overall, the explicit training methodology is only suitable for black-box applications where there is little-to-no visibility into the latent dynamical state-variables that generated the data, or randomized high-dimensional feedback makes it generally intractable to analytically determine the trajectory of the network's dynamics.
 
 From the perspective of RC, the NEF provides a way to solve for the recurrent connection weights by imposing a low-dimensional dynamical state $\V{x}(t)$ on the reservoir.
 This can be thought of as building a  \emph{structured} reservoir that is optimized for a restricted subset of functions.
 Specifically, we may include a set of temporal basis functions (that incorporate prior knowledge of the desired function) using Principle~3, and then apply any training method to this specially constructed reservoir.
-The readout may still capture nonlinear relationships between the state and the target, and this readout may still be trained from data.
+The readout may still capture unanticipated nonlinear relationships between the state and the target, and this readout may still be trained from data.
 The NEF provides a way to understand the resulting computations, and to systematically relate the dynamics of the state-variables to the parameters of the computational models.
 This allows us to, for instance, understand the network-level effects of including different synapse models.
 Furthermore, this reduces the cost of simulation time and memory by a factor of $\bigoh{ n }$ for constant dimensionality, since the number of connection weights for RC scale as $\bigoh{ n^2 }$.
 
-The conclusions from this section are similar to those drawn by \citet[][see supplementary~S1]{nicola2016supervised} in comparing NEF networks to the FORCE method~\citep{sussillo2009generating, abbott2016building}.
-
-However, this scheme applies only to \emph{linear} dynamical systems, relies on near-instantaneous communication between all neurons, and requires linear neurons with minimal leakage and no refractory period~\citep{boerlin2013predictive}.
-\citet{schwemmer2015constructing} has extended these methods to support more biologically-plausible mechanisms, but the scaling benefits do not appear to persist beyond $100$--$400$ neurons~[personal communication].
+The balanced SNN approach of \citet{boerlin2011spike, boerlin2013predictive} requires a separate discussion.
+These methods are closer to the NEF in that they begin with a model of the desired dynamics, and then map that system onto a latent representation within an SNN using factored weight matrices.
+These methods do not rely on randomized feedback, nor explicit simulation of the network over time to train its parameters.
+Rather, they derive a closed-form solution for the parameters.
+These parameters, in effect, deterministically control the spike-timing of each neuron, in such a way that the population collaboratively keeps any deviations from its ideal state bounded above by the variance of a single filtered spike.
+In particular, each neuron's spike signals a constant deviation from the ideal, which causes all neurons to instantly update their local state to reflect the global error.
+The outcome is precision that scales as $\bigoh{n}$, that is, linearly in the number of neurons, or the total number of spikes~\citep{boahen2017neuromorph}. 
+However, this scheme applies only to \emph{linear} dynamical systems, relies on near-instantaneous communication between all neurons, and requires linear neurons with relatively minimal leakage and no refractory period~\citep{boerlin2013predictive}.
+The work of \citet{schwemmer2015constructing} has extended these methods to support more biologically-plausible mechanisms, but the scaling benefits do not appear to persist beyond $100$--$400$ neurons~[personal communication].
 In general, it is unclear how far these assumptions can be relaxed before scaling regresses to $\bigoh{\sqrt{n}}$, which is of relevance when considering our targets of modelling biological systems and compiling onto neuromorphic hardware -- both of these targets regularly violate the above assumptions.
 
 Returning to the literature on RNNs and backpropagation, there exists a range of methods designed to convert a conventionally-trained RNN that uses static non-spiking (i.e.,~rate-based) nonlinearities, into an equivalent SNN~\citep{rueckauer2017conversion, yousefzadehconversion2019}.
