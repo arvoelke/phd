@@ -209,7 +209,7 @@ We find some connections between this system's NEF implementation and the neural
 In this section, we provide the basic building blocks adapted from the original proposal by \citet{eliasmith2003a}, before analyzing its theoretical merits in Chapter~\ref{chapt:analysis}.
 
 In the context of RNNs, the NEF provides generic machinery for training the weights of a recurrent network of spiking (and non-spiking) neurons in order to implement some particular dynamical system~\citep{dynamicspatent}.
-This is made efficient through two important steps: (1)~weight matrices are factored into two $n \times q$ \emph{encoding} and \emph{decoding} matrices, where $q \in \bigoh{1}$ is the dimensionality of the dynamical state-vector, and $n$ is the number of neurons, and (2)~the optimization problem is recast as a batched least-squares problem that can be solved offline without needing to explicitly simulate the network over time.
+This is made efficient through three important steps: (1)~weight matrices are factored into two $n \times q$ \emph{encoding} and \emph{decoding} matrices, where $q \in \bigoh{1}$ is the dimensionality of the dynamical state-vector, and $n$ is the number of neurons, (2)~the optimization problem is recast as a batched least-squares problem that can be solved offline without needing to explicitly simulate the network over time, and (3)~the dynamics of the synapse model are leveraged as a temporal basis for the overall system.
 These insights lead to procedures for training and simulation that are efficiently implemented---scaling as $\bigoh{n}$ in both time and space---by the Nengo~2.X software package~\citep{bekolay2013}.
 Backpropagation through time can be applied to further improve the performance of these networks, by use of the Nengo~DL extension~\citep{hunsberger2018, rasmussen2018nengodl, blouw2018a}, which bidirectionally integrates Nengo with Google's machine learning toolkit, Tensorflow~\citep{abadi2016tensorflow}.
 
@@ -301,12 +301,11 @@ D^\V{f} &= \transpose{\left[ \V{d}^\V{f}_1\text{,}\, \ldots\text{,}\, \V{d}^\V{f
 \end{equation}
 Now we must solve for $D^\V{f}$. For both Principles~1 and~2, we optimize for $D^\V{f}$ over the domain of the signal, $S = \{\V{x}(t) : t \ge 0\}$, which is typically the unit $q$-ball $\{ \V{v} \in \mathbb{R}^q : \|\V{v}\|_2 \le 1\}$ or the unit $q$-cube $[-1\text{,}\, 1]^q$.
 This can be done, as is, by simulating the population over time and solving a least-squares problem.
-But, in order to do this as efficiently and scalably as possible, we also reformulate the problem to avoid needing to explicitly simulate the neuron models.
+But, in order to do this as efficiently and scalably as possible, we also reformulate the problem to avoid needing to \emph{explicitly} simulate the spike generation.
 We first let $r_i(\V{v})$ be the limiting average firing rate of the $i^{\text{th}}$ neuron under the constant input $\V{v} \in S$:
 \begin{equation} \label{eq:rates}
 r_i(\V{v}) = \lim_{t \rightarrow \infty} \frac{1}{t} \int_{0}^t a_i(t') \, dt' \text{.}
 \end{equation}
-
 For non-adaptive neuron models, equation~\ref{eq:rates} reduces to encoding $\V{v}$ using a rate model.
 To provide an example, we solve for the closed-form solution in the case of the LIF model. To start, we solve the differential equation~\ref{eq:lif-model} while holding $s_i = \alpha_i \left \langle \V{e}_i \text{,} \V{v} \right \rangle + \beta_i$ fixed:
 \begin{equation*}
@@ -336,7 +335,7 @@ In other words, the optimization is determined strictly by the distribution of t
 Since we have replaced the optimization problem involving spikes (equation~\ref{eq:trans-decode}) with one involving rates, this side-steps the need to explicitly simulate the neurons over time when training.
 Furthermore, this is a convex optimization problem, which may be solved by uniformly sampling $S$~\citep{voelker2017} and applying a standard regularized least-squares solver to the sampled data~\citep{bekolay2013}.
 Monte Carlo sampling introduces $\bigoh{ m^{-\frac{1}{2}} }$ error into the integral from equation~\ref{eq:decoder_solution}, where $m$ is the number of samples, but this can be improved to $\widetilde{\mathcal{O}} \left( m^{-1} \right)$---effectively squaring $m$---by the use of quasi-Monte Carlo methods~\citep{fang1994, knight2016}.
-Nengo also supports alternative decoder solvers that optimize variants of equation~\ref{eq:decoder_solution}~\citep[e.g.,][]{voelker2016a, abrams2017}, but we do not use them here.
+Nengo also supports alternative decoder solvers that optimize variants of equation~\ref{eq:decoder_solution}~\citep[e.g.,][]{voelker2016a, abrams2017}, and randomized singular-value-decomposition~(SVD) solvers that take $\bigoh{mn}$ time~\citep{halko2011finding} -- but we do not use them here.
 %This provides the decoders needed by equations~\ref{eq:repn_decode} and \ref{eq:trans-decode} to represent the vector or compute transformations, respectively.
 
 % this synapse is only for continuous case:
@@ -345,10 +344,10 @@ Nengo also supports alternative decoder solvers that optimize variants of equati
 %\end{equation}
 
 The accuracy of this approach relies on $r_i(\V{v}) + \mu$ being a suitable proxy for $a_i(t)$ whenever $\V{x}(t) = \V{v}$.
-In other words, this supposes that substituting a filtered spike-train with its correspondingly filtered rates does not change the optimal set of decoders.
-This zeroth-order approximation clearly holds in the steady-state for constant $\V{x}(t)$, and turns out to be ideal in practice for low-frequency $\V{x}(t)$~\citep[][appendix~F.1]{eliasmith2003a}.
+In other words, this presupposes that substituting a filtered spike-train with its correspondingly filtered rates does not change the optimal set of decoders.
+This zeroth-order approximation clearly holds in the limit of constant $\V{x}(t)$, and turns out to be ideal in practice for low-frequency $\V{x}(t)$ relative to $\tau$ by a separation of time-scales~\citep[][appendix~F.1]{eliasmith2003a}.
 In section~\ref{sec:spike-coding} we provide a novel proof that justifies the correctness of this substitution more generally.
-Perhaps surprisingly, this optimization procedure is mathematically correct for Poisson-spiking models and simple integrate-and-fire models, even as the frequency of the input goes towards infinity, and the time-constant of the filter goes towards zero.
+Perhaps surprisingly, this optimization procedure is mathematically correct for Poisson-spiking models and simple integrate-and-fire models, even as the frequency of the input goes towards infinity, and the time-constant of the filter approaches zero.
 % Reminder: there's a result in my comp-II report that the expected spike train is the same as the rate model when the prior for the spike interval is uniform -- this prior becomes invalid for high frequency \V{x}(t) that cross over the neuron threshold
 % We also remark that one may use singular value decomposition~(SVD) to characterize the class of functions that can be accurately approximated by the chosen neural basis functions~\citep[][pp.~185--217]{eliasmith2003a}.
 
@@ -362,17 +361,17 @@ W = E \transpose{\left(D^\V{f}\right)} \text{.}
 \end{equation}
 To project activities from one population to another (or back to itself), they are decoded from an $n$-dimensional neuron space into the $q$-dimensional vector space, and then encoded back into the $n$-dimensional neuron space.
 %where $E$ are the encoders of the postsynaptic population from equation~\ref{eq:encoding}, and $D$ are the decoders of the presynaptic population solved by equation~\ref{eq:decoder_solution}.
-In other words, the process of decoding (equation~\ref{eq:trans-decode}) and then encoding (equation~\ref{eq:encoding}) is equivalent to taking the dot-product of the full-rank weight matrix $W$ with the neural activities, by linearity.
+Thus, by linearity, the process of decoding (equation~\ref{eq:trans-decode}) and then encoding (equation~\ref{eq:encoding}), is equivalent to taking the dot-product of the weight matrix $W$ with the neural activities.
 Consequently, the matrices $E$ and $D^\V{f}$ are a low-rank factorization of $W$.
 % Intuitively, structure is imposed by the choice of representing $\V{x}(t)$, which in turn becomes latent within the weight matrix.
 
 This factorization has important consequences for the computational efficiency of neural simulations.
-The crucial difference between the factorized and non-factorized forms is that it takes $\bigoh{q n}$ operations per simulation time-step to implement this dot-product in the factored form of equation~\ref{eq:factored-weights}, as opposed to $\bigoh{ n^2 }$ operations for a full-rank weight matrix.
+The crucial difference between the factorized and non-factorized forms is that it takes $\bigoh{q n}$ operations per simulation time-step to implement this dot-product in the factored form of equation~\ref{eq:factored-weights}, as opposed to $\bigoh{ n^2 }$ operations for a weight matrix.
 Since $q$ is typically held constant, this yields a factor $\bigoh{ n }$ improvement in simulation time.
 Similarly, this factorizations yields an $\bigoh{ n }$ reduction in memory, which significantly improves the scaling of neuromorphics~\citep{mundy2015}.
 % including those in RC.
 In essence, this factorization provides a way to describe the network's latent state-vector $\V{x}(t)$.
-This, in turn, permits us to perform useful computations by transforming the state-vector with $\bigoh{ \sqrt{n} }$ precision in the presence of spike-noise~\citep[][p.~47]{eliasmith2003a}.
+This, in turn, enables useful computations that nonlinearly transform the state-vector with $\bigoh{ \tau \sqrt{n} }$ precision in the presence of spike-noise (see~\citet[][p.~47]{eliasmith2003a} and section~\ref{sec:scalability}).
 
 \subsection{Principle 3 -- Dynamics}
 \label{sec:principle3}

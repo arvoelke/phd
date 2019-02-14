@@ -73,6 +73,7 @@ Maybe additional biological detail can get around this limitation, or maybe the 
 \citep{boahen2017neuromorph}
 
 \subsection{Scalability of Precision}
+\label{sec:scalability}
 
 \TODO{Discuss all of the scaling.}
 We usually set $n$ to about $50 \times q$, as this has been found to provide tolerable performance in practice~\citep{braindrop2019}. 
@@ -83,6 +84,7 @@ That is, the dimensionality should not be able to scale faster than the neuron c
 If it could, then each neuron would represent $\omega(1)$ dimensions, which seems physically implausible given access to only $\bigoh{1}$ state variables.
 This limitation could be broken by dendritic computation, for instance if each neuron had access to $\bigoh{n}$ variables distributed along the dendritic tree.
 
+$\bigoh{ \tau \sqrt{n} }$ precision following from the convergence of the central limit theorem~\citep[CLT;][]{berry1941accuracy, esseen1942liapunov} and the $\tau^{-1}$ peak-amplitude of equation~\ref{eq:lowpass}.
 
 \subsection{Correctness of Spike Coding}
 \label{sec:spike-coding}
