@@ -492,7 +492,7 @@ We provide details on such examples in section~\ref{sec:dynamics-language}.
 Furthermore, the class of state-space models is isomorphic to the class of all finite-dimensional causal linear filters, or equivalently all rational (finite-order) proper transfer functions, which is a large and useful class of dynamical systems employed widely in control applications~\citep{brogan1982modern}.
 Given the ability of Principle~2 to compute nonlinear functions~(i.e.,~equation~\ref{eq:trans-decode}), Principle~3 also naturally generalizes to nonlinear dynamical systems, as illustrated in section~\ref{sec:nonlinear-extensions}.
 
-\subsection{Relationships to Other Approches}
+\subsection{Relationships to Other Approaches}
 \label{sec:relationships}
 
 Traditional rate-based RNNs are notoriously difficult to train and interpret in practice.
@@ -537,12 +537,12 @@ And a feed-forward readout vector, $\V{d} \in \mathbb{R}^{n}$, is optimized to d
 %\end{align}
 Intuitively, the reservoir expands the input into a set of nonlinear temporal basis functions---referred to as {\it echoes}---while the readout combines these dynamical traces to approximate the desired target.
 Since the readout is typically a linear combination of the reservoir's activity, the decoders may be learned via least-squares regression.
-This is equivalent to the optimization performed by the NEF on the output transformation, but on data that is collected by explicitly simulating the network over time.
-In contrast, the reservoir is untrained with dynamical properties that remain fixed, independently of the desired task.
+This is equivalent to the optimization performed by the NEF on the output transformation, but using data that is collected by explicitly simulating the network over time.
+In contrast, the reservoir is left untrained with dynamical properties that remain fixed, independently of the desired task.
 
 While RC solves the issue of training RNNs, the problem of efficient scaling remains. 
 Indeed, as noted by RC theorists, ``just simply creating a reservoir at random is unsatisfactory'' and ``setting up the reservoir such that a good state expansion emerges is an ill-understood challenge in many respects''~\citep{lukovsevicius2012reservoir}.
-Generally, the computational power of RC relies upon having a sufficiently large reservoir representing a high-dimensional superset of the required dynamics, ultimately resulting in an inefficient use of resources for many systems.
+Generally, the computational power of RC relies upon having a sufficiently large reservoir that represents a high-dimensional superset of the required dynamics, ultimately resulting in an inefficient use of resources for many systems.
 This becomes problematic when considering the time and memory required to simulate RC networks, which scales as $\bigoh{ n^2 }$, thus making large-scale simulations of the brain computationally prohibitive.
 \TODO{Cite memory limits on random networks.}
 In section~\ref{sec:delay-rc} we show that rate-based reservoirs (ESNs) can be outperformed in accuracy, time, and memory, by \emph{spiking} NEF networks of the same size.
@@ -568,7 +568,7 @@ A central observation made by the NEF is that the optimal $D$ can be determined 
 %\V{s}(t) = \sum_{i=0}^k c_i \V{x}^{(i)}(t) \text{,} \quad \V{s}[t] = \sum_{i=0}^k \bar{c}_i \V{x}^{[i]}[t] \text{,}
 %\end{equation}
 %where $c_i$ are the transfer function coefficients of the analog synapse model, or $\bar{c}_i$ for the digital synapse model, respectively~\cite[][equations~17,19]{voelker2017b}.
-In the same way as FORCE, the NEF may include $\V{d}$ as a column of $D$, and $\V{e}$ as a row of $E$, to re-encode $y(t)$ -- equivalent to asserting that a filtered version of $y(t)$ is a dimension of $\V{x}(t)$.
+In the same way as FORCE, the NEF may include $\V{d}$ as a row of $D$, and $\V{e}$ as a column of $E$, to re-encode $y(t)$ -- equivalent to asserting that a filtered version of $y(t)$ is a dimension of $\V{x}(t)$.
 This assumption is made if and only if it is helpful~\citep[i.e.,~to perform integration;][]{singh2004}.
 If all relevant state-variables are identified, and all target models are ideally leveraged, then the high-dimensional dynamics introduced by $W$ serve absolutely no purpose.
 
@@ -618,7 +618,7 @@ Furthermore, the readout can learn to compensate for other sources of error and 
 On the one hand, this can simplify the engineering work involved in training the network, while on the other hand it can mask the effects of costly modelling mistakes.
 
 For the non-adaptive, non-spiking, case the explicit training method adds absolutely no improvement, assuming the representation has been correctly characterized.
-Overall, the explicit training methodology is only suitable for black-box applications where there is little-to-no visibility into the latent dynamical state-variables that generated the data, or randomized high-dimensional feedback makes it generally intractable to analytically determine the trajectory of the network's dynamics.
+Overall, the explicit training methodology is only suitable for black-box applications where there is little-to-no visibility into the latent dynamical state-variables that generated the data, or for when randomized high-dimensional feedback makes it generally intractable to analytically determine the trajectory of the network's dynamics.
 
 From the perspective of RC, the NEF provides a way to solve for the recurrent connection weights by imposing a low-dimensional dynamical state $\V{x}(t)$ on the reservoir.
 This can be thought of as building a  \emph{structured} reservoir that is optimized for a restricted subset of functions.
@@ -632,14 +632,15 @@ The balanced SNN approach of \citet{boerlin2011spike, boerlin2013predictive} req
 These methods are closer to the NEF in that they begin with a model of the desired dynamics, and then map that system onto a latent representation within an SNN using factored weight matrices.
 These methods do not rely on randomized feedback, nor explicit simulation of the network over time to train its parameters.
 Rather, they derive a closed-form solution for the parameters.
-These parameters, in effect, deterministically control the spike-timing of each neuron, in such a way that the population collaboratively keeps any deviations from its ideal state bounded above by the variance of a single filtered spike.
+These parameters, in effect, deterministically control the spike-timing of each neuron, in such a way that the population collaboratively keeps any deviations from its ideal state bounded above by the peak magnitude of a single filtered spike.
 In particular, each neuron's spike signals a constant deviation from the ideal, which causes all neurons to instantly update their local state to reflect the global error.
 The outcome is precision that scales as $\bigoh{n}$, that is, linearly in the number of neurons, or the total number of spikes~\citep{boahen2017neuromorph}. 
 However, this scheme applies only to \emph{linear} dynamical systems, relies on near-instantaneous communication between all neurons, and requires linear neurons with relatively minimal leakage and no refractory period~\citep{boerlin2013predictive}.
 The work of \citet{schwemmer2015constructing} has extended these methods to support more biologically-plausible mechanisms, but the scaling benefits do not appear to persist beyond $100$--$400$ neurons~[personal communication].
 In general, it is unclear how far these assumptions can be relaxed before scaling regresses to $\bigoh{\sqrt{n}}$, which is of relevance when considering our targets of modelling biological systems and compiling onto neuromorphic hardware -- both of these targets regularly violate the above assumptions.
+Still, we believe further investigation into this line of work is of utmost importance for determining the computationally-theoretic limits of SNN precision with respect to some target set of dynamical primitives.
 
-Returning to the literature on RNNs and backpropagation, there exists a range of methods designed to convert a conventionally-trained RNN that uses static non-spiking (i.e.,~rate-based) nonlinearities, into an equivalent SNN~\citep{rueckauer2017conversion, yousefzadehconversion2019}.
+Returning to the literature on RNNs and backpropagation, there exists a range of methods designed to convert a conventionally-trained RNN, that uses static non-spiking (i.e.,~rate-based) nonlinearities, into an equivalent SNN~\citep{rueckauer2017conversion, yousefzadehconversion2019}.
 This comes with some minor loss in precision due to spike-variability.
 However, common to all of these methods are limitations regarding the nonlinearities employed by the original RNN and the target SNN.
 In particular, they commonly assume the RNN is using rectified linear activation units, while the SNN is using specifically engineered integrate-and-fire units, which limits the applicability of these methods to biologically-grounded models and implementation on neurormorphic hardware.
