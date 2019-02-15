@@ -103,7 +103,7 @@ def analyze(name, t, u, x_hat, x_ideal, C, theta,
 
     if dump_file:
         np.savez("%s-%s" % (name, time.time()),
-                 t=sim.trange(), u=u, x_hat=x_hat, x_ideal=x_ideal, C=C)
+                 t=t, u=u, x_hat=x_hat, x_ideal=x_ideal, C=C)
 
     return nrmse(w.flatten(), target=w_ideal.flatten())
 
