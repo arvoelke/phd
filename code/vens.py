@@ -6,7 +6,7 @@ import nengo
 from nengo.params import IntParam
 from nengo.utils.builder import default_n_eval_points
 
-from nengo_loihi.builder import get_gain_bias, get_samples
+from nengo_loihi.builder.ensemble import get_gain_bias, get_samples
 from nengo_loihi.neurons import loihi_rates
 
 
