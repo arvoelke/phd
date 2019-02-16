@@ -248,7 +248,7 @@ After normalizing the range of $v_i(t)$ to the interval $[0, 1]$, the subthresho
 \tau_\text{RC} \dot{v}_i(t) + v_i(t) = s_i(t) \text{,} \quad 0 \le v_i(t) < 1 \text{,}
 \end{equation}
 where $v_i(t) = 1$ generates a spike at time $t$, followed by a reset to $v_i(t) = 0$ that lasts $\tau_\text{ref}$ seconds.
-This model is considered to strike a convenient balance between simplicity and biological realism~\citep{eliasmith2003a}, although the NEF does not eliminate the possibility of considering significantly more biologically-detailed neuron models~\citep{duggins2017incorporating}.
+This model is considered to strike a convenient balance between simplicity and biological realism~\citep[][pp.~81--82]{eliasmith2003a}, although the NEF does not eliminate the possibility of considering significantly more biologically-detailed neuron models~\citep{duggins2017incorporating}.
 Likewise, neurons driven by nonlinear conductances, rather than pure current-sources, can be leveraged by the NEF~\citep{stoeckel2018}.
 Nevertheless, a modelling competition centered around fitting biological recordings from real pyramidal neurons, using artificial models of action-potential generation, discovered that simpler models (e.g.,~non-leaky integration with an adaptive threshold) are often the most successful at reproducing precisely-timed spike-trains~\citep{gerstner2009good}.
 
@@ -363,8 +363,10 @@ To project activities from one population to another (or back to itself), they a
 Thus, by linearity, the process of decoding (equation~\ref{eq:trans-decode}) and then encoding (equation~\ref{eq:encoding}), is equivalent to taking the dot-product of the weight matrix $W$ with the neural activities.
 Consequently, the matrices $E$ and $D^\V{f}$ are a low-rank factorization of $W$.
 % Intuitively, structure is imposed by the choice of representing $\V{x}(t)$, which in turn becomes latent within the weight matrix.
+Moreover, we remark that by linearity, the addition of multiple connections has the effect of adding together their transformations in the vector space. Similarly, any linear transformation of the nonlinear function $T\V{f}(\V{x})$, $T \in \mathbb{R}^{q \times q}$, may be implemented by the decoders $D^\V{f}T$ or by the encoders $ET$---both are optimal and equivalent to one another---without needing to solve for a new set of weights.
+On the other hand, nonlinear conductance-based synapses can be exploited to encode nonlinear functions of the decoded variables across multiple pre-populations~\citep{stoeckel2018}.
 
-This factorization has important consequences for the computational efficiency of neural simulations.
+This factorization has additional consequences for the computational efficiency of neural simulations.
 The crucial difference between the factorized and non-factorized forms is that it takes $\bigoh{q n}$ operations per simulation time-step to implement this dot-product in the factored form of equation~\ref{eq:factored-weights}, as opposed to $\bigoh{ n^2 }$ operations for a weight matrix.
 Since $q$ is typically held constant, this yields a factor $\bigoh{ n }$ improvement in simulation time.
 Similarly, this factorizations yields an $\bigoh{ n }$ reduction in memory, which significantly improves the scaling of neuromorphics~\citep{mundy2015}.
@@ -568,8 +570,8 @@ A central observation made by the NEF is that the optimal $D$ can be determined 
 %\V{s}(t) = \sum_{i=0}^k c_i \V{x}^{(i)}(t) \text{,} \quad \V{s}[t] = \sum_{i=0}^k \bar{c}_i \V{x}^{[i]}[t] \text{,}
 %\end{equation}
 %where $c_i$ are the transfer function coefficients of the analog synapse model, or $\bar{c}_i$ for the digital synapse model, respectively~\cite[][equations~17,19]{voelker2017b}.
-In the same way as FORCE, the NEF may include $\V{d}$ as a row of $D$, and $\V{e}$ as a column of $E$, to re-encode $y(t)$ -- equivalent to asserting that a filtered version of $y(t)$ is a dimension of $\V{x}(t)$.
-This assumption is made if and only if it is helpful~\citep[i.e.,~to perform integration;][]{singh2004}.
+In the same way as FORCE, the NEF may include $\V{d}$ as a column of $D$, and $\V{e}$ as a column of $E$, to re-encode $y(t)$ -- equivalent to asserting that a filtered version of $y(t)$ is a dimension of $\V{x}(t)$.
+This assumption is made if and only if it is helpful~\citep[e.g.,~to perform integration;][]{singh2004}.
 If all relevant state-variables are identified, and all target models are ideally leveraged, then the high-dimensional dynamics introduced by $W$ serve absolutely no purpose.
 
 Now we shift focus to discuss the method(s) of training in some detail (see Table~\ref{tab:learning-types}).
@@ -636,9 +638,9 @@ These parameters, in effect, deterministically control the spike-timing of each 
 In particular, each neuron's spike signals a constant deviation from the ideal, which causes all neurons to instantly update their local state to reflect the global error.
 The outcome is precision that scales as $\bigoh{n}$, that is, linearly in the number of neurons, or the total number of spikes~\citep{boahen2017neuromorph}. 
 However, this scheme applies only to \emph{linear} dynamical systems, relies on near-instantaneous communication between all neurons, and requires linear neurons with relatively minimal leakage and no refractory period~\citep{boerlin2013predictive}.
-The work of \citet{schwemmer2015constructing} has extended these methods to support more biologically-plausible mechanisms, but the scaling benefits do not appear to persist beyond $100$--$400$ neurons~[personal communication].
+The work has been extended to support more biologically-plausible mechanisms, but the scaling becomes $\bigoh{\sqrt{n}}$ as in the NEF~\citep[][Figure~12d]{schwemmer2015constructing}.
 In general, it is unclear how far these assumptions can be relaxed before scaling regresses to $\bigoh{\sqrt{n}}$, which is of relevance when considering our targets of modelling biological systems and compiling onto neuromorphic hardware -- both of these targets regularly violate the above assumptions.
-Still, we believe further investigation into this line of work is of utmost importance for determining the computationally-theoretic limits of SNN precision with respect to some target set of dynamical primitives.
+Nevertheless, we believe further investigation into this line of work is of utmost importance for determining the computationally-theoretic limits of SNN precision with respect to some target set of dynamical primitives, and for maximizing the efficiency of information transmission per spike~\citep[][pp.~92--127]{eliasmith2003a}.
 
 Returning to the literature on RNNs and backpropagation, there exists a range of methods designed to convert a conventionally-trained RNN, that uses static non-spiking (i.e.,~rate-based) nonlinearities, into an equivalent SNN~\citep{rueckauer2017conversion, yousefzadehconversion2019}.
 This comes with some minor loss in precision due to spike-variability.
