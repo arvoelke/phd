@@ -653,10 +653,11 @@ As we show, the NEF can account for and remain robust to non-idealities, such as
 We find that some of the remaining differences between the statistics of spike-trains, and the number of spikes required to achieve some level of precision, can be made up for in the NEF by delaying spikes a variable length of time that is sensitive to the global error~(unpublished) -- but we cannot currently offer a biologically plausible explanation to learn such a mechanism.
 Nevertheless, we believe further investigation into these areas of research are of utmost importance for determining the computationally-theoretic limits of SNN precision with respect to some target set of dynamical primitives, and for maximizing the efficiency of information transmission per spike~\citep[][pp.~92--127]{eliasmith2003a}.
 
-Returning to the literature on RNNs and backpropagation, there exists a range of methods designed to convert a conventionally-trained RNN, that uses static non-spiking (i.e.,~rate-based) nonlinearities, into an equivalent SNN~\citep{rueckauer2017conversion, yousefzadehconversion2019}.
+Returning to the literature on RNNs and backpropagation, there exists a range of methods designed to convert a conventionally-trained deep network, that uses static non-spiking (i.e.,~rate-based) nonlinearities, into an equivalent SNN~\citep{rueckauer2017conversion, yousefzadehconversion2019}.
 This comes with some minor loss in precision due to spike-variability.
-However, common to all of these methods are limitations regarding the nonlinearities employed by the original RNN and the target SNN.
-In particular, they commonly assume the RNN is using rectified linear activation units, while the SNN is using specifically engineered integrate-and-fire units, which limits the applicability of these methods to biologically-grounded models and implementation on neurormorphic hardware.
+However, these methods do not extend to recurrent SNNs, unless the RNN has been trained with the same filter as the SNN.
+Of equal importance, common to all of these methods are limitations regarding the nonlinearities employed by both networks.
+In particular, they commonly assume rectified linear activation units, corresponding to specifically-engineered integrate-and-fire units in the SNN, which limits the applicability of these methods in the context of biologically-grounded models and implementation on neurormorphic hardware.
 
 \section{Neuromorphic Computing}
 \label{sec:neuromorphic}
@@ -751,13 +752,41 @@ A significant amount of detail addressing the design of the chip is available in
 As stated above, the design of Braindrop is informed by many of the lessons learned from Neurogrid.
 Detailed models have been studied at the circuit level~\citep{benjamintemp2019} and NEF-related methods have been employed at the network level~\citep{voelker2017iscas, reidpint2019}, in order to simultaneously tame and account for the non-idealities introduced by transistor mismatch, parasitic capacitances, and temperature variation.
 In chapter~\ref{chapt:nef-extensions}, we expose a few of these extensions at a theoretical level.
-In chapter~\ref{chapt:results}, we provide applications demonstrating robust dynamical computation on Braindrop.
+In chapter~\ref{chapt:results}, we provide applications that demonstrate robust dynamical computation on Braindrop.
+
+\TODO{Mention some details about how the NEF is realized, or point forward to the methods section and say stuff there, while acknowledging Terry again and not taking credit myself.}
 
 % Multicast tree router \citep{merolla2014multicast}
 
 \subsection{Loihi}
 
-\citep{blouw2018a}
+Loihi~\citep{davies2018loihi} is Intel's fully digital, barrier-synchronized, clock-driven neuromorphic architecture, that promotes significant flexibility in its SNN feature set, while being optimized for low power consumption.
+It consists of 128 ``neuromorphic cores'' that operate asynchronously from one another.
+Each core time-multiplexes \numprint{1024} neural units---configurable as trees of neurons and dendritic compartments---across the same shared silicon.
+In contrast to SpiNNaker, barrier messages are transmitted between cores in order to keep the system synchronized to a global time-step.
+This has the advantages of each step only taking as long as it needs\footnote{
+One time-step may take longer than the next, if for example learning rules are applied irregularly, or depending on the total volume of spike-traffic.} 
+while guaranteeing globally deterministic behaviour.
+
+By virtue of being fully digital and barrier-synchronized, there exists far fewer challenges presented to its users when compared to solutions in the mixed-signal, purely analog, or asynchronous digital domains; in particular, the behaviour of the chip is guaranteed to be reliable and predictable.
+When compared to simulating SNNs on traditional hardware (e.g.,~an x86~CPU), the challenges that remain include quantization (i.e.,~truncation) of real values (e.g.,~weights, synaptic states, and neuronal states) due to the limited bit-precision of floating-point numbers (1--9~bits), and constraints on connectivity, memory, and bandwidth.
+A Loihi emulator, provided by Applied Brain Research~(ABR), accurately reproduces many of these limitations using detailed software models of the underlying hardware~\citep{blouw2018a}.
+In addition, software tools exist to map SNNs onto Loihi while optimizing for power-efficiency with respect to the constraints imposed by the hardware~\citep{lin2018programming, lin2018mapping}.
+
+Nengo has been ported to Loihi and used to simulate a nonlinear adaptive controller for a robotic arm~\citep[][and personal communication]{dewolf2016}.
+However, Loihi does not support the use of factored weight matrices, meaning that a substantial benefit of the NEF---namely, a linear reduction in the number of multiplies and memory accesses per time-step---is not leveraged at the hardware level.
+As a way to resolve this at the software level, Nengo currently creates intermediate populations to represent latent variables explicitly in spikes, which has the effect of amplifying representational error, increasing the number of neurons, and introducing additional rounds of filtering between layers.
+\TODO{Cite nengo-loihi github and forward reference methodology section with more details (similar to braindrop).}
+Nevertheless, Nengo~DL~\citep{rasmussen2018nengodl} has been used to implement a fully-connected deep network performing keyword spotting, on Loihi, while outperforming state-of-the-art hardware in energy cost per inference~\citep{blouw2018a}.
+
+\TODO{Comprehensive literature review on what Loihi is being used for.}
+
+Loihi supports a broad variety of features that make it accessible to a wide range of researchers experimenting with the simulation of large-scale SNNs.
+\TODO{List features.}
+It is currently unclear how important or useful each of these features are relative to one another and especially in the context of target applications.
+We believe that an important role of Nengo and the NEF in this context is to facilitate such exploration, by systematically harnessing relevant features for useful computation, which can then feed back to inform the design of future iterations (as was the case for Neurogrid and Braindrop).
+More generally, specific classes of computations will encounter distinct trade-offs when it comes to resource usage, precision, energy-to-solution, and time-to-solution; mathematical frameworks, such as the NEF, participate by providing a unified way of characterizing such trade-offs.
+A primary focus of chapters~\ref{chapt:nef-extensions}--\ref{chapt:results} is to take a concrete step in these directions.
 
 \subsection{Others}
 \label{sec:neuromorphic-others}
