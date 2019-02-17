@@ -36,7 +36,6 @@ This is not intended to provide a comprehensive record of all such findings, but
 Reviews and references that provide more detailed accounts of these methods and its variants are included throughout.
 We then describe, in detail, the three principles of the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a} while contrasting this approach with those discussed thus far.
 This leads into a high-level overview of a few promising neuromorphic architectures that have been made available to us through various collaborations: SpiNNaker~\citep{furber2014spinnaker}, Braindrop~\citep{braindrop2019}, and Loihi~\citep{davies2018loihi} -- all of which support the compilation of NEF networks, and are the targets of many of our example applications.
-Finally, we provide some necessary mathematical background on dynamical systems.
 
 \section{Recurrent Neural Networks}
 
@@ -87,6 +86,7 @@ This has motivated the invention of many different types of RNNs and training me
 For more information we point the reader to a review by \citet{salehinejad2017recent}.
 
 \subsection{Backpropagation through time}
+\label{sec:bptt}
 
 The traditional approach to build an RNN is to take a single-layer feed-forward network, and recurrently connect the output of each neuron to all other neurons in the same layer with a square weight matrix.
 To simulate the network, the weighted activations propagated by the recurrent feedback loop are delayed by a single time-step, and added to the weighted inputs on the next step.
@@ -97,7 +97,8 @@ This may optionally be stacked to form multiple layers, akin to a multi-layer fe
 This approach also extends to more biologically-plausible realizations of the RNN, in which the continuous (i.e.,~real-valued) neural activations are replaced by spiking neurons that emit binary-valued events over time, and weight matrices are replaced by synaptic filters that appropriately weight and exponentially decay incoming spikes over time.
 These networks are named Spiking Neural Networks~(SNNs), and are the subject matter of later sections.
 The issue in this context is that spikes (i.e.,~Dirac impulses) are non-differentiable with respect to time.
-But recently, many research groups have independently demonstrated that SNNs can also be trained with backpropagation by softening the gradient in a variety of creative ways~\citep{hunsberger2015spiking, hunsberger2016training, lee2016training, marblestone2016toward, neftci2017neuromorphic, bellec2018long, hunsberger2018, huh2018gradient, severa2018whetstone, rasmussen2018nengodl, shrestha2018slayer, neftci2019surrogate}, although there are challenges in realizing biologically-plausible implementations that carry this out online~\citep[][submitted]{hunsberger2018, stockel2019align}.
+But recently, many research groups have independently demonstrated that SNNs can also be trained with backpropagation by softening the gradient in a variety of creative ways~\citep{esser2015backpropagation, hunsberger2015spiking, hunsberger2016training, lee2016training, marblestone2016toward, neftci2017neuromorphic, bellec2018long, hunsberger2018, huh2018gradient, severa2018whetstone, rasmussen2018nengodl, shrestha2018slayer, neftci2019surrogate}, although there are challenges in realizing biologically-plausible implementations that carry this out online~\citep[][submitted]{hunsberger2018, stockel2019align}.
+A review that focuses on feed-forward architectures is given by \citet{pfeiffer2018deep}, while an example applied to RNNs is given by \citet{diehl2016conversion}.
 It was also recently shown by \citet{chen2018neural} that both RNNs and backpropagation may be extended to continuous-time (i.e.,~taking the limit of infinitesimally small time-steps), consistent with the the NEF and Principle~3~(see section~\ref{sec:principle3}).
  
 While these approaches are theoretically sound, BPTT encounters many problems in practice~\citep{bengio1994learning}.
@@ -159,6 +160,9 @@ Reviews of many of these methods are given by \citet{deneve2016efficient}, \cite
 In all cases, these methods provide a procedure for taking a description of some desired dynamical state-vector, and then training a recurrent network of spiking or non-spiking neurons, with varying constraints on the target models' level of biological detail, to represent that state.
 We discuss some of the critical differences below.
 
+\TODO{Also talk about STICK: Spike Time Interval Computational Kernel, a Framework for General Purpose Computation Using Neurons, Precise Timing, Delays, and Synchrony.
+And ``Dynamic Neural Fields as a Step Towards Cognitive Neuromorphic Architectures.''? somewhere?}
+
 It is important to preface our discussion with a reminder that, although all of these approaches are engineered from a top-down modelling perspective, one can still apply BPTT (or any other optimization method) to fine-tune the resulting RNN end-to-end from example input-output pairs -- a hybrid approach that is embraced by the NEF and its software stack~\citep{rasmussen2018nengodl}.
 In our opinion, the point of these methods is that incorporating prior knowledge of the task can dramatically simplify the optimization procedure, provide guarantees regarding scalability and precision, and place appropriate constraints on the initial configuration of the RNN to assist in additional rounds of optimization.
 At the same time, this provide greater transparency into the relationships between network parameters, configuration, and function.
@@ -192,7 +196,8 @@ One approach to better understanding these mechanisms is to construct models tha
 
 %The ways in which these low-level mechanisms might interact, in order to usefully encode information about a stimulus \emph{across time}, are generally unclear in the context of high-level cognition~\citep{?}.
 
-The NEF proposes a method to model such dynamical systems in artificial networks of spiking neurons.
+The NEF proposes a general approach to model such dynamical systems in artificial networks of spiking neurons.
+It does so by leveraging neural nonlinearities and weighted synaptic filters as computational resources.
 The NEF has been used to construct a wide variety of neural models, including a functioning 6.6~million neuron model of the human brain, dubbed ``Spaun'', that is capable of performing perceptual, motor, and cognitive tasks~\citep{eliasmith2012, choo2018}.
 This model incorporates many kinds of observed neural dynamics, including self-generated oscillations, sustained activity, and point attractor dynamics.
 
@@ -349,10 +354,10 @@ Nengo also supports alternative decoder solvers that optimize variants of equati
 The accuracy of this approach relies on $r_i(\V{v}) + \mu$ being a suitable proxy for $a_i(t)$ whenever $\V{x}(t) = \V{v}$.
 In other words, this presupposes that substituting a filtered spike-train with its correspondingly filtered rates does not change the optimal set of decoders for a target set of postsynaptic currents.
 This zeroth-order approximation clearly holds in the limit of constant $\V{x}(t)$, and turns out to be ideal in practice for low-frequency $\V{x}(t)$ relative to $\tau$ by a separation of time-scales~\citep[][appendix~F.1]{eliasmith2003a}.
-In section~\ref{sec:psc-coding}, we discuss how this simplification has lead many to mischaracterize the NEF as using a ``rate code''.
-In section~\ref{sec:spike-coding}, we provide a novel proof that justifies the correctness of this substitution much more generally.
-Perhaps surprisingly, this optimization procedure is mathematically correct for Poisson-spiking models and simple integrate-and-fire models, even as the frequency of the input goes towards infinity, and the time-constant of the filter approaches zero.
-% Reminder: there's a result in my comp-II report that the expected spike train is the same as the rate model when the prior for the spike interval is uniform -- this prior becomes invalid for high frequency \V{x}(t) that cross over the neuron threshold
+In section~\ref{sec:psc-coding}, we discuss how our adoption of this technique has lead many to mischaracterize the NEF as using a ``rate code''.
+We suggest that the NEF should instead by characterized as mapping latent state-variables onto postsynaptic currents, and to label this as a ``postsynaptic current code''; this code exhibits repeatedly precise spike-times, facilitates rapid transmission of information, and does not demand excessive pool sizes or long time-constants, contrary to commonly-held beliefs that have carried over from rate-coding paradigms.
+In section~\ref{sec:spike-coding}, we provide a novel proof that justifies the correctness of this technique much more generally.
+Perhaps surprisingly, this optimization procedure is mathematically correct for Poisson-spiking models and simple integrate-and-fire models, even as the frequency of the state-vector goes towards infinity, and the time-constants of the filters approach zero.
 % We also remark that one may use singular value decomposition~(SVD) to characterize the class of functions that can be accurately approximated by the chosen neural basis functions~\citep[][pp.~185--217]{eliasmith2003a}.
 
 It remains to map these encoding and decoding parameters onto a neural architecture.
@@ -416,10 +421,9 @@ This, in turn, enables useful computations that nonlinearly transform the state-
     The integrator is driven by the signal $\dot{\V{x}}(t)$.
     Reproduced from \citet[][Figure~1]{voelker2018}.
   }
-\end{figure}
 
-\begin{figure}
-  \centering
+  \vspace{4em}
+
   \resizebox{\columnwidth}{!} {
 	\begin{tikzpicture}[auto, node distance=2cm,>=latex']
 	  \node [input, name=input] {};
@@ -471,9 +475,9 @@ However, in the model that we consider (see Figure~\ref{fig:lti-system-mapped}),
 \begin{align} \label{eq:lowpass-laplace}
 h(t) = \frac{1}{\tau} e^{-\frac{t}{\tau}} = \mathcal{L}^{-1}\left\{ \frac{1}{\tau s + 1} \right\} \text{,}
 \end{align}
-where $\mathcal{L}^{-1}\{ \cdot \}$ denotes the inverse Laplace transform.\footnote{
+where $\mathcal{L}^{-1}\{ \cdot \}$ denotes the inverse Laplace transform, and the latter representation is referred to as a transfer function.\footnote{
 For comparison, the Laplace transform of the integrator is $\mathcal{L}\left\{ 1 \right\} = \frac{1}{s}$.}
-To be more precise, our approach is to represent the state-vector $\V{x}(t)$ in a population of spiking neurons (Principle~1;~equation~\ref{eq:encoding}), such that a filtered transformation of this vector is obtained by filtering some linearly decoded spike-trains with a leaky integrator (Principle~2;~equation~\ref{eq:trans-decode}).
+Our approach is to represent the state-vector $\V{x}(t)$ in a population of spiking neurons (Principle~1;~equation~\ref{eq:encoding}), such that a filtered transformation of this vector is obtained by filtering some linearly decoded spike-trains with a leaky integrator (Principle~2;~equation~\ref{eq:trans-decode}).
 Thus, the goal of Principle~3 is to determine the transformations required to implement equation~\ref{eq:lti}, given that the required $\V{x}(t)$ is obtained by some convolution with a leaky integrator, rather than the perfect integrator depicted in Figure~\ref{fig:lti-system}.
 
 Principle~3 states that in order to implement equation~\ref{eq:lti} in a population of neurons that represents $\V{x}(t)$, we must compensate for the effect of ``replacing'' the integrator with a leaky integrator (compare Figures~\ref{fig:lti-system} and~\ref{fig:lti-system-mapped}) by driving the synapse with $\tau \dot{\V{x}}(t) + \V{x}(t)$ instead of only $\dot{\V{x}}(t)$.
@@ -653,10 +657,11 @@ As we show, the NEF can account for and remain robust to non-idealities, such as
 We find that some of the remaining differences between the statistics of spike-trains, and the number of spikes required to achieve some level of precision, can be made up for in the NEF by delaying spikes a variable length of time that is sensitive to the global error~(unpublished) -- but we cannot currently offer a biologically plausible explanation to learn such a mechanism.
 Nevertheless, we believe further investigation into these areas of research are of utmost importance for determining the computationally-theoretic limits of SNN precision with respect to some target set of dynamical primitives, and for maximizing the efficiency of information transmission per spike~\citep[][pp.~92--127]{eliasmith2003a}.
 
-Returning to the literature on RNNs and backpropagation, there exists a range of methods designed to convert a conventionally-trained deep network, that uses static non-spiking (i.e.,~rate-based) nonlinearities, into an equivalent SNN~\citep{rueckauer2017conversion, yousefzadehconversion2019}.
+Returning to the literature on RNNs and backpropagation, there exists a range of methods designed to convert a conventionally-trained deep network, that uses static non-spiking (i.e.,~rate-based) nonlinearities, into an equivalent SNN~\citep[][and various methods mentioned in section~\ref{sec:bptt}]{cao2015spiking, rueckauer2017conversion, yousefzadehconversion2019}.
 This comes with some minor loss in precision due to spike-variability.
-However, these methods do not extend to recurrent SNNs, unless the RNN has been trained with the same filter as the SNN.
-Of equal importance, common to all of these methods are limitations regarding the nonlinearities employed by both networks.
+However, these methods on their own do not address the difficulties in training RNNs.
+Moreover, they do not immediately extend to recurrent SNNs, that is, unless the RNN has been trained with the same filter as the SNN.
+But of equal importance, is that common to all of the methods mentioned above are limitations regarding the nonlinearities employed by both networks.
 In particular, they commonly assume rectified linear activation units, corresponding to specifically-engineered integrate-and-fire units in the SNN, which limits the applicability of these methods in the context of biologically-grounded models and implementation on neurormorphic hardware.
 
 \section{Neuromorphic Computing}
@@ -795,24 +800,26 @@ A number of excellent review articles are made available by \citet{bartolozzi199
 
 Some of the earliest examples include \citep{sivilotti1985novel, boahen1989heteroassociative} and \citep{mead1988silicon}.
 
-Spikey, BrainScaleS 1 and 2, SyNAPSE, Dynapse 1 and 2, TrueNorth~\citep{merolla2014million, fischl2018}, DeepSouth, COLAMN, ODIN, ROLLS, Giacomo and Eliasmith, Tripp, Wang and Tapson, STPU, Neuromemristive random projection networks (Dhireesha Kudithipudi)
+Spikey, BrainScaleS~\citep{schemmel2010wafer, aamir2018accelerated}, SyNAPSE, Dynapse~\citep{moradi2018scalable}, TrueNorth~\citep{merolla2014million, fischl2018}, DeepSouth, COLAMN, ODIN~\citep{frenkel2018}, ROLLS~\citep{qiao2015reconfigurable, glatz2018adaptive}, Giacomo and Eliasmith, Tripp, Wang and Tapson, STPU, Neuromemristive random projection networks (Dhireesha Kudithipudi)
 \TODO{\url{https://link.springer.com/chapter/10.1007/978-3-642-00641-8_38}}
+DANNA~\citep{daffron2016extensions, mitchell2018danna},
+and miscellaneous prototypes~\citep{binas2016precise}.
 % A scalable multicore architecture with heterogeneous memory structures for dynamic neuromorphic asynchronous processors (dynaps)
 % A 65k-neuron 73-mevents/s 22-pj/event asynchronous micro-pipelined integrate-and-fire array transceiver
 % Analog computing in a modern context: A linear algebra accelerator case study
 % A wafer-scale neuromorphic hardware system for large-scale neural modeling
 % A digital neurosynaptic core using embedded crossbar memory with 45 pJ per spike in 45 nm, (GoldenGate SyNAPSE IBM)
-\TODO{Cite any ASIC results for deep learning?}
+\TODO{Missing ASIC results for deep learning?}
 
-\section{Dynamical Systems}
+TrueNorth results \citep{esser2016convolutional} and ``Supervised Learning Based on Temporal Coding in Spiking Neural Networks''.
 
-\subsection{Linear Time-Invariant Systems}
+An emerging framework called the Neural and Synaptic Array Transceiver~\citep[NSAT;][]{detorakis2018neural}, focusing on online learning for data-driven autonomy on neuromorphic hardware, has been validated on a field-programmable gate array~(FPGA).
+
+Promising investigations are currently underway to explore the utility of integrating memristive devices into mixed-signal architectures as a compact and non-volatile (i.e.,~maintains memory without power) computational element~\citep{payvand2018neuromorphic, cady2018full}.
+
+\TODO{Move the following somewhere else}
 
 State-space representations, transfer functions, filters, convolution, properties, Pad\'e approximants and coordinate transformations
-
-\subsection{Nonlinear Systems}
-
-Linearization, Jacobians, signatures of chaos
 
 \subsubsection{Coordinate Transformation}
 
