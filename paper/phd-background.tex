@@ -86,7 +86,7 @@ It is instead necessary to constrain the solution space with prior knowledge.
 This has motivated the invention of many different types of RNNs and training methods, a selection of which are described in the following sections.
 For more information we point the reader to a review by \citet{salehinejad2017recent}.
 
-\subsection{Backpropagation Through Time}
+\subsection{Backpropagation through time}
 
 The traditional approach to build an RNN is to take a single-layer feed-forward network, and recurrently connect the output of each neuron to all other neurons in the same layer with a square weight matrix.
 To simulate the network, the weighted activations propagated by the recurrent feedback loop are delayed by a single time-step, and added to the weighted inputs on the next step.
@@ -97,7 +97,7 @@ This may optionally be stacked to form multiple layers, akin to a multi-layer fe
 This approach also extends to more biologically-plausible realizations of the RNN, in which the continuous (i.e.,~real-valued) neural activations are replaced by spiking neurons that emit binary-valued events over time, and weight matrices are replaced by synaptic filters that appropriately weight and exponentially decay incoming spikes over time.
 These networks are named Spiking Neural Networks~(SNNs), and are the subject matter of later sections.
 The issue in this context is that spikes (i.e.,~Dirac impulses) are non-differentiable with respect to time.
-But recently, many research groups have independently demonstrated that SNNs can also be trained with backpropagation by softening the gradient in a variety of creative ways~\citep{hunsberger2015spiking, hunsberger2016training, marblestone2016toward, neftci2017neuromorphic, bellec2018long, hunsberger2018, huh2018gradient, severa2018whetstone, rasmussen2018nengodl, neftci2019surrogate}, although there are challenges in realizing biologically-plausible implementations that carry this out online~\citep[][submitted]{hunsberger2018, stockel2019align}.
+But recently, many research groups have independently demonstrated that SNNs can also be trained with backpropagation by softening the gradient in a variety of creative ways~\citep{hunsberger2015spiking, hunsberger2016training, lee2016training, marblestone2016toward, neftci2017neuromorphic, bellec2018long, hunsberger2018, huh2018gradient, severa2018whetstone, rasmussen2018nengodl, shrestha2018slayer, neftci2019surrogate}, although there are challenges in realizing biologically-plausible implementations that carry this out online~\citep[][submitted]{hunsberger2018, stockel2019align}.
 It was also recently shown by \citet{chen2018neural} that both RNNs and backpropagation may be extended to continuous-time (i.e.,~taking the limit of infinitesimally small time-steps), consistent with the the NEF and Principle~3~(see section~\ref{sec:principle3}).
  
 While these approaches are theoretically sound, BPTT encounters many problems in practice~\citep{bengio1994learning}.
@@ -108,7 +108,7 @@ Solutions proposed by \citet{pascanu2013difficulty} that involve clipping and co
 Alternatives to BPTT include extended Kalman filter-based learning, second-order Hessian-based optimization methods, Hessian-free optimization, and evolutionary algorithms~\citep{salehinejad2017recent} -- but none have been found to be as consistently useful in practice as backpropagation.
 To face the problem of learning across longer time-scales, architectural constraints are often imposed on the RNN, such as those in the following section.
 
-\subsection{Structured Approaches}
+\subsection{Structured approaches}
 
 The Long Short-Term Memory~\citep[LSTM;][]{hochreiter1997long} network addresses the problem of storing information across long intervals of time, by incorporating an explicit memory unit into the network.
 Rather than a static nonlinearity, the basic computational element is an LSTM ``cell'': a group of five nonlinearities and three multiplicative gates, dynamically coupled to one another in a specific manner, such that its default behaviour is to ``store'' its input, by propagating an internal state variable back to itself on the next time-step (i.e.,~using an internal feedback connection).
@@ -128,12 +128,13 @@ The structure of LSTM cells have also been compared to that of cortical microcir
 
 This success has prompted many variants of LSTMs, including the bidirectional LSTM~\citep{graves2005framewise}, hierarchical S-LSTM~\citep{zhu2015long}, grid LSTM~\citep{kalchbrenner2015grid}, phased LSTM~\citep{neil2016phased}, and others~\citep{salehinejad2017recent}.
 At the same time, this has inspired several related architectures that augment an RNN with differentiable memory cells to facilitate long-range temporal interactions, including the gated recurrent unit~\citep[GRU;][]{cho2014properties, chung2014empirical}, neural Turing machine~\citep{graves2014neural}, memory network~\citep{weston2014memory}, and orthogonal GRU~\citep{jing2018gated}.
-In section~\TODO{reference LSTM-DelayCell comparison section}, we propose another kind of memory cell based on our work, and compare their performance in terms of memory capacity to LSTMs.
-Results on a chaotic time-series prediction benchmark suggest that LSTMs, when interleaved with our novel memory cell, and trained via BPTT, become capable of learning systems described by nonlinear delay-differential equations.
 
-\subsection{Randomized Approaches}
+In section~\ref{sec:delay-lstm}, we propose another kind of memory cell based on our work, and compare their performance in terms of memory capacity to LSTMs.
+Our results on a chaotic time-series prediction benchmark suggest that LSTMs, when interleaved with our novel memory cell, and trained via BPTT, improve their ability to learn dynamical systems described by nonlinear delay-differential equations.
 
-Reservoir Computing~(RC) is a strategy for training RNNs, that relaxes the optimization problem by keeping the recurrent weights fixed.
+\subsection{Randomized approaches}
+
+Reservoir Computing~(RC) is a strategy for training RNNs, that simplifies the optimization problem by keeping the recurrent weights fixed.
 That is, only the static ``readout'' weights to a linear output layer are modified, while the recurrent weights are left untrained, thus sidestepping the issues in BPTT.
 This is referred to as an Echo State Network~\citep[ESN;][]{jaeger2001echo}, or Liquid State Machine~\citep[LSM;][]{maass2002real}, depending on whether the neural nonlinearities are static or spiking models, respectively.
 The intuition is that randomized feedback, when initialized in an appropriate manner, causes traces of the input to dynamically reverberate, or ``echo'', throughout the state of the network; a common metaphor is depicted by throwing rocks into a pool of water and observing the ripples interact through time.\footnote{To demonstrate the relevance of this metaphor, \citet{fernando2003pattern} went so far as to actually implement an LSM using a bucket of water.}
@@ -142,9 +143,9 @@ Details are provided in section~\ref{sec:relationships} after introducing the NE
 
 There are two great insights driving the adoption of RC: (1)~randomized feedback provides an overcomplete basis of nonlinear time-varying signals that can be linearly combined to approximate some target signal, and (2)~by leaving the recurrent weights fixed, the optimization procedure is greatly simplified; training the readout weights amounts to a least-squares problem.
 However, the benefits of RC do not come without limitations involving memory capacity. \TODO{Cite some key results.}
-In particular, section~\ref{sec:delay-rc} compares the performance of RC to the NEF on a continuous-time memory benchmark, thus highlighting severe scaling issues with RC.
+In particular, section~\ref{sec:delay-rc} compares the performance of RC to the NEF on a continuous-time memory benchmark, thus highlighting severe scaling issues with RC, while demonstrating how the NEF solves these practical issues.
 
-\subsection{Engineered Approaches}
+\subsection{Engineered approaches}
 
 A unique set of approaches to training RNNs is rooted in the application of engineering and control-theoretic methods to modelling neurobiological systems~\citep{eliasmith1999developing}.
 We call these top-down methods ``engineered approaches''.
@@ -154,17 +155,21 @@ In practice, this might be some physical model of the dynamical system under con
 Often, the dynamical system is simply a description of a particular computation that we know to be useful, such as a controller for a robotic arm, or the examples provided in section~\ref{sec:dynamics-language}.
 
 Instances of this approach include the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a, duggins2017incorporating}, first-order reduced and controlled error~\citep[FORCE;][]{sussillo2009generating, depasquale2018full} and its spiking relatives~\citep{thalmeier2016learning, depasquale2016using}, balanced spiking networks~\citep{boerlin2011spike, boerlin2013predictive, schwemmer2015constructing, alemi2018learning}, and closely-related methods~\citep{jaeger2014controlling, gilra2017predicting}.
-Reviews of many of these methods are given by \citet{deneve2016efficient}, \citet{abbott2016building}, and \citet{nicola2016supervised}. We discuss some of the critical points below.
+Reviews of many of these methods are given by \citet{deneve2016efficient}, \citet{abbott2016building}, and \citet{nicola2016supervised}.
 In all cases, these methods provide a procedure for taking a description of some desired dynamical state-vector, and then training a recurrent network of spiking or non-spiking neurons, with varying constraints on the target models' level of biological detail, to represent that state.
+We discuss some of the critical differences below.
 
-It is important to note that, although all of these approaches are engineered from a top-down modelling perspective, one can still apply BPTT (or any other optimization method) to fine-tune the resulting RNN end-to-end from example input-output pairs -- a hybrid approach that is embraced by the NEF and its software stack~\citep{rasmussen2018nengodl}.
-The point is that prior knowledge of the task can help place appropriate constraints on the initial configuration of the RNN to assist BPTT, and provide transparency into the relationships between network parameters, configuration, and function.
-This transparency enables theoretical insights into neural computation, and, as we will show, practical advances on RNN benchmarks that would otherwise be quite difficult to obtain with a pure black-box approach.
+It is important to preface our discussion with a reminder that, although all of these approaches are engineered from a top-down modelling perspective, one can still apply BPTT (or any other optimization method) to fine-tune the resulting RNN end-to-end from example input-output pairs -- a hybrid approach that is embraced by the NEF and its software stack~\citep{rasmussen2018nengodl}.
+In our opinion, the point of these methods is that incorporating prior knowledge of the task can dramatically simplify the optimization procedure, provide guarantees regarding scalability and precision, and place appropriate constraints on the initial configuration of the RNN to assist in additional rounds of optimization.
+At the same time, this provide greater transparency into the relationships between network parameters, configuration, and function.
+This transparency enables theoretical insights into neural computation, and, as we will show in chapter~\ref{chapt:delays}, practical advances on RNN benchmarks that would otherwise be quite difficult to obtain with a pure black-box approach.
 
 In section~\ref{sec:nef} we provide a detailed account of the NEF, and in section~\ref{sec:relationships} we draw architectural comparisons to both RC and FORCE.
 Its extension, full-FORCE~\citep{depasquale2018full}, can be viewed an an instance of the NEF with full-rank weight matrices~\citep{tripp2006neural}, where training is performed online rather than offline, and randomized feedback is thrown in to serve the same purposes as in RC.
-The methods of \citet{thalmeier2016learning} provide a means of realizing FORCE and full-FORCE networks in biologically-plausible spiking networks using a precise spike-time coding mechanism, similar to ~\citet{boerlin2013predictive}, supported by nonlinearities in the synapses.
+The crucial difference is that FORCE networks assert that recurrently connecting the estimate of the target variable back into the network during both training and inference will improve performance. 
+The methods of \citet{thalmeier2016learning} provide a means of realizing full-FORCE networks in biologically-plausible spiking networks using a precise spike-time coding mechanism, similar to ~\citet{boerlin2013predictive}, supported by nonlinearities in the synapses.
 On the other hand, \citet{jaeger2014controlling} can be viewed as an extension of RC that is essentially an offline variant of FORCE, or a non-spiking NEF network~\citep{aubin2017}.
+In section~\ref{sec:force-comparison}, we find that both the NEF and RC outperform FORCE on a continuous-time memory benchmark, suggesting that the primary assumption made by FORCE could be incorrect for a large class of memory-based tasks.
 
 Balanced spiking networks also share many commonalities with the NEF, primarily a procedure for mapping a dynamical state-vector onto a population of spiking neurons, via a low-rank weight matrix that accounts for the dynamics of the neurons and synapses.
 The main benefit of the balanced network approach is that precision scales as $\bigoh{n}$, compared to $\bigoh{\sqrt{n}}$ for the NEF, where $n$ is the number of neurons, by carefully coordinating the variance in spike-timing~\citep[][Figure~11]{boahen2017neuromorph}.
@@ -487,17 +492,17 @@ In section~\ref{sec:synaptic-extensions}, we provide a novel proof of this fact,
 % Methods of coping with the third assumption for small $n$ remain a currently active area of research.
 % In section~\ref{sec:results}, we demonstrate the success of this approach given low-frequency inputs in spiking networks.
 
-Principle~3 is useful for accurately implementing a wide class of dynamical systems (e.g.,~integrators, oscillators, attractor networks, etc.) to solve specific problems that frequently arise in neural modelling~\citep[e.g.,][]{eliasmith2000b, singh2004, eliasmith2005b, singh2006}.
+Principle~3 is useful for accurately implementing a wide class of dynamical systems---integrators, oscillators, attractor networks, controllers, and even continuous memories (see chapter~\ref{chapt:delays})---to solve specific problems that frequently arise in neural modelling~\citep[e.g.,][]{eliasmith2000b, singh2004, eliasmith2005b, singh2006}.
 We provide details on such examples in section~\ref{sec:dynamics-language}.
 % This provides a precise mathematical understanding of the role of equation~\ref{eq:lowpass-laplace} in neural models and the computations that it supports.
 % This mapping allows one to alter the synaptic $\tau$ without affecting the overall dynamics.
 Furthermore, the class of state-space models is isomorphic to the class of all finite-dimensional causal linear filters, or equivalently all rational (finite-order) proper transfer functions, which is a large and useful class of dynamical systems employed widely in control applications~\citep{brogan1982modern}.
 Given the ability of Principle~2 to compute nonlinear functions~(i.e.,~equation~\ref{eq:trans-decode}), Principle~3 also naturally generalizes to nonlinear dynamical systems, as illustrated in section~\ref{sec:nonlinear-extensions}.
 
-\subsection{Relationships to Other Approaches}
+\subsection{Relationships to other approaches}
 \label{sec:relationships}
 
-Traditional rate-based RNNs are notoriously difficult to train and interpret in practice.
+Conventional RNNs are notoriously difficult to train and interpret in practice~\citep{bengio1994learning}.
 The paradigm of Reservoir Computing~\citep[RC;][]{jaeger2001echo, maass2002real} has managed to overcome some of these limitations, by driving a fixed and randomly-connected ensemble of neurons, and learning the desired output via linear decoding.
 The First-Order Reduced and Controlled Error~\citep[FORCE;][]{sussillo2009generating} method improves the performance of RC networks, by simultaneously re-encoding the learned output back into the reservoir, and training this feedback loop online using recursive least-squares~\citep[RLS;][]{haykin1991adaptive}.
 Despite the success of these approaches, it remains difficult to interpret the high-dimensional representations employed by the reservoir, or to incorporate prior knowledge into the reservoir to improve task performance.
@@ -510,8 +515,8 @@ The NEF imposes such a low-dimensional structure on the weight matrices themselv
 Learning these dynamics is a somewhat separate matter; the NEF does not \emph{limit} itself to situations where the dynamics are known apriori.
 Techniques from system identification~\citep{nelles2013nonlinear}, optimization in the time-domain using a teacher signal~\citep{duggins2017incorporating}, or backpropagation through time~\citep{rasmussen2018nengodl}, may all be applied to learn the dynamics from raw data.
 Likewise, Nengo supports the use of random feedback and online RLS learning with full weight matrices, with or without spikes, thus reducing the NEF network to a full-FORCE network.
-The NEF is compatible with all such methods, but makes a preference for those that are amenable to theoretical analysis while being useful and efficient in practice.
-We find the approach of introducing random high-dimensional feedback to often be unnecessary for our purposes (section~\ref{sec:delay-rc}), and furthermore re-encoding the target output into the network as a teaching signal can be counter-productive (i.e.,~reduce accuracy) even in simple cases (section~\ref{sec:force-comparison}).
+The NEF is compatible with all such methods, but makes a preference for those that are amenable to theoretical analysis while being scalable and efficient in time and space.
+We find the approach of introducing random high-dimensional feedback to be inefficient and unnecessary for our purposes (section~\ref{sec:delay-rc}), and furthermore re-encoding the target output into the network as a teaching signal can be counter-productive (i.e.,~reduce accuracy) even in simple cases (section~\ref{sec:force-comparison}).
 
 \begin{figure}
   \centering
@@ -573,6 +578,7 @@ A central observation made by the NEF is that the optimal $D$ can be determined 
 In the same way as FORCE, the NEF may include $\V{d}$ as a column of $D$, and $\V{e}$ as a column of $E$, to re-encode $y(t)$ -- equivalent to asserting that a filtered version of $y(t)$ is a dimension of $\V{x}(t)$.
 This assumption is made if and only if it is helpful~\citep[e.g.,~to perform integration;][]{singh2004}.
 If all relevant state-variables are identified, and all target models are ideally leveraged, then the high-dimensional dynamics introduced by $W$ serve absolutely no purpose.
+To this point, we find that even the expansion of the input signal into a rich set of nonlinear temporal basis functions can be accomplished by an optimally-designed, closed-form, dynamical system (see section~\ref{sec:nef-delay}).
 
 Now we shift focus to discuss the method(s) of training in some detail (see Table~\ref{tab:learning-types}).
 Within the NEF, the important distinction between ESNs and LSMs is captured simply by the choice of $G_i \left[ \cdot \right]$ (see equation~\ref{eq:encoding}).
@@ -634,13 +640,18 @@ The balanced SNN approach of \citet{boerlin2011spike, boerlin2013predictive} req
 These methods are closer to the NEF in that they begin with a model of the desired dynamics, and then map that system onto a latent representation within an SNN using factored weight matrices.
 These methods do not rely on randomized feedback, nor explicit simulation of the network over time to train its parameters.
 Rather, they derive a closed-form solution for the parameters.
-These parameters, in effect, deterministically control the spike-timing of each neuron, in such a way that the population collaboratively keeps any deviations from its ideal state bounded above by the peak magnitude of a single filtered spike.
-In particular, each neuron's spike signals a constant deviation from the ideal, which causes all neurons to instantly update their local state to reflect the global error.
+These parameters, in effect, deterministically control the spike-timing of each neuron, in such a way that the population collaboratively keeps any deviations from its ideal state bounded above by the peak magnitude of a single filtered and weighted spike, $h(0) \left( \tau n \right)^{-1} = n^{-1}$ (see equation~\ref{eq:lowpass-impulse}).
+In particular, each neuron's spike signals a constant deviation from the ideal, which causes all neurons to instantly update their local state to track the global error.
 The outcome is precision that scales as $\bigoh{n}$, that is, linearly in the number of neurons, or the total number of spikes~\citep{boahen2017neuromorph}. 
-However, this scheme applies only to \emph{linear} dynamical systems, relies on near-instantaneous communication between all neurons, and requires linear neurons with relatively minimal leakage and no refractory period~\citep{boerlin2013predictive}.
+However, this scheme applies only to \emph{linear} dynamical systems, relies on near-instantaneous communication between all neurons with a sufficiently small time-step, and requires linear neurons with relatively minimal leakage and no refractory period~\citep{boerlin2013predictive}.\footnote{
+We thank Daniel Rasmussen for having implemented these methods in Nengo~(unpublished),
+which served to validate these criticisms and to inform this discussion through additional experimentation.}
+
 The work has been extended to support more biologically-plausible mechanisms, but the scaling becomes $\bigoh{\sqrt{n}}$ as in the NEF~\citep[][Figure~12d]{schwemmer2015constructing}.
 In general, it is unclear how far these assumptions can be relaxed before scaling regresses to $\bigoh{\sqrt{n}}$, which is of relevance when considering our targets of modelling biological systems and compiling onto neuromorphic hardware -- both of these targets regularly violate the above assumptions.
-Nevertheless, we believe further investigation into this line of work is of utmost importance for determining the computationally-theoretic limits of SNN precision with respect to some target set of dynamical primitives, and for maximizing the efficiency of information transmission per spike~\citep[][pp.~92--127]{eliasmith2003a}.
+As we show, the NEF can account for and remain robust to non-idealities, such as discrete time-steps, higher-order synapses, and detailed neural dynamics.
+We find that some of the remaining differences between the statistics of spike-trains, and the number of spikes required to achieve some level of precision, can be made up for in the NEF by delaying spikes a variable length of time that is sensitive to the global error~(unpublished) -- but we cannot currently offer a biologically plausible explanation to learn such a mechanism.
+Nevertheless, we believe further investigation into these areas of research are of utmost importance for determining the computationally-theoretic limits of SNN precision with respect to some target set of dynamical primitives, and for maximizing the efficiency of information transmission per spike~\citep[][pp.~92--127]{eliasmith2003a}.
 
 Returning to the literature on RNNs and backpropagation, there exists a range of methods designed to convert a conventionally-trained RNN, that uses static non-spiking (i.e.,~rate-based) nonlinearities, into an equivalent SNN~\citep{rueckauer2017conversion, yousefzadehconversion2019}.
 This comes with some minor loss in precision due to spike-variability.
@@ -662,11 +673,11 @@ There is no logical nor physical reason to believe that neurons and synapses som
 Instead, neuromorphic architectures aim to implement specific classes of algorithms, realized via massively-parallelized event-driven computations that are sparse in both space and time, using dramatically less power~\citep{tang2017sparse}.
 
 The human brain has been estimated to consume as little as $10$--$20$\,fJ on average per ``synaptic event''~\citep{cassidy2014real, boahen2017neuromorph}, totalling approximately $20$\,W across its {\textasciitilde{}}\numprint{e11}~neurons and {\textasciitilde{}}\numprint{e14}~synapses~\citep{koch2014}.
-After more than $30$ years of work~\citep{cassidy2013design}, the state-of-the-art in neuromorphic computing is on the verge of reaching this performance metric, with Braindrop, Loihi, and TrueNorth~\citep{merolla2014million}, each coming within a factor of \numprint{e1}--\numprint{e3} for roughly equivalent measures of energy per synaptic operation and typical network configurations~\citep{braindrop2019}.
+After more than $30$ years of work~\citep{cassidy2013design}, the state-of-the-art in neuromorphic computing is on the verge of reaching this level of performance, with Braindrop, Loihi, and TrueNorth~\citep{merolla2014million}, each coming within a factor of \numprint{e1}--\numprint{e3} for roughly equivalent measures of energy per synaptic operation and typical network configurations~\citep{braindrop2019}.
 Such potential energy savings are not only tremendous, but a prerequisite to reach the exascale (\numprint{e18}) level of computation achieved by the human brain -- unless one has access to a super-computing cluster powered by a nuclear power plant producing on the order of \numprint{e9}~watts~\citep{furber2012build, neurogrid2014}.
 However, such power measurements are not straight-forward to interpret, as there are many other factors such as the cost of scaling, flexibility of the hardware, and open questions surrounding whether the energy per synaptic event is the best metric for evaluating system performance, and how much speed, accuracy, and biological detail is necessary~\citep{eliasmith2013build} -- all of which make fair benchmarking an incredibly challenging problem~\citep{stewart2015closed}.
 
-However, improved power-efficiency often comes at the cost of reduced programmability and narrowed application spaces;
+However, improved power-efficiency often comes with the costs of reduced programmability and narrowed application spaces;
 the more you know about the problem that you are trying to solve, the more that can be ``baked in'' to the hardware to save energy and space, while sacrificing flexibility.
 This fundamental trade-off between being able to solve fewer problems more efficiently, versus more problems less efficiently, is one that the community as a whole is still trying to navigate.
 It appears likely there will be no one-size-fits-all solution, and rather a variety of strategies will be needed to mirror the degrees of architectural specificity observed in the human brain.
@@ -674,9 +685,9 @@ Yet, there are many common features between neuromorphic hardware architectures,
 These features are anticipated to provide robust, scalable, and energy-efficient solutions to the domain of tasks where our brains excel: processing sensory information, language and cognition, and motor behaviours -- all dynamically coupled to the time-scales of our environment.
 
 To fully unlock the potential of such hardware, we require significant advances at the intersection of computer science, computational neuroscience, cognitive modelling, electrical engineering, physics, and mathematics.
-This involves discovering new algorithms, developing new frameworks, and training the next generation of programmers to think differently about problems -- but the benefits are far-reaching: real-time computation that can in principle scale up to the perceptual, cognitive, and motor capabilities of the human brain, without requiring the energy production of an entire nuclear power plant.
+This involves discovering new algorithms, developing new frameworks, and training the next generation of programmers to think differently about problems -- but the benefits are far-reaching: real-time computation that can in principle scale up to the perceptual, cognitive, and motor capabilities of the human brain, without requiring the energy production of a nuclear power plant.
 
-In chapter~\ref{chapt:nef-extensions} we summarize some of the main challenges surrounding the use of neuromorphic hardware, and demonstrate how the NEF solves many of these problems.
+In chapter~\ref{chapt:nef-extensions}, we summarize some of the main challenges surrounding the use of neuromorphic hardware, and demonstrate how the NEF solves many of these problems.
 More generally, we provide a theoretical framework and extensions to formally understand the class of computations that neuromorphic hardware enables, given its computational elements and constraints, including resource budget and desired precision.
 A novel class of algorithms involving temporal computations are explored and analyzed in detail in chapter~\ref{chapt:delays}.
 Applications running on neuromorphic hardware are provided in chapter~\ref{chapt:results}.
@@ -718,21 +729,31 @@ Although Nengo support may not be available any time soon, the hardware promises
 
 \subsection{Braindrop}
 
-Braindrop~\citep{braindrop2019} is a mixed-signal (i.e.,~both analog and digital) neuromorphic architecture that seeks to realize the energy-efficiency of the human brain, without sacrificing the flexibility required to model large-scale cognitive systems such as Spaun~\citep{eliasmith2012}.
-This chip was designed explicitly with the NEF in mind, by way of a novel mapping~\citep{voelker2017iscas, neckar2018optimizing}, accompanied by a number of inventive solutions including: temperature-invariance~\citep{abrams2017, reidpint2019, benjamintemp2019}, H-tree routing~\citep{fokserial2018}, sparse encoding by spatial convolution~\citep{feinstein1988hexagonal, braindrop2019}, and decoding by accumulative spike-thinning~\citep{fokthinning2019}.
+Braindrop~\citep{braindrop2019} is a mixed-signal---both analog and digital---neuromorphic architecture that attempts to realize the energy-efficiency of the human brain, without sacrificing the flexibility required to simulate functional large-scale cognitive systems such as Spaun~\citep{eliasmith2012}.
+This project was a five year collaboration between Stanford, Yale, and the University of Waterloo, and was made possible in this time frame 
+by building upon many of the tools and lessons learned from its predecessor, Neurogrid~\citep{neurogrid2014}. 
 
-This collection of work was the product of a 5-year collaboration between Stanford, Yale, and the University of Waterloo, and was made possible in this time frame 
-by building on more than a decade of experience building---and years of programming---its predecessor, Neurogrid~\citep{neurogrid2014}. 
-
-Leveraging low-level analog transistor physics to emulate the behaviour of individual neurons and synapses.
-
-Dynamical systems approach \citep{arthur2011silicon}
-
-Multicast tree router \citep{merolla2014multicast}
+Both Neurogrid and Braindrop take a dynamical systems-based approach~\citep{arthur2011silicon, gao2012dynamical} to realize network-level computation.
+In particular, the device-level physics of subthreshold analog circuits~\citep{andreou1991current}---emulating the behaviours of neurons and synapses---are leveraged by weighting the digital communication of spikes, to engineer dynamical systems~\citep{dethier2011brain}.
+It is argued that an appropriate mixture of analog computation for nonlinear encoding---sparsifying signals across both space and time---and digital communication for spike transmission, is responsible for the energy-efficiency of mamillian brains~\citep{boahen2017neuromorph}.
+This hypothesis makes such architectures a natural target for NEF networks, in particular due to its modelling of the dynamical primitives encoding signals into spikes, and its efficient procedures to solve for the weights in the communication fabric.
 
 The NEF has been deployed on Neurogrid primarily to implement control algorithms~\citep{dethier2011brain, choudhary2012silicon, menon2014controlling}.
+However, the use of Neurogrid requires advanced calibration~\citep{kauderer2017calibrating} and temperature-compensation techniques~\citep{abrams2017} in order to tame the analog variability -- both of which contribute to it being difficult to use in practical applications.\footnote{
+For example, a live demonstration that used Neurogrid to control a robotic arm, which had previously worked in an air-controlled climate, no longer functioned in the conference hall as it was bombarded by the warmth of onlookers~[personal communication].}
 
-Requires advanced calibration techniques~\citep{kauderer2017calibrating}.
+Braindrop is designed explicitly with the NEF in mind, by way of a novel mapping~\citep{voelker2017iscas, neckar2018optimizing}, accompanied by a number of inventive solutions including: temperature-invariance~\citep{abrams2017, reidpint2019, benjamintemp2019}, H-tree routing~\citep{fokserial2018}, sparse encoding by spatial convolution~\citep{feinstein1988hexagonal, braindrop2019}, and decoding by accumulative spike-thinning~\citep{fokthinning2019}.
+Of key notability is the fact that Braindrop, in essence, implements a factorization of the weight matrices akin to equation~\ref{eq:factored-weights}, which has cut down on area requirements for SRAM and permitted the sharing of synaptic circuitry across neurons, in turn leading to an estimate of 381~fJ\footnote{
+One femtojoule~(fJ) is equivalent to \numprint{e-15} joules~(J).}
+per equivalent synaptic operation for network configurations typical in Spaun.
+A significant amount of detail addressing the design of the chip is available in \citet{neckar2018braindrop, fok2018communicating, braindrop2019}.
+
+As stated above, the design of Braindrop is informed by many of the lessons learned from Neurogrid.
+Detailed models have been studied at the circuit level~\citep{benjamintemp2019} and NEF-related methods have been employed at the network level~\citep{voelker2017iscas, reidpint2019}, in order to simultaneously tame and account for the non-idealities introduced by transistor mismatch, parasitic capacitances, and temperature variation.
+In chapter~\ref{chapt:nef-extensions}, we expose a few of these extensions at a theoretical level.
+In chapter~\ref{chapt:results}, we provide applications demonstrating robust dynamical computation on Braindrop.
+
+% Multicast tree router \citep{merolla2014multicast}
 
 \subsection{Loihi}
 

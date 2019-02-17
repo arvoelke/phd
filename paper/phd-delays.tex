@@ -59,6 +59,8 @@ Reservoir computing / FORCE / LSTMs?
 \section{Optimal NEF Solution}
 \label{sec:nef-delay}
 
+\TODO{cite patent}
+
 As it is impossible in practice (i.e.,~given finite-order continuous-time resources) to implement an arbitrary delay, we will instead approximate $u(t)$ as a low-frequency signal, or, equivalently, approximate equation~\ref{eq:time-delay} as a low-dimensional system expanded about the zeroth frequency in the \emph{Laplace domain}.
 We begin by transforming equation~\ref{eq:time-delay} into the Laplace domain, $\mathcal{L} \left\{ y(t) \right\} = \mathcal{L} \left\{ u(t) \right\} \mathcal{L} \left\{ \delta_{-\theta}(t) \right\}$, and then using the fact that $\mathcal{L} \left\{ \delta_{-\theta}(t) \right\} = e^{-\theta s}$ to obtain:
 \begin{align} \label{eq:tf-delay}
@@ -554,6 +556,9 @@ In addition, trials took on average $5.10$\,s for the sigmoid DN, $6.44$\,s for 
 This difference is a consequence of not simulating the DN for training, and from using factorized weight matrices (i.e.,~encoders and decoders) to simulate the DN.
 
 \TODO{restate the intuitive story of why given the difference between linear and nonlinear results}
+
+\subsection{Optimized Long Short-Term Memory}
+\label{sec:delay-lstm}
 
 \subsection{Time Cells}
 \label{sec:time-cells}
