@@ -7,7 +7,9 @@ from dn import set_style
 set_style()
 
 import nengo_loihi
-nengo_loihi.set_defaults()
+nengo.Ensemble.max_rates.default = nengo.dists.Uniform(100, 120)
+nengo.Ensemble.intercepts.default = nengo.dists.Uniform(-1, 0.5)
+# nengo_loihi.set_defaults()
 
 import nengolib
 from nengolib.signal import s, nrmse
@@ -47,7 +49,9 @@ def do_trial(n_neurons=300,
 
     def loihi_factory(model, dt, tau=tau):
         loihi_model = nengo_loihi.builder.Model(dt=dt)
-        loihi_model.inter_tau = tau  # used by spike generator
+        # https://github.com/nengo/nengo-loihi/issues/97
+        assert loihi_model.decode_tau == 0.005
+        loihi_model.decode_tau = tau  # used by spike generator
         return nengo_loihi.Simulator(
             model, model=loihi_model, precompute=True, dt=dt) 
 
