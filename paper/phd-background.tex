@@ -368,19 +368,19 @@ Perhaps surprisingly, this optimization procedure is mathematically correct for 
 % We also remark that one may use singular value decomposition~(SVD) to characterize the class of functions that can be accurately approximated by the chosen neural basis functions~\citep[][pp.~185--217]{eliasmith2003a}.
 
 It remains to map these encoding and decoding parameters onto a neural architecture.
-Equations~\ref{eq:encoding} and \ref{eq:trans-decode} are used to derive a connection weight matrix between layers that implicitly computes the desired function $\V{f}(\V{x})$ within the \emph{latent} vector space $\mathbb{R}^q$.
+Equations~\ref{eq:encoding} and \ref{eq:trans-decode} are used to derive a connection weight matrix between layers that implicitly computes the desired function $\V{f}(\V{x})$ within the \emph{latent} state-space $\mathbb{R}^q$.
 Let $\omega_{ij}$ be the ``weight'', or coupling strength, between the $j^\text{th}$ presynaptic neuron and the $i^\text{th}$ postsynaptic neuron.
 Specifically, the weight matrix $W = [\omega_{ij}] \in \mathbb{R}^{n \times n}$, which maps activities from the $j^{\text{th}}$ presynaptic neuron to the $i^{\text{th}}$ postsynaptic neuron (disregarding the gain, bias, and synapse), is given by:
 \begin{equation} \label{eq:factored-weights}
 %\omega_{ij} = \left\langle \V{e}_i, \V{d}^\V{f}_j \right\rangle \text{.} % = \left( \transpose{E\left( D^\V{f} \right)} \right)_{ij}
 W = E \transpose{\left(D^\V{f}\right)} \text{.}
 \end{equation}
-To project activities from one population to another (or back to itself), they are decoded from an $n$-dimensional neuron space into the $q$-dimensional vector space, and then encoded back into the $n$-dimensional neuron space.
+To project activities from one population to another (or back to itself), they are decoded from an $n$-dimensional neuron space into the $q$-dimensional state-space, and then encoded back into the $n$-dimensional neuron space.
 %where $E$ are the encoders of the postsynaptic population from equation~\ref{eq:encoding}, and $D$ are the decoders of the presynaptic population solved by equation~\ref{eq:decoder_solution}.
-Thus, by linearity, the process of decoding (equation~\ref{eq:trans-decode}) and then encoding (equation~\ref{eq:encoding}), is equivalent to taking the dot-product of the weight matrix $W$ with the neural activities.
+Thus, by linearity, the process of decoding (equation~\ref{eq:trans-decode}) and then encoding (equation~\ref{eq:encoding}), is equivalent to taking the dot-product of the weight matrix $W$ with a vector of neural activations.
 Consequently, the matrices $E$ and $D^\V{f}$ are a low-rank factorization of $W$.
 % Intuitively, structure is imposed by the choice of representing $\V{x}(t)$, which in turn becomes latent within the weight matrix.
-Moreover, we remark that by linearity, the addition of multiple connections has the effect of adding together their transformations in the vector space. Similarly, any linear transformation of the nonlinear function $T\V{f}(\V{x})$, $T \in \mathbb{R}^{q \times q}$, may be implemented by the decoders $D^\V{f}T$ or by the encoders $ET$---both are optimal and equivalent to one another---without needing to solve for a new set of weights.
+Moreover, we remark that by linearity, the addition of multiple connections has the effect of adding together their transformations in state-space. Similarly, any linear transformation of the nonlinear function $T\V{f}(\V{x})$, $T \in \mathbb{R}^{q \times q}$, may be implemented by the decoders $D^\V{f}T$ or by the encoders $ET$---both are optimal and equivalent to one another---without needing to solve for a new set of weights.
 On the other hand, nonlinear conductance-based synapses can be exploited to encode nonlinear functions of the decoded variables across multiple pre-populations~\citep{stoeckel2018}.
 
 This factorization has additional consequences for the computational efficiency of neural simulations.
@@ -524,7 +524,7 @@ That is, if we know the dynamics of the system that we would like to implement, 
 Many have argued that dynamics in biological systems are unions of low-dimensional attractor manifolds~\citep{sussillo2013opening, cunningham2014dimensionality, waernberg2017low}.
 The NEF imposes such a low-dimensional structure on the weight matrices themselves.
 Learning these dynamics is a somewhat separate matter; the NEF does not \emph{limit} itself to situations where the dynamics are known apriori.
-Techniques from system identification~\citep{nelles2013nonlinear}, optimization in the time-domain using a teacher signal~\citep{duggins2017incorporating}, or backpropagation through time~\citep{rasmussen2018nengodl}, may all be applied to learn the dynamics from raw data.
+Techniques from system identification~\citep{nelles2013nonlinear}, optimization in the time-domain using a teacher signal~\citep{duggins2017incorporating}, and backpropagation through time~\citep{rasmussen2018nengodl}, may all be applied to learn the dynamics from raw data.
 Likewise, Nengo supports the use of random feedback and online RLS learning with full weight matrices, with or without spikes, thus reducing the NEF network to a full-FORCE network.
 The NEF is compatible with all such methods, but makes a preference for those that are amenable to theoretical analysis while being scalable and efficient in time and space.
 We find the approach of introducing random high-dimensional feedback to be inefficient and unnecessary for our purposes (section~\ref{sec:delay-rc}), and furthermore re-encoding the target output into the network as a teaching signal can be counter-productive (i.e.,~reduce accuracy) even in simple cases (section~\ref{sec:force-comparison}).
