@@ -753,13 +753,14 @@ This hypothesis makes such architectures a natural target for NEF networks, in p
 
 The NEF has been deployed on Neurogrid primarily to implement control algorithms~\citep{dethier2011brain, choudhary2012silicon, menon2014controlling}.
 However, the use of Neurogrid requires advanced calibration~\citep{kauderer2017calibrating} and temperature-compensation techniques~\citep{abrams2017} in order to tame the analog variability -- both of which contribute to it being difficult to use in practical applications.\footnote{
-For example, a live demonstration that used Neurogrid to control a robotic arm, which had previously worked in an air-controlled climate, no longer functioned in the conference hall as it was bombarded by the warmth of onlookers~[personal communication].}
+For example, a live demonstration that used Neurogrid to control a robotic arm, which had previously worked within an air-controlled climate, no longer functioned in the conference hall as it was bombarded by the warmth of onlookers~[personal communication].}
 
-Braindrop is designed explicitly with the NEF in mind, by way of a novel mapping~\citep{voelker2017iscas, neckar2018optimizing}, accompanied by a number of inventive solutions including: temperature-invariance~\citep{abrams2017, reidpint2019, benjamintemp2019}, H-tree routing~\citep{fokserial2018}, sparse encoding by spatial convolution~\citep{feinstein1988hexagonal, braindrop2019}, and decoding by accumulative spike-thinning~\citep{fokthinning2019}.
+Braindrop is designed explicitly with Nengo and the NEF in mind, by way of a novel mapping~\citep{voelker2017iscas, neckar2018optimizing}, accompanied by a number of inventive solutions including: temperature-invariance~\citep{abrams2017, reidpint2019, benjamintemp2019}, H-tree routing~\citep{fokserial2018}, sparse encoding by spatial convolution~\citep{feinstein1988hexagonal, braindrop2019}, and decoding by accumulative spike-thinning~\citep{fokthinning2019}.
 Of key notability is the fact that Braindrop, in essence, implements a factorization of the weight matrices akin to equation~\ref{eq:factored-weights}, which has cut down on area requirements for SRAM and permitted the sharing of synaptic circuitry across neurons, in turn leading to an estimate of 381~fJ\footnote{
 One femtojoule~(fJ) is equivalent to \numprint{e-15} joules~(J).}
 per equivalent synaptic operation for network configurations typical in Spaun.
 A significant amount of detail addressing the design of the chip is available in \citet{neckar2018braindrop, fok2018communicating, braindrop2019}.
+The success of this project has prompted the formation of a start-up company, Femtosense, named after the mere femtojoules that synapses consume to sense and react~\citep{femtosense}. 
 
 As stated above, the design of Braindrop is informed by many of the lessons learned from Neurogrid.
 Detailed models have been studied at the circuit level~\citep{benjamintemp2019} and NEF-related methods have been employed at the network level~\citep{voelker2017iscas, reidpint2019}, in order to simultaneously tame and account for the non-idealities introduced by transistor mismatch, parasitic capacitances, and temperature variation.
@@ -777,7 +778,7 @@ It consists of 128 ``neuromorphic cores'' that operate asynchronously from one a
 Each core time-multiplexes \numprint{1024} neural units---configurable as trees of neurons and dendritic compartments---across the same shared silicon.
 In contrast to SpiNNaker, barrier messages are transmitted between cores in order to keep the system synchronized to a global time-step.
 This has the advantages of each step only taking as long as it needs\footnote{
-One time-step may take longer than the next, if for example learning rules are applied irregularly, or depending on the total volume of spike-traffic.} 
+One algorithmic time-step may take longer than the next, if for example learning rules are applied irregularly, or depending on the total volume of spike-traffic.} 
 while guaranteeing globally deterministic behaviour.
 
 By virtue of being fully digital and barrier-synchronized, there exists far fewer challenges presented to its users when compared to solutions in the mixed-signal, purely analog, or asynchronous digital domains; in particular, the behaviour of the chip is guaranteed to be reliable and predictable.
@@ -785,55 +786,63 @@ When compared to simulating SNNs on traditional hardware (e.g.,~an x86~CPU), the
 A Loihi emulator, provided by Applied Brain Research~(ABR), accurately reproduces many of these limitations using detailed software models of the underlying hardware~\citep{blouw2018a}.
 In addition, software tools exist to map SNNs onto Loihi while optimizing for power-efficiency with respect to the constraints imposed by the hardware~\citep{lin2018programming, lin2018mapping}.
 
-Nengo has been ported to Loihi and used to simulate a nonlinear adaptive controller for a robotic arm~\citep[][and personal communication]{dewolf2016}.
-However, Loihi does not support the use of factored weight matrices, meaning that a substantial benefit of the NEF---namely, a linear reduction in the number of multiplies and memory accesses per time-step---is not leveraged at the hardware level.
-As a way to resolve this at the software level, Nengo currently creates intermediate populations to represent latent variables explicitly in spikes, which has the effect of amplifying representational error, increasing the number of neurons, and introducing additional rounds of filtering between layers.
-\TODO{Cite nengo-loihi github and forward reference methodology section with more details (similar to braindrop).}
-Nevertheless, Nengo~DL~\citep{rasmussen2018nengodl} has been used to implement a fully-connected deep network performing keyword spotting, on Loihi, while outperforming state-of-the-art hardware in energy cost per inference~\citep{blouw2018a}.
+Loihi supports a broad variety of features that make it accessible to a wide range of researchers experimenting with the synthesis of large-scale SNNs.
+For example, stochastic noise can be added to internal states, discrete delays may be introduced to spikes and PSCs, synapses can have higher-order dynamics, dendritic trees may be constructed by repurposing the neural units within each core, neuron models may include adaptive terms, learning rules are described using a general template, and finally there is support for several weight compression formats, spike multicast, and closed-loop control via embedded x86 cores~\citep{davies2018loihi}.
 
-Loihi supports a broad variety of features that make it accessible to a wide range of researchers experimenting with the simulation of large-scale SNNs.
-\TODO{List features.}
-It is currently unclear how important or useful each of these features are relative to one another and especially in the context of target applications.
-We believe that an important role of Nengo and the NEF in this context is to facilitate such exploration, by systematically harnessing relevant features for useful computation, which can then feed back to inform the design of future iterations (as was the case for Neurogrid and Braindrop).
-More generally, specific classes of computations will encounter distinct trade-offs when it comes to resource usage, precision, energy-to-solution, and time-to-solution; mathematical frameworks, such as the NEF, participate by providing a unified way of characterizing such trade-offs.
-A primary focus of chapters~\ref{chapt:nef-extensions}--\ref{chapt:results} is to take a concrete step in these directions.
+ABR has ported Nengo over to Loihi and used the NEF to simulate a nonlinear adaptive controller on a robotic arm~\citep[][and personal communication]{dewolf2016}.
+However, Loihi does not support the use of factored weight matrices, meaning that a substantial benefit of the NEF---namely, a linear reduction in the number of multiplies and memory accesses per time-step---is not leveraged at the hardware level.
+As a way to resolve this at the software level, Nengo currently creates intermediate populations to represent latent variables explicitly in spikes, which has the adverse effects of amplifying representational error, increasing the number of neurons, and introducing additional rounds of filtering between layers.
+Alternatively, weight matrices can be left unfactored and fully-connected, but this misses out on potentially dramatic savings.
+\TODO{Cite nengo-loihi github and forward reference methodology section with more details (similar to braindrop).}
+
+Nengo~DL~\citep{rasmussen2018nengodl} has been used to implement a fully-connected deep network performing keyword spotting, on Loihi, while outperforming state-of-the-art hardware in energy cost per inference~\citep{blouw2018a}.
+After extensive review of the literature, we have found this to be the first, and currently only published example, outside of Intel's demonstration of sparse pattern representation~\citep{tang2017sparse, davies2018loihi}, to deploy an SNN on the actual chip.
+
+However the flexibility and digital nature of Loihi comes at the cost of increased power-consumption relative to fully analog or mixed-signal architectures. 
+Simulations from \citet{davies2018loihi}, that are summarized in \citet[][Table~3]{braindrop2019}, indicate that Loihi consumes on the order of \numprint{24000}~fJ per synaptic operation -- or two orders-of-magnitude more than Braindrop's equivalent measure.
+Regardless, the analog variability intrinsic to Braindrop changes the scope of target applications, and moreover the results of Loihi still demonstrate a three orders-of-magnitude improvement over a comparable solution running on a CPU.
+We speculate the power-efficiency of Loihi can be improved somewhat by supporting factored weight matrices, and refining the architecture according to the network topology and particular features leveraged by the example application.
+
+On the other hand, it is currently unclear how important or useful each of Loihi's features are relative to one another, and especially in the context of target applications.
+We believe that an important avenue of research, and the role of Nengo and the NEF in this context, is to facilitate such exploration, by systematically harnessing relevant features for useful computation, which can then feed back to co-design future iterations (as was the case for Neurogrid and Braindrop).
+More generally, specific classes of computations that leverage particular subsets of features will encounter distinct trade-offs when it comes to resource usage, precision, energy-to-solution, and time-to-solution; mathematical frameworks, such as the NEF, participate by providing a unified way of characterizing such trade-offs.
+A primary focus of chapters~\ref{chapt:nef-extensions}--\ref{chapt:results} is to take a concrete step in these directions by explicitly incorporating some of Loihi's features into the NEF and demonstrating dynamical systems functioning on the physical hardware.
 
 \subsection{Others}
 \label{sec:neuromorphic-others}
 
-A number of excellent review articles are made available by \citet{bartolozzi1999neuromorphic}, \citet{indiveri2011neuromorphic}, \citet{cassidy2013design}, \citet{eryilmaz2016neuromorphic}, \citet{cummings2018} and \citet{rajendran2019low}.
-High-level considerations regarding the role of biomimicry---the emulation of nature's solutions in order to solve real-world problems---in the context of SNNs and power-efficiency are discussed in \citet{krichmar2018making}.
+The literature on neuromorphic computing is incredibly extensive\footnote{%
+See \citet{schuman2017survey} for a review that references nearly \numprint{3000} other papers.}%
+, dating back to the late 80's and recently displaying a renewed set of interests spanning many historically-separate communities.
+This has resulted in a number of architectures mentioned below, which were not available for me to use, to be considered outside the scope of this thesis.
+A number of excellent review articles by experts widely regarded to have advanced the field, are made available by \citet{bartolozzi1999neuromorphic}, \citet{indiveri2011neuromorphic}, \citet{cassidy2013design}, \citet{cummings2018}, and \citet{rajendran2019low}.
+At a higher level, a review that considers the role of biomimicry---the emulation of nature's solutions in order to solve real-world problems---in the context of power-efficient SNNs and neuromorphic computing, is provided by \citet{krichmar2018making}.
 
-Some of the earliest examples include \citet{sivilotti1985novel, mead1988silicon, boahen1989heteroassociative, mahowald1991silicon}.
-
-A number of other examples that support the compilation of NEF networks include \citet{corradi2014}, \citet{wang2014compact, wang2017neuromorphic}, \citet{berzish2016}, \citet{fischl2018}
-
-Spikey,
+Some of the earliest examples of neuromorphic engineering date back to the work of \citet{sivilotti1985novel, mead1988silicon, boahen1989heteroassociative, mahowald1991silicon}.
+Many of these techniques have since been extended and scaled up to show-case a large variety of analog, digital, and mixed-signal systems (excluding those mentioned thus far):
+Spikey~\citep{pfeil2013six},
 BrainScaleS~\citep{schemmel2010wafer, aamir2018mixed, aamir2018accelerated},
-SyNAPSE,
 DYNAPs~\citep{moradi2018scalable},
-TrueNorth~\citep{merolla2014million, esser2016convolutional},
-DeepSouth,
-COLAMN~\citep{wijekoon2012vlsi},
+IBM's TrueNorth~\citep{merolla2011digital, merolla2014million, esser2016convolutional},
+Sydney's DeepSouth~\citep{cummings2018},
 ODIN~\citep{frenkel2018},
 ROLLS~\citep{qiao2015reconfigurable, glatz2018adaptive},
+COLAMN~\citep{wijekoon2012vlsi},
 STPU~\citep{smith2017novel},
 DANNA~\citep{daffron2016extensions, mitchell2018danna},
-and many other related prototypes~\citep[e.g.,][]{glackin2009hardware, binas2016precise, kim2018efficient, chen20184096, zheng2018low, larras2018fully}.
-% A scalable multicore architecture with heterogeneous memory structures for dynamic neuromorphic asynchronous processors (dynaps)
-% A 65k-neuron 73-mevents/s 22-pj/event asynchronous micro-pipelined integrate-and-fire array transceiver
-% Analog computing in a modern context: A linear algebra accelerator case study
-% A wafer-scale neuromorphic hardware system for large-scale neural modeling
+and many other related prototypes~\citep[e.g.,][]{glackin2009hardware, moradi2011vlsi, brink2013computing, moradi2014event, park201465k, azghadi2015programmable, binas2016precise, kim2018efficient, chen20184096, zheng2018low, larras2018fully}.
+
+\TODO{Analog computing in a modern context: A linear algebra accelerator case study?}
 % A digital neurosynaptic core using embedded crossbar memory with 45 pJ per spike in 45 nm, (GoldenGate SyNAPSE IBM)
 \TODO{Missing ASIC results for deep learning?}
 
-TrueNorth results \citep{} and ``Supervised Learning Based on Temporal Coding in Spiking Neural Networks''.
+Among these systems, a number support the compilation of NEF networks, including a VLSI prototype~\citep{corradi2014}, several FPGA implementations~\citep{naylor2013managing, wang2014compact, berzish2016, wang2017neuromorphic} including ABR's own FPGA backend~(unpublished), several GPUs~\citep{bekolay2014, blouw2018a}, and most recently, TrueNorth~\citep{fischl2018}.
 
-An emerging framework called the Neural and Synaptic Array Transceiver~\citep[NSAT;][]{detorakis2018neural}, focusing on online learning for data-driven autonomy on neuromorphic hardware, has been validated on a field-programmable gate array~(FPGA).
-Likewise, an engine that repurposes generic computational elements in order to flexibly support a variety of network topologies at scale has been used to implement polysynchronous SNNs on an FPGA~\citep{wang2013neuromorphic, wang2018breaking}.
+An emerging framework called the Neural and Synaptic Array Transceiver~\citep[NSAT;][]{detorakis2018neural}, which focuses on data-driven autonomy via online learning on neuromorphic hardware, has been validated on a field-programmable gate array~(FPGA).
+Likewise, an engine that repurposes generic computational elements in order to flexibly support a variety of network topologies at scale, has been used to implement polychronous SNNs on an FPGA~\citep{wang2013neuromorphic, wang2018breaking}.
 
-Proposals exist to use memresistors as an alternative hardware primitive for SNNs in mixed-signal neuromorphic architectures, due to their compact and non-volatile (i.e.,~maintains memory without power) properties~\citep{payvand2018neuromorphic}.
-Multiple investigations are currently underway to explore the practical challenges associated with these proposals~\citep[e.g.,][]{chang2013building, kudithipudi2016design, cady2018full, boybat2018neuromorphic}.
+There also exist multiple proposals to leverage memristors as an alternative hardware primitive for SNN computation in mixed-signal neuromorphic architectures, due to their compact and non-volatile (i.e.,~maintains memory without power) properties~\citep{payvand2018neuromorphic}.
+Several investigations are currently underway to explore the practical challenges associated with these proposals~\citep[e.g.,][]{chang2013building, kudithipudi2016design, cady2018full, boybat2018neuromorphic}.
 
 Likewise, many other unconventional substrates for SNNs are actively being considered, such as nanoscale spintronic oscillators and multiferroic devices~\citep{torrejon2017neuromorphic, hoppensteadt2017applied, manipatruni2018beyond}, analog non-volatile memory~\citep{ambrogio2018equivalent}, organic electronics~\citep{van2018organic}, phase-change oxides~\citep{zhao2019low}, photonics~\citep{tait2018silicon, shainline2018largest}, and superconducting circuits based on quantum phase-slip junctions~\citep[QPSJs;][]{cheng2019superconducting}.
 
