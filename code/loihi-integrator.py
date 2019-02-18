@@ -138,6 +138,8 @@ if __name__ == '__main__':
                              freq=1, sim_t=10, input_seed=1,
                              tau=0.2, tau_probe=0.2))
 
+    np.savez(datapath("loihi-integrator.npz"), data=data)
+
     flattened = []
     for r in data:
         flattened.append(r['actual'])
