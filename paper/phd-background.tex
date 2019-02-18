@@ -125,7 +125,7 @@ Recently, this has found success in sequence learning, machine translation, and 
 A spiking analog to LSTMs have also been proposed by \citet{bellec2018long}, in which adaptive neurons take on the functional role of LSTM cells.
 The intuition behind why this works is that the adaptive state of the neuron is functionally similar to that of a controlled leaky integrator.
 When BPTT is applied to such an SNN, it has been shown to approach the performance of a non-spiking LSTM network.
-The structure of LSTM cells have also been compared to that of cortical microcircuits in biology, providing a post hoc explanation for the utility of LSTMs~\citep{costa2017cortical}.
+The structure of LSTM cells have also been compared to that of cortical microcircuits in biology, providing a post hoc explanation for the utility of LSTMs, and spiking implementations thereof~\citep{costa2017cortical, pozzi2018gating}.
 
 This success has prompted many variants of LSTMs, including the bidirectional LSTM~\citep{graves2005framewise}, hierarchical S-LSTM~\citep{zhu2015long}, grid LSTM~\citep{kalchbrenner2015grid}, phased LSTM~\citep{neil2016phased}, and others~\citep{salehinejad2017recent}.
 At the same time, this has inspired several related architectures that augment an RNN with differentiable memory cells to facilitate long-range temporal interactions, including the gated recurrent unit~\citep[GRU;][]{cho2014properties, chung2014empirical}, neural Turing machine~\citep{graves2014neural}, memory network~\citep{weston2014memory}, and orthogonal GRU~\citep{jing2018gated}.
@@ -201,7 +201,7 @@ It does so by leveraging neural nonlinearities and weighted synaptic filters as 
 The NEF has been used to construct a wide variety of neural models, including a functioning 6.6~million neuron model of the human brain, dubbed ``Spaun'', that is capable of performing perceptual, motor, and cognitive tasks~\citep{eliasmith2012, choo2018}.
 This model incorporates many kinds of observed neural dynamics, including self-generated oscillations, sustained activity, and point attractor dynamics.
 
-Meanwhile, the flexibility of the NEF has lead to it being deployed on mixed-analog-digital neuromorphic chips~\citep{choudhary2012silicon, corradi2014, voelker2017iscas, voelker2017neuromorphic, braindrop2019} and digital architectures~\citep{bekolay2013, wang2014compact, mundy2015, knight2016, berzish2016, wang2017neuromorphic, blouw2018a}.
+Meanwhile, the flexibility of the NEF has lead to it being deployed on mixed-analog-digital neuromorphic chips~\citep{choudhary2012silicon, corradi2014, voelker2017iscas, voelker2017neuromorphic, braindrop2019} and digital architectures~\citep{bekolay2014, wang2014compact, mundy2015, knight2016, berzish2016, wang2017neuromorphic, blouw2018a}.
 Consequently, the NEF provides a practical method for programming neuromorphics, thus helping the field realize its promise of a low-energy computing platform that emulates core principles of the nervous system~\citep{boahen2017neuromorph}.
 
 Biological brains possess a significant amount of structure, with neuroanatomical constraints that differ considerably between functional areas. %~\citep[][pp.~207--227]{kandel2000principles}.
@@ -218,7 +218,7 @@ In this section, we provide the basic building blocks adapted from the original 
 
 In the context of RNNs, the NEF provides generic machinery for training the weights of a recurrent network of spiking (and non-spiking) neurons in order to implement some particular dynamical system~\citep{dynamicspatent}.
 This is made efficient through three important steps: (1)~weight matrices are factored into two $n \times q$ \emph{encoding} and \emph{decoding} matrices, where $q \in \bigoh{1}$ is the dimensionality of the dynamical state-vector, and $n$ is the number of neurons, (2)~the optimization problem is recast as a batched least-squares problem that can be solved offline without needing to explicitly simulate the network over time, and (3)~the dynamics of the synapse model are leveraged as a temporal basis for the overall system.
-These insights lead to procedures for training and simulation that are efficiently implemented---scaling as $\bigoh{n}$ in both time and space---by the Nengo~2.X software package~\citep{bekolay2013}.
+These insights lead to procedures for training and simulation that are efficiently implemented---scaling as $\bigoh{n}$ in both time and space---by the Nengo~2.X software package~\citep{bekolay2014}.
 Backpropagation through time can be applied to further improve the performance of these networks, by use of the Nengo~DL extension~\citep{hunsberger2018, rasmussen2018nengodl, blouw2018a}, which bidirectionally integrates Nengo with Google's machine learning toolkit, Tensorflow~\citep{abadi2016tensorflow}.
 
 At the same time, this top-down approach provides considerable transparency into systematic relationships between neural nonlinearities, synapse models, time-constants, and network function.
@@ -341,7 +341,7 @@ D^\V{f} = \argmin_{D \in \mathbb{R}^{n \times q}} \int_{S} \left\| \V{f}(\V{v}) 
 Note that this optimization only depends on $r_i(\V{v})$ for $\V{v} \in S$, as opposed to depending on the signal $\V{x}(t)$.
 In other words, the optimization is determined strictly by the distribution of the signal, and not according to its particular dynamics.
 Since we have replaced the optimization problem involving spikes (equation~\ref{eq:trans-decode}) with one involving rates, this side-steps the need to explicitly simulate the neurons over time when training.
-Furthermore, this is a convex optimization problem, which may be solved by uniformly sampling $S$~\citep{voelker2017} and applying a standard regularized least-squares solver to the sampled data~\citep{bekolay2013}.
+Furthermore, this is a convex optimization problem, which may be solved by uniformly sampling $S$~\citep{voelker2017} and applying a standard regularized least-squares solver to the sampled data~\citep{bekolay2014}.
 Monte Carlo sampling introduces $\bigoh{ m^{-\frac{1}{2}} }$ error into the integral from equation~\ref{eq:decoder_solution}, where $m$ is the number of samples, but this can be improved to $\widetilde{\mathcal{O}} \left( m^{-1} \right)$---effectively squaring $m$---by the use of quasi-Monte Carlo methods~\citep{fang1994, knight2016}.
 Nengo also supports alternative decoder solvers that optimize variants of equation~\ref{eq:decoder_solution}~\citep[e.g.,][]{voelker2016a, abrams2017}, and randomized singular-value-decomposition~(SVD) solvers that take $\bigoh{mn}$ time and space~\citep{halko2011finding} -- but we do not use them here.
 %This provides the decoders needed by equations~\ref{eq:repn_decode} and \ref{eq:trans-decode} to represent the vector or compute transformations, respectively.
@@ -798,12 +798,12 @@ A primary focus of chapters~\ref{chapt:nef-extensions}--\ref{chapt:results} is t
 
 A number of excellent review articles are made available by \citet{bartolozzi1999neuromorphic}, \citet{indiveri2011neuromorphic}, \citet{cassidy2013design}, \citet{eryilmaz2016neuromorphic}, and \citet{cummings2018}.
 
-Some of the earliest examples include \citep{sivilotti1985novel, boahen1989heteroassociative} and \citep{mead1988silicon}.
+Some of the earliest examples include \citet{sivilotti1985novel, mead1988silicon, boahen1989heteroassociative, mahowald1991silicon}.
 
-Spikey, BrainScaleS~\citep{schemmel2010wafer, aamir2018accelerated}, SyNAPSE, Dynapse~\citep{moradi2018scalable}, TrueNorth~\citep{merolla2014million, fischl2018}, DeepSouth, COLAMN, ODIN~\citep{frenkel2018}, ROLLS~\citep{qiao2015reconfigurable, glatz2018adaptive}, Giacomo and Eliasmith, Tripp, Wang and Tapson, STPU, Neuromemristive random projection networks (Dhireesha Kudithipudi)
+Spikey, BrainScaleS~\citep{schemmel2010wafer, aamir2018accelerated}, SyNAPSE, DYNAPs~\citep{moradi2018scalable}, TrueNorth~\citep{merolla2014million, fischl2018}, DeepSouth, COLAMN, ODIN~\citep{frenkel2018}, ROLLS~\citep{qiao2015reconfigurable, glatz2018adaptive}, Giacomo and Eliasmith, Tripp, Wang and Tapson, STPU, Neuromemristive random projection networks (Dhireesha Kudithipudi)
 \TODO{\url{https://link.springer.com/chapter/10.1007/978-3-642-00641-8_38}}
 DANNA~\citep{daffron2016extensions, mitchell2018danna},
-and miscellaneous prototypes~\citep{binas2016precise}.
+and other VLSI prototypes~\citep{binas2016precise}.
 % A scalable multicore architecture with heterogeneous memory structures for dynamic neuromorphic asynchronous processors (dynaps)
 % A 65k-neuron 73-mevents/s 22-pj/event asynchronous micro-pipelined integrate-and-fire array transceiver
 % Analog computing in a modern context: A linear algebra accelerator case study
@@ -814,8 +814,11 @@ and miscellaneous prototypes~\citep{binas2016precise}.
 TrueNorth results \citep{esser2016convolutional} and ``Supervised Learning Based on Temporal Coding in Spiking Neural Networks''.
 
 An emerging framework called the Neural and Synaptic Array Transceiver~\citep[NSAT;][]{detorakis2018neural}, focusing on online learning for data-driven autonomy on neuromorphic hardware, has been validated on a field-programmable gate array~(FPGA).
+Likewise, an engine that repurposes generic computational elements in order to flexibly support a variety of network topologies at scale has been used to implement polysynchronous SNNs on an FPGA~\citep{wang2013neuromorphic, wang2018breaking}.
 
-Promising investigations are currently underway to explore the utility of integrating memristive devices into mixed-signal architectures as a compact and non-volatile (i.e.,~maintains memory without power) computational element~\citep{payvand2018neuromorphic, cady2018full}.
+Promising investigations are currently underway to explore the utility of integrating memristive devices into mixed-signal architectures as a compact and non-volatile (i.e.,~maintains memory without power) computational element~\citep{chang2013building, payvand2018neuromorphic, cady2018full}.
+
+Likewise, many other unconventional implementations of SNNs are currently being considered, such as nanoscale spintronic oscillators and multiferroic devices~\citep{torrejon2017neuromorphic, hoppensteadt2017applied, manipatruni2018beyond}, analog non-volatile memory~\citep{ambrogio2018equivalent}, organic electronics~\citep{van2018organic}, and superconducting circuits based on quantum phase-slip junctions~\citep[QPSJs;][]{cheng2019superconducting}.
 
 \TODO{Move the following somewhere else}
 
