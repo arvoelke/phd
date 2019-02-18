@@ -803,9 +803,18 @@ Some of the earliest examples include \citet{sivilotti1985novel, mead1988silicon
 
 A number of other examples that support the compilation of NEF networks include \citet{corradi2014}, \citet{wang2014compact, wang2017neuromorphic}, \citet{berzish2016}, \citet{fischl2018}
 
-Spikey, BrainScaleS~\citep{schemmel2010wafer, aamir2018mixed, aamir2018accelerated}, SyNAPSE, DYNAPs~\citep{moradi2018scalable}, TrueNorth~\citep{merolla2014million}, DeepSouth, COLAMN~\citep{wijekoon2012vlsi}, ODIN~\citep{frenkel2018}, ROLLS~\citep{qiao2015reconfigurable, glatz2018adaptive}, Tripp, Wang and Tapson, STPU, Neuromemristive random projection networks (Dhireesha Kudithipudi)
+Spikey,
+BrainScaleS~\citep{schemmel2010wafer, aamir2018mixed, aamir2018accelerated},
+SyNAPSE,
+DYNAPs~\citep{moradi2018scalable},
+TrueNorth~\citep{merolla2014million, esser2016convolutional},
+DeepSouth,
+COLAMN~\citep{wijekoon2012vlsi},
+ODIN~\citep{frenkel2018},
+ROLLS~\citep{qiao2015reconfigurable, glatz2018adaptive},
+STPU~\citep{smith2017novel},
 DANNA~\citep{daffron2016extensions, mitchell2018danna},
-and many other related prototypes~\citep[e.g.,][]{glackin2009hardware, binas2016precise, kim2018efficient, chen20184096, zheng2018low,, larras2018fully}.
+and many other related prototypes~\citep[e.g.,][]{glackin2009hardware, binas2016precise, kim2018efficient, chen20184096, zheng2018low, larras2018fully}.
 % A scalable multicore architecture with heterogeneous memory structures for dynamic neuromorphic asynchronous processors (dynaps)
 % A 65k-neuron 73-mevents/s 22-pj/event asynchronous micro-pipelined integrate-and-fire array transceiver
 % Analog computing in a modern context: A linear algebra accelerator case study
@@ -813,12 +822,13 @@ and many other related prototypes~\citep[e.g.,][]{glackin2009hardware, binas2016
 % A digital neurosynaptic core using embedded crossbar memory with 45 pJ per spike in 45 nm, (GoldenGate SyNAPSE IBM)
 \TODO{Missing ASIC results for deep learning?}
 
-TrueNorth results \citep{esser2016convolutional} and ``Supervised Learning Based on Temporal Coding in Spiking Neural Networks''.
+TrueNorth results \citep{} and ``Supervised Learning Based on Temporal Coding in Spiking Neural Networks''.
 
 An emerging framework called the Neural and Synaptic Array Transceiver~\citep[NSAT;][]{detorakis2018neural}, focusing on online learning for data-driven autonomy on neuromorphic hardware, has been validated on a field-programmable gate array~(FPGA).
 Likewise, an engine that repurposes generic computational elements in order to flexibly support a variety of network topologies at scale has been used to implement polysynchronous SNNs on an FPGA~\citep{wang2013neuromorphic, wang2018breaking}.
 
-Multiple proposals are currently being investigated to explore the utility of integrating memristive devices into mixed-signal architectures as a compact and non-volatile (i.e.,~maintains memory without power) computational element~\citep{chang2013building, kudithipudi2016design, payvand2018neuromorphic, cady2018full}.
+Proposals exist to use memresistors as an alternative hardware primitive for SNNs in mixed-signal neuromorphic architectures, due to their compact and non-volatile (i.e.,~maintains memory without power) properties~\citep{payvand2018neuromorphic}.
+Multiple investigations are currently underway to explore the practical challenges associated with these proposals~\citep[e.g.,][]{chang2013building, kudithipudi2016design, cady2018full, boybat2018neuromorphic}.
 
 Likewise, many other unconventional substrates for SNNs are actively being considered, such as nanoscale spintronic oscillators and multiferroic devices~\citep{torrejon2017neuromorphic, hoppensteadt2017applied, manipatruni2018beyond}, analog non-volatile memory~\citep{ambrogio2018equivalent}, organic electronics~\citep{van2018organic}, phase-change oxides~\citep{zhao2019low}, photonics~\citep{tait2018silicon, shainline2018largest}, and superconducting circuits based on quantum phase-slip junctions~\citep[QPSJs;][]{cheng2019superconducting}.
 
