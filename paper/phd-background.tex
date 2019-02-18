@@ -357,14 +357,14 @@ The accuracy of this approach depends on the quality of the following approximat
 \end{equation}
 In plain words, this presupposes that substituting a filtered spike-train with its correspondingly filtered rates does not change the optimal set of decoders for a target set of postsynaptic currents.
 A subtle, yet critical, observation is that we \emph{do not} require the spike rates of \emph{individual} neurons to reflect their idealized instantaneous rates.
-Rather, we exploit the fact that filtering and weighting spikes across the \emph{entire} population provides such an approximation, assuming that $n$ scales with $\tau^{-1}$.
+Rather, we exploit the fact that filtering and weighting spikes across the \emph{entire} population satisfies such an approximation, provided that $n$ scales with $\tau^{-1}$.
 This zeroth-order approximation clearly holds in the limit of constant $\V{x}(t)$, and turns out to be ideal in practice for low-frequency $\V{x}(t)$ relative to $\tau$ by a separation of time-scales~\citep[][appendix~F.1]{eliasmith2003a}.
 
 In section~\ref{sec:psc-coding}, we discuss how our adoption of equation~\ref{eq:rate-approximation} has lead many to mischaracterize the NEF as using a ``rate code'', which comes with significant baggage.
 We suggest that the NEF should instead by characterized as mapping latent state-variables onto postsynaptic currents, and to label this as a ``postsynaptic current code''; this code exhibits repeatedly precise spike-times, facilitates rapid transmission of information, and does not demand excessive pool sizes or long time-constants, contrary to commonly-held beliefs that have carried over from rate-coding paradigms.
-In the NEF, individual neurons are free to spike much slower than ther ideal rate models, and slower than the time-constant of the filter (e.g.,~less than half the rate of its cutoff frequency).
+In the NEF, individual neurons are free to spike much slower than ther ideal rate models, while remaining silent across intervals of time that far exceed the time-constant of the synapse.
 In section~\ref{sec:spike-coding}, we provide a novel proof that justifies the correctness of this technique much more generally.
-Perhaps surprisingly, this optimization procedure is mathematically correct for Poisson-spiking models and simple integrate-and-fire models, even as the frequency of the state-vector goes towards infinity, and the time-constants of the filters approach zero.
+Perhaps surprisingly, this optimization procedure is mathematically correct for Poisson-spiking models and simple integrate-and-fire models, even as the frequency of the state-vector goes towards infinity, and as the time-constants of the filters approach zero.
 % We also remark that one may use singular value decomposition~(SVD) to characterize the class of functions that can be accurately approximated by the chosen neural basis functions~\citep[][pp.~185--217]{eliasmith2003a}.
 
 It remains to map these encoding and decoding parameters onto a neural architecture.
