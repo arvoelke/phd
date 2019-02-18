@@ -799,7 +799,9 @@ Nengo~DL~\citep{rasmussen2018nengodl} has been used to implement a fully-connect
 After extensive review of the literature, we have found this to be the first, and currently only published example, outside of Intel's demonstration of sparse pattern representation~\citep{tang2017sparse, davies2018loihi}, to deploy an SNN on the actual chip.
 
 However the flexibility and digital nature of Loihi comes at the cost of increased power-consumption relative to fully analog or mixed-signal architectures. 
-Simulations from \citet{davies2018loihi}, that are summarized in \citet[][Table~3]{braindrop2019}, indicate that Loihi consumes on the order of \numprint{24000}~fJ per synaptic operation -- or two orders-of-magnitude more than Braindrop's equivalent measure.
+Simulations from \citet{davies2018loihi}, that are summarized in \citet[][Table~3]{braindrop2019}, indicate that Loihi consumes on the order of \numprint{24}~pJ\footnote{
+One picojoule~(pJ) is equivalent to \numprint{e-12}~J, or \numprint{e3}~fJ.}
+per synaptic operation -- or two orders-of-magnitude more than Braindrop's equivalent measure.
 Regardless, the analog variability intrinsic to Braindrop changes the scope of target applications, and moreover the results of Loihi still demonstrate a three orders-of-magnitude improvement over a comparable solution running on a CPU.
 We speculate the power-efficiency of Loihi can be improved somewhat by supporting factored weight matrices, and refining the architecture according to the network topology and particular features leveraged by the example application.
 
@@ -814,7 +816,7 @@ A primary focus of chapters~\ref{chapt:nef-extensions}--\ref{chapt:results} is t
 The literature on neuromorphic computing is incredibly extensive\footnote{%
 See \citet{schuman2017survey} for a review that references nearly \numprint{3000} other papers.}%
 , dating back to the late 80's and recently displaying a renewed set of interests spanning many historically-separate communities.
-This has resulted in a number of architectures mentioned below, which were not available for me to use, to be considered outside the scope of this thesis.
+This has resulted in a number of architectures mentioned below, which were not made available to us, to be considered outside the scope of this thesis.
 A number of excellent review articles by experts widely regarded to have advanced the field, are made available by \citet{bartolozzi1999neuromorphic}, \citet{indiveri2011neuromorphic}, \citet{cassidy2013design}, \citet{cummings2018}, and \citet{rajendran2019low}.
 At a higher level, a review that considers the role of biomimicry---the emulation of nature's solutions in order to solve real-world problems---in the context of power-efficient SNNs and neuromorphic computing, is provided by \citet{krichmar2018making}.
 
