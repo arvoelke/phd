@@ -98,7 +98,7 @@ This approach also extends to more biologically-plausible realizations of the RN
 These networks are named Spiking Neural Networks~(SNNs), and are the subject matter of later sections.
 The issue in this context is that spikes (i.e.,~Dirac impulses) are non-differentiable with respect to time.
 But recently, many research groups have independently demonstrated that SNNs can also be trained with backpropagation by softening the gradient in a variety of creative ways~\citep{esser2015backpropagation, hunsberger2015spiking, hunsberger2016training, lee2016training, marblestone2016toward, neftci2017neuromorphic, bellec2018long, hunsberger2018, huh2018gradient, severa2018whetstone, rasmussen2018nengodl, shrestha2018slayer, neftci2019surrogate}, although there are challenges in realizing biologically-plausible implementations that carry this out online~\citep[][submitted]{hunsberger2018, stockel2019align}.
-A review that focuses on feed-forward architectures is given by \citet{pfeiffer2018deep}, while an example applied to RNNs is given by \citet{diehl2016conversion}.
+Reviews that focuses on feed-forward architectures are given by \citet{pfeiffer2018deep, tavanaei2018deep}, while an example applied to RNNs is demonstrated in \citet{diehl2016conversion}.
 It was also recently shown by \citet{chen2018neural} that both RNNs and backpropagation may be extended to continuous-time (i.e.,~taking the limit of infinitesimally small time-steps), consistent with the the NEF and Principle~3~(see section~\ref{sec:principle3}).
  
 While these approaches are theoretically sound, BPTT encounters many problems in practice~\citep{bengio1994learning}.
@@ -163,8 +163,8 @@ We discuss some of the critical differences below.
 \TODO{Also talk about STICK: Spike Time Interval Computational Kernel, a Framework for General Purpose Computation Using Neurons, Precise Timing, Delays, and Synchrony.
 And ``Dynamic Neural Fields as a Step Towards Cognitive Neuromorphic Architectures.''? somewhere?}
 
-It is important to preface our discussion with a reminder that, although all of these approaches are engineered from a top-down modelling perspective, one can still apply BPTT (or any other optimization method) to fine-tune the resulting RNN end-to-end from example input-output pairs -- a hybrid approach that is embraced by the NEF and its software stack~\citep{rasmussen2018nengodl}.
-In our opinion, the point of these methods is that incorporating prior knowledge of the task can dramatically simplify the optimization procedure, provide guarantees regarding scalability and precision, and place appropriate constraints on the initial configuration of the RNN to assist in additional rounds of optimization.
+It is important to preface our discussion with a reminder that, although all of these approaches are engineered from a top-down modelling perspective, one can still apply BPTT (or any other optimization method) to fine-tune the resulting RNN end-to-end from example input-output pairs -- a hybrid approach that is embraced by the NEF, its software implementation Nengo, and related libraries~\citep{rasmussen2018nengodl, hazan2018bindsnet}.
+In this context, the purpose of these engineered approaches is as follows: incorporate prior knowledge of tasks to dramatically simplify the optimization procedure, provide guarantees regarding scalability and precision, and place appropriate constraints on the initial configuration of the RNN to assist in future rounds of optimization.
 At the same time, this provide greater transparency into the relationships between network parameters, configuration, and function.
 This transparency enables theoretical insights into neural computation, and, as we will show in chapter~\ref{chapt:delays}, practical advances on RNN benchmarks that would otherwise be quite difficult to obtain with a pure black-box approach.
 
@@ -201,7 +201,7 @@ It does so by leveraging neural nonlinearities and weighted synaptic filters as 
 The NEF has been used to construct a wide variety of neural models, including a functioning 6.6~million neuron model of the human brain, dubbed ``Spaun'', that is capable of performing perceptual, motor, and cognitive tasks~\citep{eliasmith2012, choo2018}.
 This model incorporates many kinds of observed neural dynamics, including self-generated oscillations, sustained activity, and point attractor dynamics.
 
-Meanwhile, the flexibility of the NEF has lead to it being deployed on mixed-analog-digital neuromorphic chips~\citep{choudhary2012silicon, corradi2014, voelker2017iscas, voelker2017neuromorphic, braindrop2019} and digital architectures~\citep{bekolay2014, wang2014compact, mundy2015, knight2016, berzish2016, wang2017neuromorphic, blouw2018a}.
+Meanwhile, the flexibility of the NEF has lead to it being deployed on mixed-analog-digital neuromorphic chips~\citep{choudhary2012silicon, corradi2014, voelker2017iscas, voelker2017neuromorphic, braindrop2019} and digital architectures~\citep{bekolay2014, wang2014compact, mundy2015, knight2016, berzish2016, wang2017neuromorphic, blouw2018a, fischl2018}.
 Consequently, the NEF provides a practical method for programming neuromorphics, thus helping the field realize its promise of a low-energy computing platform that emulates core principles of the nervous system~\citep{boahen2017neuromorph}.
 
 Biological brains possess a significant amount of structure, with neuroanatomical constraints that differ considerably between functional areas. %~\citep[][pp.~207--227]{kandel2000principles}.
@@ -796,14 +796,16 @@ A primary focus of chapters~\ref{chapt:nef-extensions}--\ref{chapt:results} is t
 \subsection{Others}
 \label{sec:neuromorphic-others}
 
-A number of excellent review articles are made available by \citet{bartolozzi1999neuromorphic}, \citet{indiveri2011neuromorphic}, \citet{cassidy2013design}, \citet{eryilmaz2016neuromorphic}, and \citet{cummings2018}.
+A number of excellent review articles are made available by \citet{bartolozzi1999neuromorphic}, \citet{indiveri2011neuromorphic}, \citet{cassidy2013design}, \citet{eryilmaz2016neuromorphic}, \citet{cummings2018} and \citet{rajendran2019low}.
+High-level considerations regarding the role of biomimicry---the emulation of nature's solutions in order to solve real-world problems---in the context of SNNs and power-efficiency are discussed in \citet{krichmar2018making}.
 
 Some of the earliest examples include \citet{sivilotti1985novel, mead1988silicon, boahen1989heteroassociative, mahowald1991silicon}.
 
-Spikey, BrainScaleS~\citep{schemmel2010wafer, aamir2018accelerated}, SyNAPSE, DYNAPs~\citep{moradi2018scalable}, TrueNorth~\citep{merolla2014million, fischl2018}, DeepSouth, COLAMN, ODIN~\citep{frenkel2018}, ROLLS~\citep{qiao2015reconfigurable, glatz2018adaptive}, Giacomo and Eliasmith, Tripp, Wang and Tapson, STPU, Neuromemristive random projection networks (Dhireesha Kudithipudi)
-\TODO{\url{https://link.springer.com/chapter/10.1007/978-3-642-00641-8_38}}
+A number of other examples that support the compilation of NEF networks include \citet{corradi2014}, \citet{wang2014compact, wang2017neuromorphic}, \citet{berzish2016}, \citet{fischl2018}
+
+Spikey, BrainScaleS~\citep{schemmel2010wafer, aamir2018mixed, aamir2018accelerated}, SyNAPSE, DYNAPs~\citep{moradi2018scalable}, TrueNorth~\citep{merolla2014million}, DeepSouth, COLAMN~\citep{wijekoon2012vlsi}, ODIN~\citep{frenkel2018}, ROLLS~\citep{qiao2015reconfigurable, glatz2018adaptive}, Tripp, Wang and Tapson, STPU, Neuromemristive random projection networks (Dhireesha Kudithipudi)
 DANNA~\citep{daffron2016extensions, mitchell2018danna},
-and other VLSI prototypes~\citep{binas2016precise}.
+and many other related prototypes~\citep[e.g.,][]{glackin2009hardware, binas2016precise, kim2018efficient, chen20184096, zheng2018low,, larras2018fully}.
 % A scalable multicore architecture with heterogeneous memory structures for dynamic neuromorphic asynchronous processors (dynaps)
 % A 65k-neuron 73-mevents/s 22-pj/event asynchronous micro-pipelined integrate-and-fire array transceiver
 % Analog computing in a modern context: A linear algebra accelerator case study
@@ -816,9 +818,9 @@ TrueNorth results \citep{esser2016convolutional} and ``Supervised Learning Based
 An emerging framework called the Neural and Synaptic Array Transceiver~\citep[NSAT;][]{detorakis2018neural}, focusing on online learning for data-driven autonomy on neuromorphic hardware, has been validated on a field-programmable gate array~(FPGA).
 Likewise, an engine that repurposes generic computational elements in order to flexibly support a variety of network topologies at scale has been used to implement polysynchronous SNNs on an FPGA~\citep{wang2013neuromorphic, wang2018breaking}.
 
-Promising investigations are currently underway to explore the utility of integrating memristive devices into mixed-signal architectures as a compact and non-volatile (i.e.,~maintains memory without power) computational element~\citep{chang2013building, payvand2018neuromorphic, cady2018full}.
+Multiple proposals are currently being investigated to explore the utility of integrating memristive devices into mixed-signal architectures as a compact and non-volatile (i.e.,~maintains memory without power) computational element~\citep{chang2013building, kudithipudi2016design, payvand2018neuromorphic, cady2018full}.
 
-Likewise, many other unconventional implementations of SNNs are currently being considered, such as nanoscale spintronic oscillators and multiferroic devices~\citep{torrejon2017neuromorphic, hoppensteadt2017applied, manipatruni2018beyond}, analog non-volatile memory~\citep{ambrogio2018equivalent}, organic electronics~\citep{van2018organic}, and superconducting circuits based on quantum phase-slip junctions~\citep[QPSJs;][]{cheng2019superconducting}.
+Likewise, many other unconventional substrates for SNNs are actively being considered, such as nanoscale spintronic oscillators and multiferroic devices~\citep{torrejon2017neuromorphic, hoppensteadt2017applied, manipatruni2018beyond}, analog non-volatile memory~\citep{ambrogio2018equivalent}, organic electronics~\citep{van2018organic}, phase-change oxides~\citep{zhao2019low}, photonics~\citep{tait2018silicon, shainline2018largest}, and superconducting circuits based on quantum phase-slip junctions~\citep[QPSJs;][]{cheng2019superconducting}.
 
 \TODO{Move the following somewhere else}
 
