@@ -1,6 +1,5 @@
 # Delay Network on Loihi
-# Branches
-#   nengo-loihi=integrator-accuracy
+# Assumes nengo-loihi==0.5.0
 
 from dn import go
 

@@ -1,5 +1,5 @@
 # Adapted from _braindrop_integrator.ipynb
-# Must be on nengo_loihi branch=integrator-accuracy (PR #124)
+# Assumes nengo-loihi==0.5.0
 
 from phd import *
 from vens import VirtualEnsemble
