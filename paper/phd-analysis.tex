@@ -1,7 +1,7 @@
 \chapter{Analysis of the Neural Engineering Framework}
 \label{chapt:analysis}
 
-In this chapter, we provide a thorough examination of the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a} that cannot be found elsewhere.
+In this chapter, we provide a thorough examination of the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a} that is not currently published elsewhere.
 The goals are two-fold: (1)~explore the consequences of its computational principles at a theoretical level, and in doing so debunk some of the common myths that have become associated with the NEF since its inception, and (2)~assess its suitability as a framework for deploying SNNs on neuromorphic hardware by analyzing its scalability, correctness, efficiency, Turing-completeness, robustness, and extensibility.\footnote{
 To help delineate separate considerations, some sub-sections may be significantly shorter than others.
 }
@@ -79,17 +79,73 @@ In section~\ref{sec:pure_delay}, we demonstrate a method of systematically harne
 
 \subsection{Existence of chaos}
 
-``The stability of saturated linear dynamical systems is undecidable.''
+An apparent misconception associated with NEF networks is that we already ``understand'' the computations being engineered into the network, and therefore have nothing to learn from such simulations.
+But just because a network's function can be written down using equations, does not mean that its effects are fully understood ahead of time.
+For example, the NEF has been used to construct chaotic systems, such as the Lorenz strange attractor~\citep{eliasmith2005b}.
+This \emph{deterministic} system is fully described by a three-dimensional nonlinear dynamical system.
+However, due to the nature of such chaotic systems, arbitrarily small perturbations in state-space diverge exponentially quickly over time up to the diameter of the attractor~\citep[][pp.~328--330]{strogatz2000nonlinear}.
+This leads to a fundamental inability to predict the trajectory of any physical instantiation of the system; the time-horizon that can be predicted, within some given tolerance, scales only logarithmically with the precision of the observer.
 
-``Generalized shifts: unpredictability and undecidability in
-dynamical systems ''
+More to the point, this accusation is theoretically equivalent to suggesting the same of any algorithm or computer program for that matter.
+Even though \emph{any} computer program can be written down using a finite set of symbolic expressions, and realized as a discrete sequence of steps that dynamically evolve a set of registers---such as the machine of \citet{turing1938computable}---does not mean that we know what that program will compute ahead of time on any given input.
+The assertion that the behaviour of certain programs are in essence ``unpredictable'' corresponds to the notion of \emph{undecidability} in formal theories of computation; informally, most non-trivial programs need to be run in order to see what they will do with their inputs.
 
-Simple integrator experiments
+This discussion extends to dynamical systems, where chaos and undecidability are also interwoven~\citep{moore1991generalized}.
+For example, suppose we take the linear time-invariant~(LTI) system of equation~\ref{eq:lti} and then include saturation within each of the state-variables (such that their absolute magnitudes cannot exceed one).
+Surprisingly, this is a sufficient route to chaos.
+The inclusion of this single nonlinearity spawns attractors with properties that are undecidable~\citep{blondel2001stability} -- that is, they cannot be determined ahead of time, and must be discovered by explicit simulation.
+This example is of special interest to us since the LIF neuron (equation~\ref{eq:lif-model}) exhibits a similar saturation effect, namely $r(\V{v}) \le \tau_\text{ref}^{-1}$, where the upper-bound is approached as $\V{x}(t) \in \mathbb{R}^q$ extends beyond the representational range established by the encoding parameters selected by Principle~1.
+It follows that even the most basic spiking instantiation of Principle~3 must, in general, be simulated in order to determine its behaviour whenever the input signal drives the state-space outside the range of neural representation.
+Notably, this saturation effect is exploited to overload working memory with sequential items in the Spaun model~\citep{eliasmith2012}, which suggests that the model behaviour is chaotic at multiple levels of analysis.
 
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{chaotic-integrator}
+     
+    \caption{\label{fig:chaotic-integrator} 
+      An autonomous scalar integrator---the simplest possible recurrent SNN, built using the NEF---exhibiting chaotic neural dynamics.
+      (Left)~Two deterministic simulations of the exact same network.
+          One is initialized to $x_1(0) = 0$, and the other to $x_2(0) = \numprint{e-15}$.
+          Both simulations fall into the same strange attractor, close to zero.
+      (Right)~Plotting the difference in representational states~($\Delta$) and neural states~($\delta$) on a logarithmic scale.
+          The neural states diverge exponentially quickly---leaping 30 orders of magnitude in 3 seconds---according to $\| \delta(t) \| \approx \bigoh{e^{\lambda t}}$.
+          The representational difference is essentially zero until $\delta$ hits the diameter of the attractor.
+          It is physically impossible to predict the future state of this system beyond a time-scale of $\bigoh{\lambda^{-1}} \approx 0.1$~seconds (see text for details).
+    }
+\end{figure}
+
+Perhaps even more surprisingly, one does not need to invoke any saturation to observe chaos, at the level of individual neurons, in NEF networks implementing linear dynamics.
+For example, consider the one-dimensional, autonomous (i.e.,~no input), integrator:
+$$\dot{x}(t) = 0 \text{,}$$
+implemented as an SNN using Principle~3 of the NEF ($A = B = D = 0$, $C = 1$).
+This is perhaps the simplest recurrent network that one can imagine; a point attractor without input, that is to hold its initial state indefinitely.
+Nevertheless, as shown in Figure~\ref{fig:chaotic-integrator}, the neural states display the tell-tale signs of a strange attractor~\citep[cf.~][Figure~9.3.5]{strogatz2000nonlinear}.
+Specifically, let $\V{v}_1(t), \V{v}_2(t) \in \mathbb{R}^n$ be two voltage vectors (see equation~\ref{eq:lif-model}) from two separate, but deterministic simulations, of the \emph{exact} same network ($n = 10$, $\tau = 5$\,ms, $\dt{} = 0.1$\,ms, down-sampled every $20$\,ms).
+The first simulation is initialized to the default of $x_1(0) = 0$, while the second is initialized to $x_2(0) = \numprint{e-15}$.
+% Both fall into the same attractor basins, decoding an approximation of $0$, that persists indefinitely through recurrent feedback.
+Now let:
+\begin{align*}
+\Delta(t) &= x_1(t) - x_2(t) \\
+\delta(t) &= \V{v}_1(t) - \V{v}_2(t) \text{,}
+\end{align*}
+be the difference in representational state and neural state, respectively.
+We find that $\Delta$ remains bounded above by the accuracy of neural representation, as expected.
+However, $\delta$ diverges exponentially over time, indicating that the neural states are within a strange attractor (the Lyapunov exponent $\lambda \approx 8.9$\,s${}^{-1}$ gives the exponential rate of divergence); the voltage vectors are tracing out a fractal manifold that cannot be predicted beyond a time-horizon on the order of $\bigoh{\lambda^{-1}} \approx 0.1$\,s.
+Despite this, the NEF is capable of taming the chaos at the neural level and providing a robust estimate at the population level, due to the correspondance between each strange attractor and a stable point in representational space~\citep[][p.~237]{eliasmith2003a}.
+
+More generally, the NEF may be used to implement arbitrary algorithms encoded as dynamical systems (see section~\ref{sec:nef-turing}), which implies that it is not exempt from computational-complexity theory. 
+Networks can perform interesting tasks via algorithmic manipulations of inputs and states.
+And, in this case, the network must in general be explicitly simulated in order to carry out the computations of said algorithm.
+At the same time, the NEF provides a framework for understanding the dynamical transformations being performed, examining relationships between structure and function, relating these functions to neurobiological systems, and compiling them onto neuromorphic hardware.
+
+\TODO{Forward reference where this disputes deneve's methods}
+
+\iffalse
 \subsection{Continuous-Time and Discrete-Time}
 
 The idea that both continuous-time and discrete-time dynamics play important roles at different time-scales, both in terms of the dominant dynamics and in terms of the desired computation.
 It is also important to consider both for neuromorphic hardware.
+\fi
 
 \subsection{Postsynaptic Current Coding}
 \label{sec:psc-coding}
@@ -407,6 +463,7 @@ Lastly, this suggests criteria for optimizing the information-processing capabil
 Low-rank factorization is optimal in space and time assuming linear weights (there is no advantage to factoring it any further by linearity).
 
 \subsection{Turing-Completeness}
+\label{sec:nef-turing}
 
 A Turing machine, and a digital computer for that matter, are describable as discrete dynamical systems.
 ``Computing with a Distributed Reaction-Diffusion Model''
