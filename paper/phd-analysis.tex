@@ -36,7 +36,7 @@ Conversely, we do not lose any computational power by limiting our focus to a si
 However, the encoding matrix is extremely sparse with $\frac{m-1}{m}$ percent of its coefficients set to zero.
 Likewise, the block-structure of the decoding matrix is isomorphic to the graph structure of the original network.
 
-This characterizes the functional role of network structure as: partitioning the global state-space into a union of state-vectors, sparsifying its encoders, and arranging the decoders into a block-diagonal structure that mirrors the interactions between sub-spaces.
+This characterizes the functional role of network structure as: partitioning the global state-space into a union of state-vectors, sparsifying its encoders, and arranging the decoders into a block-structure that mirrors the interactions between sub-spaces.
 In terms of computation, this structure dramatically reduces the time and memory requirements that would otherwise be needed for a full-rank $nm \times nm$ matrix multiplication.
 In terms of training, the challenges involved in globally optimizing an RNN may be viewed under the lens of identifying relatively low-dimensional sub-spaces and their interactions with one another.
 
@@ -93,7 +93,7 @@ The assertion that the behaviour of certain programs are in essence ``unpredicta
 This discussion extends to dynamical systems, where chaos and undecidability are also interwoven~\citep{moore1991generalized}.
 For example, suppose we take the linear time-invariant~(LTI) system of equation~\ref{eq:lti} and then include saturation within each of the state-variables (such that their absolute magnitudes cannot exceed one).
 Surprisingly, this is a sufficient route to chaos.
-The inclusion of this single nonlinearity spawns attractors with properties that are undecidable~\citep{blondel2001stability} -- that is, they cannot be determined ahead of time, and must be discovered by explicit simulation.
+The inclusion of this single nonlinearity spawns attractors with properties that are undecidable~\citep{blondel2001stability}; basic questions about the system's response cannot be resolved in a finite number of steps.
 This example is of special interest to us since the LIF neuron (equation~\ref{eq:lif-model}) exhibits a similar saturation effect, namely $r(\V{v}) \le \tau_\text{ref}^{-1}$, where the upper-bound is approached as $\V{x}(t) \in \mathbb{R}^q$ extends beyond the representational range established by the encoding parameters selected by Principle~1.
 It follows that even the most basic spiking instantiation of Principle~3 must, in general, be simulated in order to determine its behaviour whenever the input signal drives the state-space outside the range of neural representation.
 Notably, this saturation effect is exploited to overload working memory with sequential items in the Spaun model~\citep{eliasmith2012}, which suggests that the model behaviour is chaotic at multiple levels of analysis.
