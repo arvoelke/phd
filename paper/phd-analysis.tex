@@ -2,7 +2,7 @@
 \label{chapt:analysis}
 
 In this chapter, we provide a thorough examination of the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a} that cannot be found elsewhere.
-The goals are two-fold: (1)~analyze the consequences of its computational principles at a theoretical level, and in doing so debunk some of the common myths that have become associated with the NEF since its inception, and (2)~assess its suitability as a framework for deploying SNNs on neuromorphic hardware by analyzing its scalability, correctness, efficiency, Turing-completeness, robustness, and extensibility.\footnote{
+The goals are two-fold: (1)~explore the consequences of its computational principles at a theoretical level, and in doing so debunk some of the common myths that have become associated with the NEF since its inception, and (2)~assess its suitability as a framework for deploying SNNs on neuromorphic hardware by analyzing its scalability, correctness, efficiency, Turing-completeness, robustness, and extensibility.\footnote{
 To help delineate separate considerations, some sub-sections may be significantly shorter than others.
 }
 This involves a proof of equation~\ref{eq:rate-approximation} that, as far as we know, is the first to provide a sufficient criteria for the correctness of the first two principles of the NEF at the level of individual spikes.
@@ -40,21 +40,42 @@ This characterizes the functional role of network structure as: partitioning the
 In terms of computation, this structure dramatically reduces the time and memory requirements that would otherwise be needed for a full-rank $nm \times nm$ matrix multiplication.
 In terms of training, the challenges involved in globally optimizing an RNN may be viewed under the lens of identifying relatively low-dimensional sub-spaces and their interactions with one another.
 
-\subsection{Heterogeneous Dynamical Primitives}
+\subsection{Heterogeneous dynamical primitives}
 
-The idea that synapses, neurons, and even entire recurrent networks, can all be described in terms of their filtering / dynamical equations.
-Of core importance is the notion that we want a rich basis of dynamics that is heterogeneous in time.
+An important observation is that neurons~(equation~\ref{eq:lif-model}), synapses~(equation~\ref{eq:lowpass-impulse}), and even the functional behaviour of entire recurrent networks~(equations~\ref{eq:discrete-dynamical-system} and~\ref{eq:lti}), can all be described in terms of differential equations.
+These ``dynamical primitives'' all have certain filtering properties, linear and nonlinear transfer functions, and internal states that evolve over time in response to some input in order to produce some output.
 
-\subsection{Duality of Macroscopic and Microscopic Dynamics}
+On the other hand, a central insight from deep learning is that a variety\footnote{
+The variety of nonlinear responses comes from the distribution of weights and biases, analagous to the hetereogeneity obtained in equation~\ref{eq:encoding} via encoding vectors, gains, and biases.}
+of static nonlinear functions, when structurally composed, enhances the \emph{spatial complexity} of network function.
+An analagous insight in the above context is that a variety of transfer functions, when temporally composed, enhances the \emph{dynamical complexity} of network function.
+In particular, the time-constants of synapses, neuron leakages, and recurrent network dynamics -- all act along different time-scales.
+In effect, NEF networks compose rich temporal functions by leveraging dynamical primitives that are heterogeneous in time.
+A compelling example is provided in section~\ref{sec:delay-lstm} that applies BPTT to a deep recurrent NEF network to predict a chaotic time-series.
 
-The corollary that, once all things are expressed in the same language, they become somewhat interchangeable.
-Examples: (1) we can implement a lowpass filter as a synapse or as a network, (2) we can implement spiking LIF voltage dynamics as a single neuron or as a network.
-But this also goes the other way (hence the duality).
-Consider the architecture: $A \rightarrow (B \rightarrow B) \rightarrow A$, where $A$ and $B$ are neural ensembles.
-We can think of $B \rightarrow B$ as a dynamical primitive, and then re-interpret the whole system as $A \rightarrow A$ with a much more complicated synapse model described by $B \rightarrow B$.
-Like a ``virtual'' synapse, implemented by an entire sub-network.
-The practical implication is that we can use the same theory and the same tools to understand and compose all of these things.
-For example, if $B \rightarrow B$ is a delay network, we can then use what we know about amplifying axonal spike delays to make an even longer delay out of the entire system (see section~\ref{sec:delay-applications})
+\subsection{Duality of macroscopic and microscopic dynamics}
+
+As a corollary to the previous observation,
+once all primitive operations are expressed in the same language (i.e.,~differential equations), they become both \emph{composable} and \emph{interchangeable}.
+To the point of interchangeability, one can implement a lowpass filter by using a single synapse, or by training a population to emulate the same dynamical system via Principle~3.
+To the point of composability, one can substitute the transfer function of a single synapse with that of an entire recurrent network.
+
+We illustrate this with a specific example by considering the following architecture:
+$$A \rightarrow (B \rightarrow B) \rightarrow A \text{,}$$
+where $A$ and $B$ are separate neural ensembles and ``$\rightarrow$'' denotes a synaptic weight matrix.
+That is, $B$ is locally-recurrent, and $A$ is globally-recurrent via the outer loop through $B$.
+We may encapsulate $H := B \rightarrow B$ as a dynamical primitive, and then \emph{re-interpret} the whole system as:
+$$A \rightarrow_H A \text{,}$$
+where ``$\rightarrow_H$'' denotes some weight matrix where the synapse model has been replaced by $H$ --
+akin to a ``virtual'' synapse, whose dynamics are implemented by $B$ under the hood.
+This is simply a mathematical ``trick''.
+But the practical point is that we can use the same theory and the same tools to understand the composition and substitution of these systems.
+This is made possible since we employ a common language and framework for describing and leveraging dynamical systems.
+
+In section~\ref{sec:linear-extensions}, this idea forms the basis of our proofs that extend Principle~3.
+In section~\ref{sec:pure_delay}, we demonstrate a method of systematically harnessing miniature delays in axonal spike-transmission to improve the accuracy of longer network-level delays.
+
+\TODO{example application in section~\ref{sec:applications} -- if $B \rightarrow B$ is a delay network, we can then use what we know about amplifying axonal spike delays to make an even longer delay out of the entire system}
 
 \subsection{Existence of chaos}
 
@@ -406,4 +427,4 @@ Expose the general ideas about mapping NEF networks onto neuromorphic hardware, 
 \subsection{Extensibility}
 \label{sec:nef-extensibility}
 
-Section~\ref{chapt:nef-extensions}.
+Section~\ref{chapt:nef-extensions}. Loihi delay harnessing.
