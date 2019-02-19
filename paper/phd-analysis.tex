@@ -1,17 +1,44 @@
 \chapter{Analysis of the Neural Engineering Framework}
 \label{chapt:analysis}
 
-This section is intended to talk about high-level NEF considerations / analysis that don't fit elsewhere in the thesis, aren't published elsewhere, help compare it with other frameworks, and illuminate what it is doing from a computational perspective.
+In this chapter, we provide a thorough examination of the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a} that cannot be found elsewhere.
+The goals are two-fold: (1)~analyze the consequences of its computational principles at a theoretical level, and in doing so debunk some of the common myths that have become associated with the NEF since its inception, and (2)~assess its suitability as a framework for deploying SNNs on neuromorphic hardware by analyzing its scalability, correctness, efficiency, Turing-completeness, robustness, and extensibility.\footnote{
+To help delineate separate considerations, some sub-sections may be significantly shorter than others.
+}
+This involves a proof of equation~\ref{eq:rate-approximation} that, as far as we know, is the first to provide a sufficient criteria for the correctness of the first two principles of the NEF at the level of individual spikes.
+The correctness of the third principle is proven in \citet[][pp.~221--225]{eliasmith2003a} and is extended by various proofs in section~\ref{sec:synaptic-extensions}.
 
-\section{Computational Principles}
+\section{Computational Sub-Principles}
 
-An ode to the three principles of the NEF.
-These are themes that primarily expand upon the third principle.
+In this section, we focus primarily on the third principle of the NEF, and elucidate some high-level observations, or ``sub-principles'', that follow from its adoption.
+In particular, \TODO{...}
 
-\subsection{Single-Layer Equivalence}
+\subsection{Single-layer equivalence}
 
-The idea that any multi-layer network can be collapsed into a single recurrently connected layer.
-In the NEF, this implies a certain structure with sparse encoders and sparse decoders.
+In section~\ref{sec:nef}, we focused primarily on a single recurrently connected population of neurons.
+However, any multi-layer NEF network, where each layer may be recurrent, and feedforward connections and feedback connections may also be included between distant layers -- may be rewritten as a single recurrently connected population.
+Indeed, even for models as complex as Spaun~\citep{eliasmith2012, choo2018}, the Nengo builder strips away the model specification, and leaves only channels that transmit spikes, and transfer functions that operate on these spikes~\citep{bekolay2014, gosmann2017automatic}.
+The topology of the network encodes spatial and organizational structure (e.g.,~hierarchies), which may be used to constrain and inform the design of biological models, and to aid in understanding function.
+The mechanisms underneath are mere signals and operators, all coupled to one another to compute some dynamical system.
+
+To examine some of the consequences of this observation, we assume without loss of generality that there are $m$ layers, and each of the layers uses $n$ neurons to represent a $q$-dimensional state-vector.
+The procedure for rewriting the network is as follows:
+\begin{enumerate}
+\item Stack all of the populations together into a single layer that consists of $nm$ neurons. 
+\item Stack all of the state-vectors together into one vector, $\V{x}(t) \in \mathbb{R}^{qm}$, to represent the global state-space.
+\item Construct the encoding matrix, $E \in \mathbb{R}^{nm \times qm}$, by inserting the $i^\text{th}$ encoding matrix into the $(i\text{,} i)^\text{th}$ block, such that $E$ is in block-diagonal form (note: each block is $n \times q$).
+\item Construct the decoding matrix, $D^\V{f} \in \mathbb{R}^{nm \times qm}$, by inserting each decoding matrix $D^{\V{f}_{i\text{,}j}}$ into the $(i\text{,} j)^\text{th}$ block, where $\V{f}_{i\text{,}j}$ is the function computed between the $i^\text{th}$ presynaptic population and the $j^\text{th}$ postsynaptic population.
+\end{enumerate}
+Then Principles~1--3 apply in the same way to this single population, while being functionally equivalent to the original network.
+
+This reveals that the problem of constructing and training arbitrary network topologies may be reduced to the special case of a single layer.
+Conversely, we do not lose any computational power by limiting our focus to a single layer.
+However, the encoding matrix is extremely sparse with $\frac{m-1}{m}$ percent of its coefficients set to zero.
+Likewise, the block-structure of the decoding matrix is isomorphic to the graph structure of the original network.
+
+This characterizes the functional role of network structure as: partitioning the global state-space into a union of state-vectors, sparsifying its encoders, and arranging the decoders into a block-diagonal structure that mirrors the interactions between sub-spaces.
+In terms of computation, this structure dramatically reduces the time and memory requirements that would otherwise be needed for a full-rank $nm \times nm$ matrix multiplication.
+In terms of training, the challenges involved in globally optimizing an RNN may be viewed under the lens of identifying relatively low-dimensional sub-spaces and their interactions with one another.
 
 \subsection{Heterogeneous Dynamical Primitives}
 
@@ -28,6 +55,15 @@ We can think of $B \rightarrow B$ as a dynamical primitive, and then re-interpre
 Like a ``virtual'' synapse, implemented by an entire sub-network.
 The practical implication is that we can use the same theory and the same tools to understand and compose all of these things.
 For example, if $B \rightarrow B$ is a delay network, we can then use what we know about amplifying axonal spike delays to make an even longer delay out of the entire system (see section~\ref{sec:delay-applications})
+
+\subsection{Existence of chaos}
+
+``The stability of saturated linear dynamical systems is undecidable.''
+
+``Generalized shifts: unpredictability and undecidability in
+dynamical systems ''
+
+Simple integrator experiments
 
 \subsection{Continuous-Time and Discrete-Time}
 
@@ -350,6 +386,9 @@ Lastly, this suggests criteria for optimizing the information-processing capabil
 Low-rank factorization is optimal in space and time assuming linear weights (there is no advantage to factoring it any further by linearity).
 
 \subsection{Turing-Completeness}
+
+A Turing machine, and a digital computer for that matter, are describable as discrete dynamical systems.
+``Computing with a Distributed Reaction-Diffusion Model''
 
 
 \subsection{Robustness}

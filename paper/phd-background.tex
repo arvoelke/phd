@@ -130,7 +130,7 @@ The structure of LSTM cells have also been compared to that of cortical microcir
 This success has prompted many variants of LSTMs, including the bidirectional LSTM~\citep{graves2005framewise}, hierarchical S-LSTM~\citep{zhu2015long}, grid LSTM~\citep{kalchbrenner2015grid}, phased LSTM~\citep{neil2016phased}, and others~\citep{salehinejad2017recent}.
 At the same time, this has inspired several related architectures that augment an RNN with differentiable memory cells to facilitate long-range temporal interactions, including the gated recurrent unit~\citep[GRU;][]{cho2014properties, chung2014empirical}, neural Turing machine~\citep{graves2014neural}, memory network~\citep{weston2014memory}, and orthogonal GRU~\citep{jing2018gated}.
 
-In section~\ref{sec:delay-lstm}, we propose another kind of memory cell based on our work, and compare their performance in terms of memory capacity to LSTMs.
+In section~\ref{sec:delay-lstm}, we propose a fundamentally new type of memory cell based on our work, and compare their performance in terms of memory capacity to LSTMs.
 Our results on a chaotic time-series prediction benchmark suggest that LSTMs, when interleaved with our novel memory cell, and trained via BPTT, improve their ability to learn dynamical systems described by nonlinear delay-differential equations.
 
 \subsection{Randomized approaches}
