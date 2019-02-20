@@ -153,9 +153,9 @@ It is also important to consider both for neuromorphic hardware.
 A long-standing debate in neuroscience has traditionally revolved around the question of whether biological neurons transmit information using a ``rate code'' in which the information is encoded by the firing rates of individual neurons~\citep{adrian1928basis}, or a ``spike-timing code'' in which information is encoded by the precise temporal patterns of spike trains~\citep{rieke1999spikes} or likewise their temporal order in relation to one another~\citep{thorpe1998rank}.
 However, there is historically little consensus between neuroscientists as to what exactly consistutes a rate code~\citep[][pp.~89--91]{eliasmith2003a}.
 
-\citet{gerstner1999spiking} observes that there are at least three different ways to define a rate code, and that in may important ways they are consistent with that of a timing-based code.
+\citet{gerstner1999spiking} observes that there are at least three different ways to define a rate code, and that in many important ways they are consistent with that of a timing-based code.
 \citet{fairhall2001efficiency} examines the adaptive dynamics of neurons in a fly's visual system and concludes that the principles of its code depend on the time-scales of interest.
-\citet{brette2015philosophy} argues that the question about which code the brain uses is irrelevant, and should be replaced by one that addresses the causal role of neural activity.
+\citet{brette2015philosophy} argues that the question about which code the brain uses is irrelevant, and should be replaced by one that instead addresses the causal role of neural activity.
 \citet{eliasmith2003a} likewise proposes that we should focus on the physical instantiation, and functional consequences therein, of any given approach to neural coding, rather than resorting to semantic labels that are ultimately irrelevant. 
 
 \begin{figure}
@@ -164,7 +164,7 @@ However, there is historically little consensus between neuroscientists as to wh
      
     \caption{\label{fig:spike-time-coding} 
       Demonstrating the irrelevance of identifying a ``spike-time code'' versus a ``rate code'' in the context of a standard NEF-optimized network.
-      We propose this be understood as a ``postsynaptic current code'' instead.
+      We define this as a ``postsynaptic current code'' instead.
       (Left)~An ensemble of LIF neurons are trained to oscillate at approximately $3.5$\,Hz.
       (Right)~Spike rasters of \numprint{50} randomly selected neurons, ordered by their encoding vector's polar angle.
       Each neuron spikes only $0$, $1$, or $2$ times per oscillation, which is much slower than the cut-off frequency of the synaptic filter~($10$\,Hz), and at a precise moment in time---on the order of milliseconds (see inset)---before remaining silent for another couple hundred milliseconds.
