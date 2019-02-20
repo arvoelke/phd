@@ -26,14 +26,14 @@ The procedure for rewriting the network is as follows:
 \begin{enumerate}
 \item Stack all of the populations together into a single layer that consists of $nm$ neurons. 
 \item Stack all of the state-vectors together into one vector, $\V{x}(t) \in \mathbb{R}^{qm}$, to represent the global state-space.
-\item Construct the encoding matrix, $E \in \mathbb{R}^{nm \times qm}$, by inserting the $i^\text{th}$ encoding matrix into the $(i\text{,} i)^\text{th}$ block, such that $E$ is in block-diagonal form (note: each block is $n \times q$).
+\item Construct the encoding matrix, $E \in \mathbb{R}^{nm \times qm}$, by inserting the $i^\text{th}$ encoding matrix into the $(i\text{,} i)^\text{th}$ block, such that $E$ is in block-diagonal form (note: there are $m \times m$ blocks and each is $n \times q$).
 \item Construct the decoding matrix, $D^\V{f} \in \mathbb{R}^{nm \times qm}$, by inserting each decoding matrix $D^{\V{f}_{i\text{,}j}}$ into the $(i\text{,} j)^\text{th}$ block, where $\V{f}_{i\text{,}j}$ is the function computed between the $i^\text{th}$ presynaptic population and the $j^\text{th}$ postsynaptic population.
 \end{enumerate}
 Then Principles~1--3 apply in the same way to this single population, while being functionally equivalent to the original network.
 
 This reveals that the problem of constructing and training arbitrary network topologies may be reduced to the special case of a single layer.
 Conversely, we do not lose any computational power by limiting our focus to a single layer.
-However, the encoding matrix is extremely sparse with $\frac{m-1}{m}$ percent of its coefficients set to zero.
+However, the encoding matrix is extremely sparse with $(m - 1) / m$ percent of its coefficients set to zero.
 Likewise, the block-structure of the decoding matrix is isomorphic to the graph structure of the original network.
 
 This characterizes the functional role of network structure as: partitioning the global state-space into a union of state-vectors, sparsifying its encoders, and arranging the decoders into a block-structure that mirrors the interactions between sub-spaces.
@@ -167,7 +167,7 @@ However, there is historically little consensus between neuroscientists as to wh
       We define this as a ``postsynaptic current code'' instead.
       (Left)~An ensemble of LIF neurons are trained to oscillate at approximately $3.5$\,Hz.
       (Right)~Spike rasters of \numprint{50} randomly selected neurons, ordered by their encoding vector's polar angle.
-      Each neuron spikes only $0$, $1$, or $2$ times per oscillation, which is much slower than the cut-off frequency of the synaptic filter~($10$\,Hz), and at a precise moment in time---on the order of milliseconds (see inset)---before remaining silent for another couple hundred milliseconds.
+      Each neuron spikes only $0$, $1$, or $2$ times per oscillation, and at a precise moment in time---on the order of milliseconds (see inset)---before remaining silent for another couple hundred milliseconds.
       Thus, the precise spike-timing of each individual neuron reliably conveys information about the state-space of the oscillation, despite never explicitly incorporating such a requirement about timing into the training procedure.
     }
 \end{figure}
@@ -227,33 +227,73 @@ If one is interested in constructing functioning dynamical SNNs using neuromorph
 The confusion surrounding rate coding in the NEF has essentially risen from the adoption of equation~\ref{eq:rate-approximation}.
 However, as we have said, this merely reformulates the optimization procedure to be more efficient, without sacrificing correctness as proven in section~\ref{sec:spike-coding}.
 We remark that, in Figure~\ref{fig:spike-time-coding}, the firing statistics are completely unlike their rate-model counterparts, despite the target postsynaptic currents and overall system dynamics remaining the same.
-That is, each neuron only fires at an average rate of $3$\,Hz across the simulation, much slower than the $20$--$40$\,Hz rate that they would fire at for constant inputs, and also slower than the $10$\,Hz cut-off frequency\footnote{
-The postsynaptic impulse response that results from a single spike, decays to a factor of $e^{-\frac{10}{3}} \approx 3.5\%$, before \emph{that same} neuron triggers another spike, on average.}
+That is, each neuron only fires at an average rate of $3$\,Hz across the simulation, much slower than the $20$--$40$\,Hz rate that they would fire at for constant inputs.
+Likewise, the postsynaptic impulse response that results from a single spike, decays to a factor of $e^{-\frac{10}{3}} \approx 3.5\%$, before \emph{that same} neuron triggers another spike, on average.
 of the synaptic filter.
-Neither the average rates, inter-spike intervals, nor spike times tell the entire story.
+In general neither the average rates, inter-spike intervals, nor spike times tell the entire story.
 
 But then, how does equation~\ref{eq:rate-approximation} hold if each neuron is not spiking at its intended rate?
 Our proposal to resolve this seemingly paradoxical situation is to first establish a new label: ``postsynaptic current code''.
 This code does not care about the spike-rates of individual neurons; it is only sensitive to how well the weighted and synaptically-filtered spikes, \emph{when pooled across the entire population}, approximate some desired set of postsynaptic currents (corresponding to an affine transformation of the required state-vector)~\citep{tripp2006neural}.
-Why this works requires careful proof, and the subtleties surrounding what matters is often lost even amongst experts in the field~[personal communication].
+This is summarized by taking the encoding equation~\ref{eq:encoding} and decoding equation~\ref{eq:trans-decode} which fold into the weight equation~\ref{eq:factored-weights} -- and combining them in a similar manner to \citet{stoeckel2018}:
+\begin{equation} \label{eq:psc-code}
+\alpha_i \left\langle \V{e}_i\text{,}\, \V{x}(t) \right\rangle + \beta_i \approx \sum_{j=1}^n \sum_m \omega_{ij} h \left( t - t_{j\text{,}m} \right) \text{.}
+\end{equation}
+In plain words, the represented state-vector is linearly projected onto the postsynaptic current of each neuron. 
+How this works in light of equation~\ref{eq:rate-approximation} requires careful proof, and the subtleties surrounding why this can matter are often lost even amongst experts in the field~[personal communication].
 But as our example illustrates, the NEF cannot be adhering to any single definition of rate or timing code.
 Rather, it is representing desired transformations by mapping latent state-variables onto postsynaptic currents.  %, with precision that scales as $\bigoh{\tau \sqrt{n}}$.
 % Anectodally, we find that it takes at least several months of working closely with the details of NEF simulations to appreciate these nuances, although the software package Nengo dramatically assists in abstracting them away from the user.
 % Later, we participate in further attempts to rectify these misunderstandings using detailed proofs and simulation results in order to tease apart the NEF's coding principles, scaling properties, and sources of error.
 
-If one is still unconvinced, then, as mentioned in section~\ref{sec:relationships} when comparing the NEF to RC and FORCE, one can forego the substitution of equation~\ref{eq:rate-approximation} and perform the optimization directly in the spiking time-domain~\citep{voelker2016a, duggins2017incorporating}.
+If one is still unconvinced, then, as mentioned in section~\ref{sec:relationships} when comparing the NEF to RC and FORCE, one can forego the substitution of equation~\ref{eq:rate-approximation} and perform the optimization directly in the spiking time-domain~\citep{voelker2016a, duggins2017incorporating}, or even apply backpropagation through time~\citep{rasmussen2018nengodl}.
 But the fact of the matter is that this becomes unnecessary (and inefficient) for a large class of interesting systems and models that we commonly explore.
 % We further step outside this paradigm for conductance-based synapses, and adaptive LIF neurons.
 
 % https://link.springer.com/content/pdf/10.1023/B:NACO.0000027755.02868.60.pdf
 
 
-\subsection{Low-Frequency Representations}
+\subsection{Energy-minimization via low-frequency representation}
 
-The idea that the most amount of ``information'' is present within the low-frequency range of the signals, relative to the firing rates of neurons and time-constants of synapses.
+We define a \emph{low-frequency representation} as one in which the represented vector, $\V{x}(t)$, carries its information within frequencies on the order of the cut-off frequency of the synaptic filter.
+That is, $\bigoh{\left( 2 \pi \tau \right)^{-1}}$\,Hz, where $\tau$ is the synaptic time-constant of equation~\ref{eq:lowpass-laplace} in seconds.\footnote{
+For example, a typical time-constant of $\tau = 5$\,ms would imply that most information is present within a frequency band of $< 32$\,Hz.
+}
+Such representations are known to be ubiquitous in biological systems~\citep{pulvermuller1997high, singer1999neuronal, szendro2001bio}.
+The NEF provides a basic theoretical explanation for this observation from the perspective of energy-minimization.
 
-Maybe additional biological detail can get around this limitation, or maybe the time-constants are this way for this very reason.
+As discussed in the previous section, and described by equation~\ref{eq:psc-code}, the state-vector $\V{x}(t)$ is projected onto postsynaptic currents.
+To analyze the frequency content of this code, we apply the Laplace transform to both sides of equation~\ref{eq:psc-code}, and substitute in the synapse model from equation~\ref{eq:lowpass-laplace}:
+\begin{equation} \label{eq:psc-code-laplace}
+\begin{aligned}
+\alpha_i \left\langle \V{e}_i\text{,}\, \laplace{ \V{x}(t) }(s) \right\rangle + \beta_i &\approx \sum_{j=1}^n \sum_m \omega_{ij} \laplace{ h \left( t - t_{j\text{,}m} \right) }(s) \\
+&= \sum_{j=1}^n \sum_m \omega_{ij} \frac{e^{-{t_{j\text{,}m}s}}}{\tau s + 1} \\ 
+&= \left( \tau s + 1 \right)^{-1} \underbrace{ \sum_{j=1}^n \omega_{ij} \laplace{ a_j(t) }(s) }_{G_i(s)} \text{.}
+\end{aligned}
+\end{equation}
+$G_i(s)$ is defined as the Laplace transform of the weighted combination of presynaptic (unfiltered) spike-trains.
+The magnitude of $| G(2\pi i f) |$, evaluated at real frequencies $f$, is a (dimensionless) measure of the absolute power required to drive all of the synapses of the $i^\text{th}$ postsynaptic neuron, in order to generate such a PSC.
+Rearranging equation~\ref{eq:psc-code-laplace} yields:
+\begin{equation} \label{eq:psc-code-rearranged}
+G_i(s) \approx \left( \tau s + 1 \right) \left( \alpha_i \left\langle \V{e}_i\text{,}\, \laplace{ \V{x}(t) }(s) \right\rangle + \beta_i \right) \text{.}
+\end{equation}
+The transfer function $\left( \tau s + 1 \right)$ is a highpass filter that linearly amplifies the frequencies of its input.
+Specifically, our dimensional analysis identifies the following asymptotic relationship:
+\begin{equation} \label{eq:psc-code-power}
+| G(s) | \approx \bigoh{ \left| \tau s \right| \| \laplace{ \V{x}(t) }(s) \|_2 } \text{,}
+\end{equation}
+where the Big~$\mathcal{O}$ constants involve the length of the encoder (typically unit-length) and the gains and biases (unitless).
 
+From equation~\ref{eq:psc-code-power} it directly follows that, in order to represent $\V{x}(t)$ with an absolute power of one (unitless) at a frequency of $f$, via the postsynaptic current code (i.e.,~linear projection onto each PSC), the total amount of energy needed to drive all of the synapses scales as $\bigoh{2 \pi \tau f }$.
+Therefore, for a \emph{fixed} energy budget, the frequencies that can be successfully transmitted using this code scale by the inverse law (which just-so-happens to be the cut-off frequency of the filter):
+\begin{equation} \label{eq:low-frequency-representation}
+\bigoh{\left( 2 \pi \tau \right)^{-1}} \text{.}
+\end{equation}
+
+In this context, the role of neural coding is to sparsify signals across time while allowing for their accurate reconstruction, consistent with notions from compressed-sensing, sparse coding, and sigma-delta modulation frameworks~\citep{coulter2010adaptive, chklovskii2012neuronal, yoon2017lif}.
+The fidelity in which this can be achieved depends on factors such as the total energy available to drive all of the synapses and the useful frequencies within the signal being reconstructed.
+The NEF provides a way to formalize such relationships, thus making predictions relevant to biological modellers, and establishing trade-offs relevant to neuromorphic engineers.
+We provide additional examples of such trade-offs in the following sections.
 
 \section{Suitability for Neuromorphic Hardware}
 \label{sec:nef-suitability}

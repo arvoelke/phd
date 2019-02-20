@@ -241,7 +241,7 @@ To describe this representation, we define a nonlinear \emph{encoding} and a lin
 First, we choose encoders $E = \transpose{\left[ \V{e}_1\text{,}\, \ldots\text{,}\, \V{e}_n \right]} \in \mathbb{R}^{n \times q}$, gains $\alpha_i > 0$, and biases $\beta_i$ ($i = 1 \ldots n$), as parameters for the following encoding:
 \begin{equation}
 \begin{aligned} \label{eq:encoding}
-s_i(t) &= \alpha_i \left\langle \V{e}_i\text{,} \V{x}(t) \right\rangle + \beta_i \\
+s_i(t) &= \alpha_i \left\langle \V{e}_i\text{,}\, \V{x}(t) \right\rangle + \beta_i \\
 a_i(t) &= G_i \left[ s_i(t) \right] \\
 &= \sum_m \delta \left(t - t_{i\text{,}m} \right) \text{,}
 \end{aligned}
@@ -300,11 +300,12 @@ The second principle of the NEF addresses the issue of computing transformations
 The encoding remains defined by equation~\ref{eq:encoding}.
 However, we now decode a filtered version of some function, $\V{f} : \mathbb{R}^q \rightarrow \mathbb{R}^q$,\footnote{
 We may also consider transformations where the range has a different dimension, but the described framework will suffice for our purposes.}
-by applying an alternate matrix of decoders to the same activities:
+by applying an alternate matrix of decoders to the same filtered spike trains:
 \begin{equation} \label{eq:trans-decode}
 \begin{aligned}
 D^\V{f} &= \transpose{\left[ \V{d}^\V{f}_1\text{,}\, \ldots\text{,}\, \V{d}^\V{f}_n \right]} \in \mathbb{R}^{n \times q} \\
-\left( \V{f}(\V{x}) \ast h \right)(t) &\approx \sum_{i=1}^n (a_i \ast h)(t) \V{d}^\V{f}_i \text{.}
+\left( \V{f}(\V{x}) \ast h \right)(t) &\approx \sum_{i=1}^n (a_i \ast h)(t) \V{d}^\V{f}_i \\
+&= \sum_{i=1}^n \sum_m h \left(t - t_{i\text{,}m} \right) \V{d}^\V{f}_i \text{.}
 \end{aligned}
 \end{equation}
 Now we must solve for $D^\V{f}$. For both Principles~1 and~2, we optimize for $D^\V{f}$ over the domain of the signal, $S = \{\V{x}(t) : t \ge 0\}$, which is typically the unit $q$-ball $\{ \V{v} \in \mathbb{R}^q : \|\V{v}\|_2 \le 1\}$ or the unit $q$-cube $[-1\text{,}\, 1]^q$.
@@ -315,7 +316,7 @@ We first let $r_i(\V{v})$ be the limiting average firing rate of the $i^{\text{t
 r_i(\V{v}) = \lim_{t \rightarrow \infty} \frac{1}{t} \int_{0}^t a_i(t') \, dt' \text{.}
 \end{equation}
 For non-adaptive neuron models, equation~\ref{eq:rates} reduces to encoding $\V{v}$ using a rate model.
-To provide an example, we solve for the closed-form solution in the case of the LIF model. To start, we solve the differential equation~\ref{eq:lif-model} while holding $s_i = \alpha_i \left \langle \V{e}_i \text{,} \V{v} \right \rangle + \beta_i$ fixed:
+To provide an example, we solve for the closed-form solution in the case of the LIF model. To start, we solve the differential equation~\ref{eq:lif-model} while holding $s_i = \alpha_i \left \langle \V{e}_i \text{,}\, \V{v} \right \rangle + \beta_i$ fixed:
 \begin{equation*}
 v_i(t) = v_i(0) + \left( s_i - v_i(0) \right) \left(1 - e^{-\frac{t}{\tau_\text{RC}}} \right) \text{.}
 \end{equation*}
@@ -371,7 +372,7 @@ Perhaps surprisingly, this optimization procedure is mathematically correct for 
 It remains to map these encoding and decoding parameters onto a neural architecture.
 Equations~\ref{eq:encoding} and \ref{eq:trans-decode} are used to derive a connection weight matrix between layers that implicitly computes the desired function $\V{f}(\V{x})$ within the \emph{latent} state-space $\mathbb{R}^q$.
 Let $\omega_{ij}$ be the ``weight'', or coupling strength, between the $j^\text{th}$ presynaptic neuron and the $i^\text{th}$ postsynaptic neuron.
-Specifically, the weight matrix $W = [\omega_{ij}] \in \mathbb{R}^{n \times n}$, which maps activities from the $j^{\text{th}}$ presynaptic neuron to the $i^{\text{th}}$ postsynaptic neuron (disregarding the gain, bias, and synapse), is given by:
+Specifically, the weight matrix $W = [\omega_{ij}] \in \mathbb{R}^{n \times n}$, which maps activities from the $j^{\text{th}}$ presynaptic neuron to the $i^{\text{th}}$ postsynaptic neuron (disregarding the gain and bias, for notational simplicity), is given by:
 \begin{equation} \label{eq:factored-weights}
 %\omega_{ij} = \left\langle \V{e}_i, \V{d}^\V{f}_j \right\rangle \text{.} % = \left( \transpose{E\left( D^\V{f} \right)} \right)_{ij}
 W = E \transpose{\left(D^\V{f}\right)} \text{.}
@@ -485,7 +486,7 @@ h(t) = \frac{1}{\tau} e^{-\frac{t}{\tau}} = \mathcal{L}^{-1}\left\{ \frac{1}{\ta
 \end{align}
 where $\mathcal{L}^{-1}\{ \cdot \}$ denotes the inverse Laplace transform, and the latter representation is referred to as a transfer function.\footnote{
 For comparison, the Laplace transform of the integrator is $\mathcal{L}\left\{ 1 \right\} = \frac{1}{s}$.}
-Our approach is to represent the state-vector $\V{x}(t)$ in a population of spiking neurons (Principle~1;~equation~\ref{eq:encoding}), such that a filtered transformation of this vector is obtained by filtering some linearly decoded spike-trains with a leaky integrator (Principle~2;~equation~\ref{eq:trans-decode}).
+Our approach is to represent the state-vector $\V{x}(t)$ in a population of spiking neurons (Principle~1;~equation~\ref{eq:encoding}), such that \emph{this same} vector is obtained by filtering an appropriate transformation with a leaky integrator (Principle~2;~equation~\ref{eq:trans-decode}).
 Thus, the goal of Principle~3 is to determine the transformations required to implement equation~\ref{eq:lti}, given that the required $\V{x}(t)$ is obtained by some convolution with a leaky integrator, rather than the perfect integrator depicted in Figure~\ref{fig:lti-system}.
 
 Principle~3 states that in order to implement equation~\ref{eq:lti} in a population of neurons that represents $\V{x}(t)$, we must compensate for the effect of ``replacing'' the integrator with a leaky integrator (compare Figures~\ref{fig:lti-system} and~\ref{fig:lti-system-mapped}) by driving the synapse with $\tau \dot{\V{x}}(t) + \V{x}(t)$ instead of only $\dot{\V{x}}(t)$.
@@ -494,12 +495,13 @@ This compensation is achieved as follows: implement the recurrent transformation
 Specifically, this may be implemented in a spiking dynamical network by representing $\V{x}(t)$ via Principle~1 and then using Principle~2 to decode the needed transformations.
 
 The resulting model is summarized in Figure~\ref{fig:lti-system-mapped}.
-Notably, both systems compute the exact same signals $\V{x}(t)$ and $\V{y}(t)$; the difference is the dynamical primitive, and the transformation needed to account for this change.
+Notably, both systems compute the exact same signals $\V{x}(t)$ and $\V{y}(t)$; the difference is the dynamical primitive, and the transformations needed to account for this change.
 The neural architecture that realizes this model consists of a population of neurons representing $\V{x}(t)$, recurrently coupled to itself, with weights implementing the above transformations determined by equation~\ref{eq:factored-weights}, and each synapse filtering its spike-trains via convolution with equation~\ref{eq:lowpass-laplace}.
+The outcome is that the desired state-vector, $\V{x}(t)$, is linearly projected onto the postsynaptic current of each neuron.
 We depict and compare this architecture to related work in the following section.
 
 The correctness of this ``mapping'' procedure relies on three assumptions: (1)~the synapse model is equation~\ref{eq:lowpass-laplace}, (2)~the network is simulated in continuous time (or the discrete time-step is sufficiently small), and (3)~the necessary representations and transformations are sufficiently accurate, such that the approximation error from equation~\ref{eq:trans-decode} is negligible.
-In other words, assuming $n$ is sufficiently large, the system described by equation~\ref{eq:lti} may be implemented by a continuous-time SNN that realizes the model of Figure~\ref{fig:lti-system-mapped}.
+In other words, assuming $n$ is sufficiently large, the system depicted in Figure~\ref{fig:lti-system} may be implemented by a continuous-time SNN that realizes the model of Figure~\ref{fig:lti-system-mapped}.
 In section~\ref{sec:synaptic-extensions}, we provide a novel proof of this fact, and extend Principle~3 to relax the first and second assumptions.
 % Methods of coping with the third assumption for small $n$ remain a currently active area of research.
 % In section~\ref{sec:results}, we demonstrate the success of this approach given low-frequency inputs in spiking networks.
@@ -603,7 +605,7 @@ y(t) \approx \sum_{i=1}^n (a_i \ast h)(t) \V{d}^\V{f}_i \text{.}
 This has the same form as equation~\ref{eq:decoding} from Principle~2 of the NEF.
 The important difference lies in how the decoders $D^\V{f}$ are trained.
 Rather than solving for $D^\V{f}$ using equation~\ref{eq:decoder_solution}, the network is explicitly simulated to obtain the exact temporal basis functions.
-In general, the RC training method relies on \emph{explicit} simulation, since $\V{x}(t)$ is unknown. In the NEF the simulation is typically \emph{implicit} within Principle~2, but can also be made explicit in exactly the same manner.
+In general, the RC training method relies on \emph{explicit} simulation, since $\V{x}(t)$ is unknown. In the NEF the simulation is typically \emph{implicit} within Principle~2, but can also be made explicit in exactly the same manner~\citep{voelker2016a, duggins2017incorporating}.
 
 \begin{table} 
 \centering
@@ -839,7 +841,7 @@ and many other related prototypes~\citep[e.g.,][]{glackin2009hardware, moradi201
 % A digital neurosynaptic core using embedded crossbar memory with 45 pJ per spike in 45 nm, (GoldenGate SyNAPSE IBM)
 \TODO{Missing ASIC results for deep learning?}
 
-Among these systems, a number support the compilation of NEF networks, including a VLSI prototype~\citep{corradi2014}, several FPGA implementations~\citep{naylor2013managing, wang2014compact, berzish2016, wang2017neuromorphic} including ABR's own FPGA backend~(unpublished), several GPUs~\citep{bekolay2014, blouw2018a}, and most recently, TrueNorth~\citep{fischl2018}.
+Among these systems, a number support the compilation of NEF networks, including a VLSI prototype~\citep{corradi2014}, several FPGA implementations~\citep{naylor2013managing, wang2014compact, berzish2016, wang2017neuromorphic} including ABR's own FPGA backend~(unpublished), several GPUs~\citep{bekolay2014, rasmussen2018nengodl, blouw2018a}, and most recently, TrueNorth~\citep{fischl2018}.
 
 An emerging framework called the Neural and Synaptic Array Transceiver~\citep[NSAT;][]{detorakis2018neural}, which focuses on data-driven autonomy via online learning on neuromorphic hardware, has been validated on a field-programmable gate array~(FPGA).
 Likewise, an engine that repurposes generic computational elements in order to flexibly support a variety of network topologies at scale, has been used to implement polychronous SNNs on an FPGA~\citep{wang2013neuromorphic, wang2018breaking}.
