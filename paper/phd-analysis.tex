@@ -5,8 +5,8 @@ In this chapter, we provide a thorough examination of the Neural Engineering Fra
 The goals are two-fold: (1)~explore the consequences of its computational principles at a theoretical level, and in doing so debunk some of the common myths that have become associated with the NEF since its inception, and (2)~assess its suitability as a framework for deploying SNNs on neuromorphic hardware by analyzing its scalability, correctness, efficiency, Turing-completeness, robustness, and extensibility.\footnote{
 To help delineate separate considerations, some sub-sections may be significantly shorter than others.
 }
-This involves a proof of equation~\ref{eq:rate-approximation} that, as far as we know, is the first to provide a sufficient criteria for the correctness of the first two principles of the NEF at the level of individual spikes.
-The correctness of the third principle is proven in \citet[][pp.~221--225]{eliasmith2003a} and is extended by various proofs in section~\ref{sec:synaptic-extensions}.
+% This involves a proof of equation~\ref{eq:rate-approximation} thatextends and improves the discussion of \citet[][pp.~132--136]{eliasmith2003a} to provide a sufficient criteria for the correctness of the first two principles of the NEF at the level of individual spikes.
+% The correctness of the third principle is proven in \citet[][pp.~221--225]{eliasmith2003a} and is extended by various proofs in section~\ref{sec:synaptic-extensions}.
 
 \section{Computational Sub-Principles}
 
@@ -77,7 +77,7 @@ In section~\ref{sec:pure_delay}, we demonstrate a method of systematically harne
 
 \TODO{example application in section~\ref{sec:applications} -- if $B \rightarrow B$ is a delay network, we can then use what we know about amplifying axonal spike delays to make an even longer delay out of the entire system}
 
-\subsection{Existence of chaos}
+\subsection{Unpredictability, chaos, and strange attractors}
 
 An apparent misconception associated with NEF networks is that we already ``understand'' the computations being engineered into the network, and therefore have nothing to learn from such simulations.
 But just because a network's function can be written down using equations, does not mean that its effects are fully understood ahead of time.
@@ -118,7 +118,7 @@ Perhaps even more surprisingly, one does not need to invoke any saturation to ob
 For example, consider the one-dimensional, autonomous (i.e.,~no input), integrator:
 $$\dot{x}(t) = 0 \text{,}$$
 implemented as an SNN using Principle~3 of the NEF ($A = B = D = 0$, $C = 1$).
-This is perhaps the simplest recurrent network that one can imagine; a point attractor without input, that is to hold its initial state indefinitely.
+This is perhaps the simplest recurrent network that one can imagine; a line attractor without input, that is to hold its initial state indefinitely.
 Nevertheless, as shown in Figure~\ref{fig:chaotic-integrator}, the neural states display the tell-tale signs of a strange attractor~\citep[cf.~][Figure~9.3.5]{strogatz2000nonlinear}.
 Specifically, let $\V{v}_1(t), \V{v}_2(t) \in \mathbb{R}^n$ be two voltage vectors (see equation~\ref{eq:lif-model}) from two separate, but deterministic simulations, of the \emph{exact} same network ($n = 10$, $\tau = 5$\,ms, $\dt{} = 0.1$\,ms, down-sampled every $20$\,ms).
 The first simulation is initialized to the default of $x_1(0) = 0$, while the second is initialized to $x_2(0) = \numprint{e-15}$.
@@ -130,11 +130,11 @@ Now let:
 \end{align*}
 be the difference in representational state and neural state, respectively.
 We find that $\Delta$ remains bounded above by the accuracy of neural representation, as expected.
-However, $\delta$ diverges exponentially over time, indicating that the neural states are within a strange attractor (the Lyapunov exponent $\lambda \approx 8.9$\,s${}^{-1}$ gives the exponential rate of divergence); the voltage vectors are tracing out a fractal manifold that cannot be predicted beyond a time-horizon on the order of $\bigoh{\lambda^{-1}} \approx 0.1$\,s.
+However, $\delta$ diverges exponentially over time, indicating that the neural states are within a strange attractor (the Lyapunov exponent $\lambda \approx 8.9$\,s${}^{-1}$ gives the exponential rate of divergence); the voltage vectors are tracing out a fractal manifold embedded within an $n$-dimensional space that cannot be predicted beyond a time-horizon on the order of $\bigoh{\lambda^{-1}} \approx 0.1$\,s.
 Despite this, the NEF is capable of taming the chaos at the neural level and providing a robust estimate at the population level, due to the correspondance between each strange attractor and a stable point in representational space~\citep[][p.~237]{eliasmith2003a}.
 
 More generally, the NEF may be used to implement arbitrary algorithms encoded as dynamical systems (see section~\ref{sec:nef-turing}), which implies that it is not exempt from computational-complexity theory. 
-Networks can perform interesting tasks via algorithmic manipulations of inputs and states.
+Networks can perform interesting tasks via algorithmic manipulations of inputs and states~\citep{choo2018}.
 And, in this case, the network must in general be explicitly simulated in order to carry out the computations of said algorithm.
 At the same time, the NEF provides a framework for understanding the dynamical transformations being performed, examining relationships between structure and function, relating these functions to neurobiological systems, and compiling them onto neuromorphic hardware.
 
@@ -147,32 +147,105 @@ The idea that both continuous-time and discrete-time dynamics play important rol
 It is also important to consider both for neuromorphic hardware.
 \fi
 
-\subsection{Postsynaptic Current Coding}
+\subsection{Postsynaptic current coding}
 \label{sec:psc-coding}
 
-The NEF's state variable is linearly mapped onto the post-synaptic current.
-Contrast this with rate code and spike-time code and rank-order coding (simon thorpe) and Bryan Tripp (2007).
-\TODO{\url{https://www.sciencedirect.com/science/article/pii/S0303264798000501}}
-\TODO{\url{https://www.frontiersin.org/articles/10.3389/fnsys.2015.00151/full}}
-\TODO{\url{https://link.springer.com/content/pdf/10.1023/B:NACO.0000027755.02868.60.pdf}}
-\TODO{\url{https://www.nature.com/articles/35090500}}
-We further step outside this paradigm for conductance-based synapses, and adaptive LIF neurons.
+A long-standing debate in neuroscience has traditionally revolved around the question of whether biological neurons transmit information using a ``rate code'' in which the information is encoded by the firing rates of individual neurons~\citep{adrian1928basis}, or a ``spike-timing code'' in which information is encoded by the precise temporal patterns of spike trains~\citep{rieke1999spikes} or likewise their temporal order in relation to one another~\citep{thorpe1998rank}.
+However, there is historically little consensus between neuroscientists as to what exactly consistutes a rate code~\citep[][pp.~89--91]{eliasmith2003a}.
 
+\citet{gerstner1999spiking} observes that there are at least three different ways to define a rate code, and that in may important ways they are consistent with that of a timing-based code.
+\citet{fairhall2001efficiency} examines the adaptive dynamics of neurons in a fly's visual system and concludes that the principles of its code depend on the time-scales of interest.
+\citet{brette2015philosophy} argues that the question about which code the brain uses is irrelevant, and should be replaced by one that addresses the causal role of neural activity.
+\citet{eliasmith2003a} likewise proposes that we should focus on the physical instantiation, and functional consequences therein, of any given approach to neural coding, rather than resorting to semantic labels that are ultimately irrelevant. 
 
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{spike-time-coding}
      
     \caption{\label{fig:spike-time-coding} 
-      Demonstrating the semantic ambiguity between ``spike-time coding'' and ``rate-coding'' in the context of a standard NEF-optimized network.
-      (Left)~An ensemble of \numprint{5000} LIF neurons with random 2D encoders and uniform $[0.5, 1]$ intercepts are trained to oscillate at approximately $3.5$\,Hz.
-      We omit the first $1.2$ seconds of simulation to wash away initial transients.
+      Demonstrating the irrelevance of identifying a ``spike-time code'' versus a ``rate code'' in the context of a standard NEF-optimized network.
+      We propose this be understood as a ``postsynaptic current code'' instead.
+      (Left)~An ensemble of LIF neurons are trained to oscillate at approximately $3.5$\,Hz.
       (Right)~Spike rasters of \numprint{50} randomly selected neurons, ordered by their encoding vector's polar angle.
-      Each neuron spikes only $0$, $1$, or $2$ times per oscillation, which is much slower than the cut-off frequency of the synaptic filter~($10$\,Hz), and at a precise moment in time---on the order of milliseconds (see inset)---before remaining silent for another several hundred milliseconds.
-      Thus, the precise spike-timing of each individual neuron reliably conveys information about the 2D state-space of the oscillation, despite not explicitly incorporating such a requirement into the training procedure.
-      The NEF's ``post-synaptic current coding'' explains how this works (see text for details).
+      Each neuron spikes only $0$, $1$, or $2$ times per oscillation, which is much slower than the cut-off frequency of the synaptic filter~($10$\,Hz), and at a precise moment in time---on the order of milliseconds (see inset)---before remaining silent for another couple hundred milliseconds.
+      Thus, the precise spike-timing of each individual neuron reliably conveys information about the state-space of the oscillation, despite never explicitly incorporating such a requirement about timing into the training procedure.
     }
 \end{figure}
+
+Nevertheless, many have mislabelled the NEF as employing a rate-coding scheme [personal communication], including \citet{lagorce2015stick} and~\citet{frady2019robust} for two recent examples -- we refer to these two below, to illustrate why this accusation constitutes a damaging use of semantics.
+% On one hand, we understand that this is due to the way in which the optimization procedure is most often simplified using equation~\ref{eq:rate-approximation}.
+Specifically, this micharacterization has lead to the misapplication of many criticisms~\citep{gautrais1998rate} that stem from the original proposal of \citet{adrian1928basis}, namely the need to average spike rates over long windows of time.
+We find this important to clarify because it leads to imprudent conclusions or ``myths'' about the NEF such as those claimed in \citet{lagorce2015stick, frady2019robust}:
+\begin{enumerate}
+\item The NEF does not exhibit precise sequences of action-potentials.
+\item The NEF does not support high speed neural computation.
+\item The NEF does not display rhythmic activity.
+\item The NEF requires very large numbers of neurons to compute simple functions.
+\end{enumerate}
+We now debunk each of these claims in turn.
+For the first three, we refer to the same simulation depicted in Figure~\ref{fig:spike-time-coding}.
+This simulation applies the NEF, as described in section~\ref{sec:nef}, to the case of an autonomous two-dimensional oscillator ($n = \numprint{5000}$, $\tau = 0.1$\,s, $\dt{} = 1$\,ms).
+The encoding parameters are randomly tiled across the two-dimensional state-space such that each neuron only responds to 25\% of the state's projection onto its encoder (i.e.,~uniform $[0.5, 1)$ intercepts), and each neuron \emph{would} fire at a rate of $20$--$40$\,Hz if encoding a constant state with maximal similarity to its encoder.
+As we explain, the firing statistics are not at all characterized by $20$--$40$\,Hz spike-trains.
+We omit the first $1.2$ seconds of simulation to wash away initial transients.
+
+\paragraph{1. The NEF can exhibit repeatedly precise sequences of action-potentials.}
+
+See Figure~\ref{fig:spike-time-coding}~inset.
+When comparing the spike-trains between two separate oscillations at the same phase, not only is the order of spiking consistent, as in rank order cording~\citep{thorpe1998rank}, but also the precise spike-timing ($\pm$ a couple milliseconds).
+
+\paragraph{2. The NEF readily supports high speed neural information processing.}
+
+In our example, neurons respond quickly to encode the rapidly-fluctuating oscillatory state, and do so without any system-level ``delay'' or undersired filtering.\footnote{
+The postsynaptic filter that is applied is leveraged to participate in the required computation (see Principle~3; section~\ref{sec:principle3}).
+There is no unwanted phase-shift.
+}
+As will be explained in section~\ref{sec:scalability}, the precision of a feed-forward network scales as $\bigoh{\tau \sqrt{n}}$.
+Thus, one is free to set the synaptic time-constant arbitrarily small, so long as the number of neurons are increased in proportion.
+We have verified this both theoretically and numerically.
+This enables arbitrarily fast transmission of information throughout the network assuming the criteria of section~\ref{sec:spike-coding} is met (see also Figure~\ref{fig:poisson-frequency-scaling}).
+Yet, even when constrained to longer time-constants, section~\ref{sec:deep-delay-networks} demonstrates a novel deep NEF network that is capable of \emph{instantaneously} propagating low-frequency stimuli through 8 layers of synaptic filters ($\tau = 0.1$\,s).
+
+\paragraph{3. The NEF examples that invoke Principle~3 all display rhythmic activity.}
+
+The NEF was designed as a toolkit for modelling dynamic rhythmic activity~\citep{eliasmith1999developing} such as the central pattern generator driving lamprey locomotion~\citep{eliasmith2000b}.
+Indeed, Figure~\ref{fig:spike-time-coding} clearly displays rhythmic activity at both the population level~(see left) and activity level~(see right).
+The properties of these rhythms can be understood as arising from the dynamics of the postsynaptic currents, in response to the neural encoding of the state-vector governed by some underlying set of differential equations.
+
+\paragraph{4. The NEF can compute difficult functions with any number of neurons.}
+
+See Figure~\ref{fig:chaotic-integrator} for an example of ten spiking LIF neurons implementing a line attractor ($\tau = 5$\,ms), or section~\ref{sec:delay-lstm} for a six neuron cell that outperforms LSTM cells.
+No matter how complex the function, the mandate of the NEF is to leverage its neuron models as a basis for that function. 
+Sometimes this can be done with sufficient accuracy using a single neuron, and in other cases one might need a few million or even more.
+In general, the feed-forward precision scales as $\bigoh{\tau \sqrt{n}}$ while the dynamical precision scales as $\bigoh{\sqrt{n}}$ (under fairly weak assumptions; see section~\ref{sec:scalability}).
+But one cannot consider the questions of resource usage and functional precision within a vacuum.
+One must resolve such questions with respect to the device-level models of the physical hardware implementation as well as the intended target application.
+Some advances in this direction are underway~\citep{schwemmer2015constructing, thalmeier2016learning}.
+But many other considerations such as weight factorization, mechanistic constraints, and the energy consumed by different synaptic or neural operations, may all play a role.
+If one is interested in constructing functioning dynamical SNNs using neuromorphic hardware, we suggest that one considers all such factors in the context of the target application before labelling an approach as being unequivocally inferior.
+
+The confusion surrounding rate coding in the NEF has essentially risen from the adoption of equation~\ref{eq:rate-approximation}.
+However, as we have said, this merely reformulates the optimization procedure to be more efficient, without sacrificing correctness as proven in section~\ref{sec:spike-coding}.
+We remark that, in Figure~\ref{fig:spike-time-coding}, the firing statistics are completely unlike their rate-model counterparts, despite the target postsynaptic currents and overall system dynamics remaining the same.
+That is, each neuron only fires at an average rate of $3$\,Hz across the simulation, much slower than the $20$--$40$\,Hz rate that they would fire at for constant inputs, and also slower than the $10$\,Hz cut-off frequency\footnote{
+The postsynaptic impulse response that results from a single spike, decays to a factor of $e^{-\frac{10}{3}} \approx 3.5\%$, before \emph{that same} neuron triggers another spike, on average.}
+of the synaptic filter.
+Neither the average rates, inter-spike intervals, nor spike times tell the entire story.
+
+Our explanation for this seemingly paradoxical observation is resolved by the creation of an entirely different label: a ``postsynaptic current code''.
+This code does not care about the spike-rates of individual neurons; it is only sensitive to how well the weighted and synaptically-filtered spikes, when pooled across the entire population, approximate some desired set of postsynaptic currents (corresponding to an affine transformation of the required state-vector)~\citep{tripp2006neural}.
+The subtleties surrounding how this works and why this distinction can matter is often lost, even amongst experts in the field, and thus these discussions sometimes regress to harmful statements such as ``it is okay; I know the NEF is sending rates''~[personal communication].
+But as our example illustrates, the NEF is not adhering to any particular definition of rate or timing code.
+Rather, it is representing desired transformations by mapping latent state-variables onto postsynaptic currents.  %, with precision that scales as $\bigoh{\tau \sqrt{n}}$.
+% Anectodally, we find that it takes at least several months of working closely with the details of NEF simulations to appreciate these nuances, although the software package Nengo dramatically assists in abstracting them away from the user.
+% Later, we participate in further attempts to rectify these misunderstandings using detailed proofs and simulation results in order to tease apart the NEF's coding principles, scaling properties, and sources of error.
+
+If one is still unconvinced, then, as mentioned in section~\ref{sec:relationships} when comparing the NEF to RC and FORCE, one can forego the substitution of equation~\ref{eq:rate-approximation} and perform the optimization directly in the spiking time-domain~\citep{voelker2016a, duggins2017incorporating}.
+But the fact of the matter is that this becomes unnecessary (and inefficient) for a large class of interesting systems and models that we commonly explore.
+% We further step outside this paradigm for conductance-based synapses, and adaptive LIF neurons.
+
+% https://link.springer.com/content/pdf/10.1023/B:NACO.0000027755.02868.60.pdf
+
 
 \subsection{Low-Frequency Representations}
 

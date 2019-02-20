@@ -89,10 +89,15 @@ sns.lineplot(data=df, x="Frequency (Hz)", y=y, ax=ax2, c=c2, label=y)
 ax1.legend(loc='upper left')
 ax2.legend(loc='upper right')
 
+ax2.set_frame_on(False)
+plt.subplots_adjust(wspace=0.27)
 ax2.set_ylabel("")
-plt.subplots_adjust(wspace=0.22)
 
-sns.despine(offset=10)
+offset = 10
+sns.despine(offset=offset, ax=ax1, right=False)
+ax2.spines['right'].set_position(('outward', offset))
+sns.despine(offset=offset, ax=ax3)
+
 fig.show()
 
 print(pearsonr(df["KS-Statistic"], df[y]))

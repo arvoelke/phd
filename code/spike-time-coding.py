@@ -1,8 +1,9 @@
 from phd import *
 
-frequency = 20
+frequency = 20  # here we're not properly accounting for a few things
 tau = 0.1
 dt = 0.001
+T = 5.0
 
 with nengo.Network() as model:
     kick = nengo.Node(output=lambda t: 1.0/dt if t <= dt else 0)
@@ -22,7 +23,7 @@ with nengo.Network() as model:
     p_a = nengo.Probe(x.neurons, 'spikes', synapse=None)
 
 with nengo.Simulator(model, dt=dt) as sim:
-    sim.run(5.0)
+    sim.run(T)
 
 sample_size = 50
 rng = np.random.RandomState(seed=x.seed)
@@ -113,3 +114,7 @@ insert2.annotate('', xy=(box_s2+box_w, box_sn+box_h+1),
 savefig('spike-time-coding.pdf')
 
 print(1. / (box_s2 - box_s1))
+
+print(np.count_nonzero(sim.data[p_a][t_range]) /
+      x.n_neurons /
+      (sim.trange()[t_range][-1] - sim.trange()[t_range][0]))

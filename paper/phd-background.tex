@@ -343,6 +343,7 @@ In other words, the optimization is determined strictly by the distribution of t
 Since we have replaced the optimization problem involving spikes (equation~\ref{eq:trans-decode}) with one involving rates, this side-steps the need to explicitly simulate the neurons over time when training.
 Furthermore, this is a convex optimization problem, which may be solved by uniformly sampling $S$~\citep{voelker2017} and applying a standard regularized least-squares solver to the sampled data~\citep{bekolay2014}.
 Monte Carlo sampling introduces $\bigoh{ m^{-\frac{1}{2}} }$ error into the integral from equation~\ref{eq:decoder_solution}, where $m$ is the number of samples, but this can be improved to $\widetilde{\mathcal{O}} \left( m^{-1} \right)$---effectively squaring $m$---by the use of quasi-Monte Carlo methods~\citep{fang1994, knight2016}.
+In the context of machine learning, the samples of $S$ are the example inputs from training data.
 Nengo also supports alternative decoder solvers that optimize variants of equation~\ref{eq:decoder_solution}~\citep[e.g.,][]{voelker2016a, abrams2017}, and randomized singular-value-decomposition~(SVD) solvers that take $\bigoh{mn}$ time and space~\citep{halko2011finding} -- but we do not use them here.
 %This provides the decoders needed by equations~\ref{eq:repn_decode} and \ref{eq:trans-decode} to represent the vector or compute transformations, respectively.
 
@@ -357,14 +358,14 @@ The accuracy of this approach depends on the quality of the following approximat
 \end{equation}
 In plain words, this presupposes that substituting a filtered spike-train with its correspondingly filtered rates does not change the optimal set of decoders for a target set of postsynaptic currents.
 A subtle, yet critical, observation is that we \emph{do not} require the spike rates of \emph{individual} neurons to reflect their idealized instantaneous rates.
-Rather, we exploit the fact that filtering and weighting spikes across the \emph{entire} population satisfies such an approximation, provided that $n$ scales with $\tau^{-1}$.
-This zeroth-order approximation clearly holds in the limit of constant $\V{x}(t)$, and turns out to be ideal in practice for low-frequency $\V{x}(t)$ relative to $\tau$ by a separation of time-scales~\citep[][appendix~F.1]{eliasmith2003a}.
+Rather, we exploit the fact that filtering and weighting spikes across the \emph{entire} population will satisfy such an approximation~\citep[][pp.~132--136]{eliasmith2003a}.
+% This zeroth-order approximation clearly holds in the limit of constant $\V{x}(t)$, and turns out to be ideal in practice for low-frequency $\V{x}(t)$ relative to $\tau$ by a separation of time-scales~\citep[][appendix~F.1]{eliasmith2003a}.
 
 In section~\ref{sec:psc-coding}, we discuss how our adoption of equation~\ref{eq:rate-approximation} has lead many to mischaracterize the NEF as using a ``rate code'', which comes with significant baggage.
 We suggest that the NEF should instead by characterized as mapping latent state-variables onto postsynaptic currents, and to label this as a ``postsynaptic current code''; this code can exhibit repeatedly precise spike-times, facilitate rapid transmission of information, and does not demand excessive pool sizes or long time-constants, contrary to commonly-held beliefs that have carried over from rate-coding paradigms.
 In the NEF, individual neurons are free to spike much slower than ther ideal rate models, while remaining silent across intervals of time that far exceed the time-constant of the synapse.
 In section~\ref{sec:spike-coding}, we provide a novel proof that justifies the correctness of this technique much more generally.
-Perhaps surprisingly, this optimization procedure is mathematically correct for Poisson-spiking models and simple integrate-and-fire models, even as the frequency of the state-vector goes towards infinity, and as the time-constants of the filters approach zero.
+Perhaps surprisingly, this optimization procedure is mathematically correct for Poisson-spiking models and simple integrate-and-fire models, even as the frequency of the state-vector goes towards infinity, and as the time-constants of the filters approach zero, provided that $n$ scales with $\tau^{-1}$ (see section~\ref{sec:scalability}).
 % We also remark that one may use singular value decomposition~(SVD) to characterize the class of functions that can be accurately approximated by the chosen neural basis functions~\citep[][pp.~185--217]{eliasmith2003a}.
 
 It remains to map these encoding and decoding parameters onto a neural architecture.
