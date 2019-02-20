@@ -256,7 +256,7 @@ But the fact of the matter is that this becomes unnecessary (and inefficient) fo
 \subsection{Energy-minimization via low-frequency representation}
 
 We define a \emph{low-frequency representation} as one in which the represented vector, $\V{x}(t)$, carries its information within frequencies on the order of the cut-off frequency of the synaptic filter.
-That is, $\bigoh{\left( 2 \pi \tau \right)^{-1}}$\,Hz, where $\tau$ is the synaptic time-constant of equation~\ref{eq:lowpass-laplace} in seconds.\footnote{
+That is, $\left( 2 \pi \tau \right)^{-1}$\,Hz, where $\tau$ is the synaptic time-constant of equation~\ref{eq:lowpass-laplace} in seconds.\footnote{
 For example, a typical time-constant of $\tau = 5$\,ms would imply that most information is present within a frequency band of $< 32$\,Hz.
 }
 Such representations are known to be ubiquitous in biological systems~\citep{pulvermuller1997high, singer1999neuronal, szendro2001bio}.
@@ -292,7 +292,8 @@ Therefore, for a \emph{fixed} energy budget, the frequencies that can be success
 
 In this context, the role of neural coding is to sparsify signals across time while allowing for their accurate reconstruction, consistent with notions from compressed-sensing, sparse coding, and sigma-delta modulation frameworks~\citep{coulter2010adaptive, chklovskii2012neuronal, yoon2017lif}.
 The fidelity in which this can be achieved depends on factors such as the total energy available to drive all of the synapses and the useful frequencies within the signal being reconstructed.
-The NEF provides a way to formalize such relationships, thus making predictions relevant to biological modellers, and establishing trade-offs relevant to neuromorphic engineers.
+% Here we have given a simple explanation for why the useful information in $\V{x}(t)$ is often low-frequency, even though it doesn't need to be given sufficient resources.
+The NEF provides a way to formalize such relationships in the context of large-scale functional models, thus making predictions relevant to biological modellers, and establishing trade-offs relevant to neuromorphic engineers.
 We provide additional examples of such trade-offs in the following sections.
 
 \section{Suitability for Neuromorphic Hardware}
