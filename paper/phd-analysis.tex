@@ -13,7 +13,7 @@ To help delineate separate considerations, some sub-sections may be significantl
 In this section, we focus primarily on the third principle of the NEF, and elucidate some high-level observations, or ``sub-principles'', that follow from its adoption.
 In particular, \TODO{...}
 
-\subsection{Single-layer equivalence}
+\subsection{Reducibility to a single layer}
 
 In section~\ref{sec:nef}, we focused primarily on a single recurrently connected population of neurons.
 However, any multi-layer NEF network, where each layer may be recurrent, and feedforward connections and feedback connections may also be included between distant layers -- may be rewritten as a single recurrently connected population.
@@ -40,7 +40,7 @@ This characterizes the functional role of network structure as: partitioning the
 In terms of computation, this structure dramatically reduces the time and memory requirements that would otherwise be needed for a full-rank $nm \times nm$ matrix multiplication.
 In terms of training, the challenges involved in globally optimizing an RNN may be viewed under the lens of identifying relatively low-dimensional sub-spaces and their interactions with one another.
 
-\subsection{Heterogeneous dynamical primitives}
+\subsection{Heterogeneity of dynamical primitives}
 
 An important observation is that neurons~(equation~\ref{eq:lif-model}), synapses~(equation~\ref{eq:lowpass-impulse}), and even the functional behaviour of entire recurrent networks~(equations~\ref{eq:discrete-dynamical-system} and~\ref{eq:lti}), can all be described in terms of differential equations.
 These ``dynamical primitives'' all have certain filtering properties, linear and nonlinear transfer functions, and internal states that evolve over time in response to some input in order to produce some output.
@@ -147,7 +147,7 @@ The idea that both continuous-time and discrete-time dynamics play important rol
 It is also important to consider both for neuromorphic hardware.
 \fi
 
-\subsection{Postsynaptic current coding}
+\subsection{Coding by postsynaptic currents}
 \label{sec:psc-coding}
 
 A long-standing debate in neuroscience has traditionally revolved around the question of whether biological neurons transmit information using a ``rate code'' in which the information is encoded by the firing rates of individual neurons~\citep{adrian1928basis}, or a ``spike-timing code'' in which information is encoded by the precise temporal patterns of spike trains~\citep{rieke1999spikes} or likewise their temporal order in relation to one another~\citep{thorpe1998rank}.
@@ -229,7 +229,6 @@ However, as we have said, this merely reformulates the optimization procedure to
 We remark that, in Figure~\ref{fig:spike-time-coding}, the firing statistics are completely unlike their rate-model counterparts, despite the target postsynaptic currents and overall system dynamics remaining the same.
 That is, each neuron only fires at an average rate of $3$\,Hz across the simulation, much slower than the $20$--$40$\,Hz rate that they would fire at for constant inputs.
 Likewise, the postsynaptic impulse response that results from a single spike, decays to a factor of $e^{-\frac{10}{3}} \approx 3.5\%$, before \emph{that same} neuron triggers another spike, on average.
-of the synaptic filter.
 In general neither the average rates, inter-spike intervals, nor spike times tell the entire story.
 
 But then, how does equation~\ref{eq:rate-approximation} hold if each neuron is not spiking at its intended rate?
@@ -240,6 +239,7 @@ This is summarized by taking the encoding equation~\ref{eq:encoding} and decodin
 \alpha_i \left\langle \V{e}_i\text{,}\, \V{x}(t) \right\rangle + \beta_i \approx \sum_{j=1}^n \sum_m \omega_{ij} h \left( t - t_{j\text{,}m} \right) \text{.}
 \end{equation}
 In plain words, the represented state-vector is linearly projected onto the postsynaptic current of each neuron. 
+Nothing needs to change about our exposition of the NEF in order to accomodate this viewpoint of how it codes information.
 How this works in light of equation~\ref{eq:rate-approximation} requires careful proof, and the subtleties surrounding why this can matter are often lost even amongst experts in the field~[personal communication].
 But as our example illustrates, the NEF cannot be adhering to any single definition of rate or timing code.
 Rather, it is representing desired transformations by mapping latent state-variables onto postsynaptic currents.  %, with precision that scales as $\bigoh{\tau \sqrt{n}}$.
@@ -280,7 +280,7 @@ G_i(s) \approx \left( \tau s + 1 \right) \left( \alpha_i \left\langle \V{e}_i\te
 The transfer function $\left( \tau s + 1 \right)$ is a highpass filter that linearly amplifies the frequencies of its input.
 Specifically, our dimensional analysis identifies the following asymptotic relationship:
 \begin{equation} \label{eq:psc-code-power}
-| G(s) | \approx \bigoh{ \left| \tau s \right| \| \laplace{ \V{x}(t) }(s) \|_2 } \text{,}
+| G_i(s) | \approx \bigoh{ \left| \tau s \right| \| \laplace{ \V{x}(t) }(s) \|_2 } \text{,}
 \end{equation}
 where the Big~$\mathcal{O}$ constants involve the length of the encoder (typically unit-length) and the gains and biases (unitless).
 
@@ -299,21 +299,10 @@ We provide additional examples of such trade-offs in the following sections.
 \section{Suitability for Neuromorphic Hardware}
 \label{sec:nef-suitability}
 
-\citep{boahen2017neuromorph}
-
-\subsection{Scalability of Precision}
-\label{sec:scalability}
-
-\TODO{Discuss all of the scaling.}
-We usually set $n$ to about $50 \times q$, as this has been found to provide tolerable performance in practice~\citep{braindrop2019}. 
-More neurons may be required depending on the difficulty of the function and the frequency of the inputs.
-For a fixed amount of noise in a represention implemented by an ensemble of $n$ neurons, the current best-known lower-bound predicts the dimensionality $d$ scales as $\Omega \left( n^{\frac{2}{3}} \right)$ for $n$ neurons~citep[][p.~60]{jgosmann2018}.
-Although we don't know the upper-bound, we conjecture that it is $\bigoh{n}$.
-That is, the dimensionality should not be able to scale faster than the neuron count.
-If it could, then each neuron would represent $\omega(1)$ dimensions, which seems physically implausible given access to only $\bigoh{1}$ state variables.
-This limitation could be broken by dendritic computation, for instance if each neuron had access to $\bigoh{n}$ variables distributed along the dendritic tree.
-
-$\bigoh{ \tau \sqrt{n} }$ precision following from the convergence of the central limit theorem~\citep[CLT;][]{berry1941accuracy, esseen1942liapunov} and the $\tau^{-1}$ peak-amplitude of equation~\ref{eq:lowpass}.
+In the prospectus of \citet{boahen2017neuromorph}, the NEF is recognized as an imperfect yet suitable framework for neuromorphic engineering.
+Many of the reasons have already been mentioned in earlier discussions, and have been 
+validated by the recent deployments of the NEF on Braindrop~\citep{braindrop2019}, Loihi~\citep{blouw2018a}, and TrueNorth~\citep{fischl2018}.
+This section aims to theoretically formalize the reasons that we currently view as being of utmost importance, by rigorously exposing the computational properties and correctness of the NEF.
 
 \subsection{Correctness of Spike Coding}
 \label{sec:spike-coding}
@@ -571,7 +560,21 @@ In summary, this provides a theoretical framework for understanding the differen
 This also provides some theoretical justification for using spiking LIF models following an offline optimization using static tuning curves -- a procedure that the NEF and Nengo use regularly.
 Lastly, this suggests criteria for optimizing the information-processing capabilities of spiking neurons in the context of high-frequency signals, as done in section~\ref{sec:poisson-spiking}.
 
+\subsection{Scalability of Precision}
+\label{sec:scalability}
+
 \TODO{Comment on dimensional analysis for speeding up / slowing down timescales}
+
+\TODO{Discuss all of the scaling.}
+We usually set $n$ to about $50 \times q$, as this has been found to provide tolerable performance in practice~\citep{braindrop2019}. 
+More neurons may be required depending on the difficulty of the function and the frequency of the inputs.
+For a fixed amount of noise in a represention implemented by an ensemble of $n$ neurons, the current best-known lower-bound predicts the dimensionality $d$ scales as $\Omega \left( n^{\frac{2}{3}} \right)$ for $n$ neurons~citep[][p.~60]{jgosmann2018}.
+Although we don't know the upper-bound, we conjecture that it is $\bigoh{n}$.
+That is, the dimensionality should not be able to scale faster than the neuron count.
+If it could, then each neuron would represent $\omega(1)$ dimensions, which seems physically implausible given access to only $\bigoh{1}$ state variables.
+This limitation could be broken by dendritic computation, for instance if each neuron had access to $\bigoh{n}$ variables distributed along the dendritic tree.
+
+$\bigoh{ \tau \sqrt{n} }$ precision following from the convergence of the central limit theorem~\citep[CLT;][]{berry1941accuracy, esseen1942liapunov} and the $\tau^{-1}$ peak-amplitude of equation~\ref{eq:lowpass}.
 
 \subsection{Efficiency in Time and Space}
 
