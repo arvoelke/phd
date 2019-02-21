@@ -321,10 +321,10 @@ However, as far as we know, the third has not received formal attention.
 A proof is found in \citet[][pp.~132--136, appendix~C.1]{eliasmith2003a} that addresses the same issue from the perspective of including noise within the neuron model, and the contents herein may be viewed as an updated treatment of that study, focusing on the one-dimensional case for convenience.
 
 Figure~\ref{fig:nef-error-types} illustrates all three types of error within the context of a single feed-forward simulation.
-Specifically, the network is a one-dimensional communication channel ($f(x) = x$, $n = 100$, $\tau = 50$\,ms, $\dt{} = \numprint{e-5}$\,s) with maximum firing rates of $10$--$20$\,Hz and intercepts uniformly distributed across $[-1, -0.5)$.
+Specifically, the network is a one-dimensional communication channel ($f(x) = x$, $n = 100$, $\tau = 50$\,ms, $\dt{} = \numprint{e-5}$\,s, $\tau_\text{RC} = 20$\,ms, $\tau_\text{ref} = 2$\,ms) with maximum firing rates of $10$--$20$\,Hz and intercepts uniformly distributed across $[-1, -0.5)$.
 Low firing rates are needed to bring the third source of error to the surface, which is normally masked by the other two at high firing rates for reasons that will become clear.
 The population encodes a constant input signal of $u(t) = 1$, that is directly mapped onto the PSCs without additional filtering.
-We also duplicate the population, and replace its neuron model with the corresponding continuous-valued rate model given by equation~\ref{eq:lif-rate}.
+We also duplicate the population, using the same decoders, but replacing its neuron model with the corresponding continuous-valued rate model given by equation~\ref{eq:lif-rate}.
 For notational simplicity, $\transpose{\V{d}}a$ refers to the filtered and decoded spike-trains (i.e.,~the spiking solution), $\hat{x}$ denotes the filtered and decoded rate model (i.e.,~the non-spiking solution), and $x = u \ast h$ is the ideally filtered input signal (i.e.,~the desired output).
 We now describe each source of error in greater detail.
 
@@ -624,7 +624,7 @@ Var \left[ \tilde{A}_i(t) \right] = \, \Aboxed{ a_i \left( \frac{(1 - r_i^2)(1 +
   Relationship between the uniformity of neural states (KS-Statistic) and the representational error (RMSE) for sinusoidal stimuli of varying frequencies.
   (Left)~Empirical distribution of ISI positions---$s_i$ normalized by the instaneous rate $a_i$---is compared to the ideal uniform distribution using the Kolmogorov-Smirnov (KS) test ($p$-value~$< 0.0001$).
   % In the ideal case, the spiking LIF model is equal to its non-spiking counterpart in the sense of expectation.
-  (Right)~The RMSE is highly correlated with the KS-Statistic, with a Pearson correlation coefficient of $R = 0.83$ ($p$-value~$< 0.0001$).
+  (Right)~The RMSE is highly correlated with the KS-Statistic, with a Pearson correlation coefficient of $R = 0.90$ ($p$-value~$< \numprint{e-6}$).
 }
 \end{figure}
 

@@ -7,8 +7,8 @@ from nengo.utils.numpy import rmse
 from scipy.stats import kstest, pearsonr
 
 
-def go(freq, max_rates, n_neurons=1000, n_steps=10000,
-       dt=1e-4, sample_every=1e-4, tau=0.005, seed=0):
+def go(freq, max_rates, n_neurons=2500, n_steps=10000,
+       dt=1e-4, sample_every=1e-4, tau=0.02, seed=0):
 
     with nengo.Network(seed=seed) as model:
         u = nengo.Node(output=lambda t: np.sin(freq*2*np.pi*t))
@@ -60,8 +60,8 @@ data = defaultdict(list)
 max_freq = 101
 tau = 1/(2*np.pi*max_freq)  # cut-off frequency of lowpass filter
 rate_scale = 50
-for seed in range(50):
-    for freq in np.linspace(1, 101, 20):
+for seed in range(5):
+    for freq in np.linspace(1, max_freq, 20):
         low = rate_scale
         high = 2*low
         max_rates = nengo.dists.Uniform(low, high)

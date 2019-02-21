@@ -232,6 +232,7 @@ t_test = sim.trange() > 0.15
 
 noise = sim.data[p_x][t_test, 0] - filt_x_hat[t_test]
 print("(c) Noise KS-Test:", kstest(noise / np.std(noise), 'norm'))
+print("(c) Noise Mean:", np.mean(noise))
 
 plt.figure(figsize=(6, 3.9))
 
