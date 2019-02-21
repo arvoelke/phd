@@ -355,7 +355,7 @@ Nengo also supports alternative decoder solvers that optimize variants of equati
 
 The accuracy of this approach depends on the quality of the following approximation:
 \begin{equation} \label{eq:rate-approximation}
-\V{x}(t) = \V{v} \quad \implies \quad \sum_{i=1}^n \left( \left( r_i(\V{v}) + \mu \right) \ast h \right)(t) \V{d}^\V{f}_i \approx \sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i \text{.}
+\V{x}(t) = \V{v} \quad \implies \quad \sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i \approx \sum_{i=1}^n \left( r_i(\V{v})\ast h \right)(t) \V{d}^\V{f}_i + \eta \text{.}
 \end{equation}
 In plain words, this presupposes that substituting a filtered spike-train with its correspondingly filtered rates does not change the optimal set of decoders for a target set of postsynaptic currents.
 A subtle, yet critical, observation is that we \emph{do not} require the spike rates of \emph{individual} neurons to reflect their idealized instantaneous rates.

@@ -64,7 +64,7 @@ We illustrate this with a specific example by considering the following architec
 $$A \rightarrow (B \rightarrow B) \rightarrow A \text{,}$$
 where $A$ and $B$ are separate neural ensembles and ``$\rightarrow$'' denotes a synaptic weight matrix.
 That is, $B$ is locally-recurrent, and $A$ is globally-recurrent via the outer loop through $B$.
-We may encapsulate $H := B \rightarrow B$ as a dynamical primitive, and then \emph{re-interpret} the whole system as:
+We may encapsulate $H = B \rightarrow B$ as a dynamical primitive, and then \emph{re-interpret} the whole system as:
 $$A \rightarrow_H A \text{,}$$
 where ``$\rightarrow_H$'' denotes some weight matrix where the synapse model has been replaced by $H$ --
 akin to a ``virtual'' synapse, whose dynamics are implemented by $B$ under the hood.
@@ -377,7 +377,7 @@ We commonly refer to the RMSE as simply the ``error'' throughout,\footnote{
 and define ``precision'' to be the reciprocal of error.
 Thus, we say that the precision of static distortion, or a non-spiking network, scales as $\bigoh{n}$.
 
-Figure~\ref{fig:nef-error-types}(a) visualizes the static distortion in two different ways.
+Figure~\ref{fig:nef-error-types}(b) visualizes the static distortion in two different ways.
 The bottom plot, $x$ versus $\hat{x}$, compares the ideal against the approximation, and includes the dashed line $x = x$ for reference.
 The upper plot, $x$ versus $\hat{x} - x$, provides a closer look to demonstrate that the error is continuous and with a mean close to zero.
 The root-mean-squared value of the latter curve is the static distortion.
@@ -388,13 +388,13 @@ By separating out the static distortion and looking at the difference $\transpos
 This is the difference between the spiking and non-spiking estimates, using the same set of basis functions.
 We refer to this as the \emph{spiking noise}, since it corresponds to the variability in the estimate that is introduced by filtered spikes.
 
-When a filter with a variance of $\bigoh{\tau^{-1}}$ in its impulse response---such as equation~\ref{eq:lowpass-impulse}---is applied to both the decoded spikes and the encoded input, then the error is scaled by $\tau^{-1}$.
-On the other hand, the variability across the population leads to an increase in error by a factor of $\sqrt{n}$.
-This latter factor follows from the convergence rate of the central limit theorem~\citep[CLT;][]{berry1941accuracy, esseen1942liapunov}, assuming the spiking noise is Gaussian and independent.
+The variability in spike-trains across the population leads to an additional error term that scales as $\left( \tau \sqrt{n} \right)^{-1}$.
+The $\tau^{-1}$ term comes from the variance of the filter's impulse response -- supposing equation~\ref{eq:lowpass-impulse} is applied to both the decoded spikes and the encoded input.
+The $\sqrt{n}^{-1}$ term follows from the convergence rate of the central limit theorem~\citep[CLT;][]{berry1941accuracy, esseen1942liapunov}, assuming the spiking noise is Gaussian and independent.
 Under these assumption, the spike noise asymptotically dominates the static distortion, and the SNN's feed-forward precision scales as $\bigoh{\tau \sqrt{n}}$.
 However, in the context of Principle 3, the transformations of the signals are scaled by $\tau$, which results in a cancellation and the recurrent SNN having precision that scales as $\bigoh{\sqrt{n}}$.
 
-Figure~\ref{fig:nef-error-types}(b) visualizes a kernel density estimate~\citep[KDE;][]{michael_waskom_2015_19108} of this error ($t > 0.15$\,s).
+Figure~\ref{fig:nef-error-types}(c) visualizes a kernel density estimate~\citep[KDE;][]{michael_waskom_2015_19108} of this error ($t > 0.15$\,s).
 A Kolmogorov-Smirnov~(KS) test of $\transpose{\V{d}}a - \hat{x}$, versus a zero-mean Gaussian distribution with equal variance, produces a KS-statistic of $\approx 0.034$ ($p$-value~$< \numprint{e-6}$).
 The KS-statistic is defined as the maximal discrepancy between the empirical cumulative density function~(CDF) and the model CDF (i.e.,~the supremum of their absolute difference)~\citep{massey1951kolmogorov}.
 In this case, the distribution of spike noise is at most $3.4$\% different from a true Gaussian distribution.
@@ -413,209 +413,191 @@ The error is overall the smallest towards the end of the simulation, at which po
 We formalize these ideas by appealing to the inter-spike interval~(ISI) in a manner that will turn out to be quite important.
 
 We define a neuron's relative ``ISI position''~(ISIP) to be its normalized position within the inter-spike interval that corresponds to the instantaneous firing rate of the ideal rate model.
+For this, we fix our analysis at \emph{any given moment in time}.
 Specifically, we consider the LIF neuron's current state (although this same approach extends more generally to other neuron models) to have a voltage of $v_i$, remaining refractory period of $0 \le \rho_i \le \tau_\text{ref}$, input current of $s_i$, and a corresponding instantaneous target rate of $r_i$.
-In the same way that we derived the rate model of the LIF neuron~(see derivation leading to equation~\ref{eq:lif-rate}), we may derive the neuron's ISIP according to how far along it is within the ideal ISI normalized by its length, $r_i^{-1}$:
-\begin{equation} \label{eq:isi-position}
+In the same way that we derived the rate model of the LIF neuron~(see derivation leading to equation~\ref{eq:lif-rate}), we may derive the neuron's ISIP according to how far along it is within the ideal ISI normalized by its length, $r_i^{-1}$:\footnote{
+If $r_i = 0$ then the neuron will not be active (and does not need to be), and so we can simply ignore it; the discussion, analysis, and results do not change.}
+\begin{equation} \label{eq:lif-isip}
 \begin{aligned}
-g_i &= 1 - \left( \rho_i + \tau_\text{RC} \ln \left( 1 + \frac{1 - v_i}{s_i - 1} \right) \right) r_i \\
+g_i(v_i, \rho_i) &= 1 - \left( \rho_i + \tau_\text{RC} \ln \left( 1 + \frac{1 - v_i}{s_i - 1} \right) \right) r_i \\
 % &= 1 - \frac{\rho_i + \tau_\text{RC} \ln \left( 1 + \frac{1 - v_i}{s_i - 1} \right)}{\tau_\text{ref} -\tau_\text{RC} \ln \left( 1 - \frac{1}{s_i} \right)} \text{.}
 &= 1 - \frac{\rho_i + \tau_\text{RC} \ln \left( 1 + \frac{1 - v_i}{s_i - 1} \right)}{\tau_\text{ref} + \tau_\text{RC} \ln \left( 1 + \frac{1}{s_i - 1} \right)} \text{.}
 \end{aligned}
 \end{equation}
-For example, if $\rho_i = \tau_\text{ref}$ and $v_i = 0$, then $g_i = 0$, since the neuron is at the very beginning of its ISI.
-Likewise, if $\rho_i = 0$ and $v_i = 1$, then $g_i = 1$, as it has just spiked.
-We now define the \emph{state discrepancy} to be the KS-statistic between the empirical ISIP distribution ($g_i$) and a uniform distribution over $\mathcal{U}[0, 1)$.
+For example, $g_i(0, \tau_\text{ref}) = 0$, since the neuron is at the very beginning of its ISI.
+Likewise, $g_i(1, 0) = 1$, as it has just spiked.
+We now define the \emph{state discrepancy}, at some chosen moment in time, to be the KS-statistic between the empirical ISIP distribution across the population, $\{g_i(v_i, \rho_i) \, : \, i = 1 \ldots n\}$, and a uniform distribution over $\mathcal{U}[0, 1]$.
 
-In Figure~\ref{fig:nef-error-types}(c), we measure this value empirically across all of neurons, and at every point in the simulation, using a window of $25$\,ms to smooth the estimate.
+In Figure~\ref{fig:nef-error-types}(d), we measure this value empirically across all of neurons, and at each time-step in the simulation, using a centered window of width $25$\,ms to smooth the estimate.
 We see that the magnitude of the KS-statistic corresponds very closely to the error between the ideal and the spiking solution.
-Although here we are looking at just a constant input for ease of visualization, we find that this statistic correlates highly with the spiking noise across a wide range of input frequencies (see Figure~\ref{fig:frequency-ks-test}).
+Although here we are looking at just a constant input for ease of visualization, we find that this statistic correlates highly (Pearson correlation coefficient $R = 0.90$, $p$-value~$< \numprint{e-6}$) with the spiking noise across a wide range of input frequencies (see Figure~\ref{fig:frequency-ks-test}).
 
-We now prove why our definition of state discrepancy is indeed the correct one, and in doing so provide a sufficient (but not necessary) criteria for scaling away this source of error.
-Specifically, this remaining source of error---state discprepancy---is tamed by minimizing the difference (KS-statistic) between a uniform distribution and the actual neuron's ``readiness to spike'', as characterized by its ISIP~(e.g.,~$g_i$ for the case of a LIF model).
+We now prove that our definition of state discrepancy is indeed the correct one, and in doing so provide a sufficient (but not necessary) criteria for scaling away this source of error.
+Specifically, this remaining source of error---state discprepancy---is tamed by minimizing the difference (KS-statistic) between a uniform distribution and the actual neuron's ``readiness to spike'', as characterized by its ISIP~(e.g.,~equation~\ref{eq:lif-isip} for the case of a LIF model).
 
+\vspace{1em}
 
-\subsubsection{Integrating a Spiking LIF Neuron}
+\begin{theorem}
+\label{thm:correctness}
+Let $\V{\eta}(t) = \sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i- \sum_{i=1}^n \left( r_i(\V{x}(t)) \ast h \right)(t) \V{d}^\V{f}_i$
+% \transpose{\V{d}}a - \hat{x}$
+be the spiking noise.
+If the ISIP is uniformly and independently distributed, as in $g_i \sim \mathcal{U}[0, 1]$, then:
+\begin{enumerate}
+\item $\expect{ \V{\eta}(t) } = 0$; hence the expected spike noise is exactly zero at all times (no systematic bias), 
+\item $\sqrt{\variance{\V{\eta}(t)}} = \bigoh{\left(\tau \sqrt{n}\right)^{-1}}$ is the standard error, or root-mean-squared error; hence the precision scales as $\bigoh{ \tau \sqrt{n} }$ at all times, and therefore:
+\item equation~\ref{eq:rate-approximation} holds for the noise term $\V{\eta}(\cdot) \sim \mathcal{N}\left(0, \sigma^2 \right)$, where $\sigma = \bigoh{ \left( \tau \sqrt{n} \right)^{-1} }$.
+\end{enumerate}
+\end{theorem}
+We prove each statement in turn.
+For the first two statements, we prove something slightly more general, and without invoking asymptotics until the very end.
+We also shift our frame of reference, without loss of generality, such that we are currently observing $t = 0$.
+We then forecast the system out into the future, assuming the representation is held constant.
+But this does not make any assertions about the causal dynamics of the representation.
+This is because the statements in this theorem are only interested in taking a measurement at arbitrarily small values of $t$.
+% $t = \epsilon$ in the one-sided limit of $\lim_{\epsilon \rightarrow 0^+} \eta(t)$.
+Hence, our work provides a more general result than what is needed, specifically a forecast of how the variance continues to evolve along its strange attractor assuming a fixed-point in state-space.
+In order to make this concrete, we suppose the synapse model is equation~\ref{eq:lowpass-impulse}, but this is not a hard requirement.
+Likewise, we initialize the synapse to $0$, which serves only to simplify the discussion.
+To remove boilerplate in the notation we substitute $r_i \leftarrow r_i(\V{x}(t))$.
+We have verified the following equations with rigorous numerical experiments~(not shown).
 
-We feed a constant input to a population of neurons, initially at rest, such that the the $i^{th}$ neuron spikes at a rate of $a_i$ hertz. The synapse is an integrator that will simply count spikes and output the count divided by the elapsed time $t$. This gives a one-sided estimate of the true spike rate, that is essentially equivalent to using a lowpass with infinite $\tau$.
+\subsubsection{Preliminaries}
 
-Let $\V{\tilde{x}}(t)$ be the estimate obtained by decoding the above using the usual decoders $\V{d}$. Now observe that since $\floor{a_i t}$ is the number of times the $i^{th}$ neuron has spiked after $t$ seconds, we get:
+Let $\tilde{y}_i(t; t_i) = \left(a_i \ast h \right)(t)$ be the foreward simulation of the $i^\text{th}$ neuron up to time $t \ge 0$, where $t_i = \left(1 - g_i\right)r_i^{-1}$ is the next spike-time ($0 \le t_i \le r_i^{-1}$) by our definition of the ISIP.
+The initial state of the synapse is some constant, that we assume to be zero without loss of generality.
+Let $T_i$ be the random variable whose realizations are $t_i$.
+Hence, $T_i \sim \mathcal{U} [ 0, r_i^{-1} ]$,
+with a probability density function~(PDF) and cumulative density function~(CDF) described by:
+\begin{equation} \label{eq:spike-distribution}
+f_{T_i}(t_i) = r_i^{-1} \quad \iff \quad P(T_i \le t_i) = t_i r_i \text{.}
+\end{equation}
+By enumerating over the spike-times, we have:
 \begin{align*}
-\V{\tilde{x}}(t) &= \sum_i \V{d}_i \floor{a_i t} / t .
+\tilde{y}_i(t; t_i) &= \sum_{0 \le j \le r_i \cdot (t - t_i)} (\delta_{j / r_i + t_i} \ast h)(t) \\
+&= \sum_{0 \le j \le r_i \cdot (t - t_i)} \frac{1}{\tau} e^{-\frac{t - (j/r_i + t_i)}{\tau}} \\
+&= \sum_{0 \le j \le r_i \cdot (t - t_i)} \frac{1}{\tau} \left( \underbrace{e^{-\left(r_i \tau\right)^{-1}}}_{c_i} \right)^{r_i \cdot (t - t_i) -j}  \text{,}
 \end{align*}
-
-\begin{align*}
-\implies \quad \V{\hat{x}} - \V{\tilde{x}}(t) &= \sum_i \V{d}_i (a_i - \floor{a_i t} / t) \\
-&= \sum_i \V{d}_i \frac{a_i t - \floor{a_i t}}{t} \\
-&= \frac{1}{t} \sum_i \V{d}_i \Delta_i(t)
-\end{align*}
-where
-\begin{align*}
-\Delta_i(t) := a_i t - \floor{a_i t}, \quad 0 \le \Delta_i(t) < 1
-\end{align*}
-is the ``truncation'' error, obtained by rounding down to the start of the inter-spike interval at time $t$.
-\begin{align*}
-\implies \quad 0 \le \V{\hat{x}} - \V{\tilde{x}}(t) < \frac{1}{t} \sum_i \V{d}_i .
-\end{align*}
-
-This reveals that the error is bounded above by $O(t^{-1})$.
-
-As an aside, since decoders grow inversely with firing rate, using neurons with higher firing rates will improve the error, as you would expect. However it is slightly counter-intuitive that adding more neurons won't increase the worst-case accuracy\footnote{The sum of all decoders is invariant to $n$.}. But observe that the worst-case is only obtained if all of the neurons collude to force $\Delta_i(t) \approx 1$ simultaneously. We will see later that less pessimistic bounds can be obtained probabilistically by assuming $\Delta_i(t)$ is sampled independently from a reasonable distribution (and then the number of neurons will matter). 
-
-\subsubsection{Lowpass Filtering a Spiking LIF Neuron}
-
-Suppose we feed a constant input to the $i^{th}$ neuron, which then spikes at a rate of $a_i > 0$ hertz, with the first spike occurring at some time $0 \le s_i < 1/a_i$. Filter each spike with a lowpass $h(t) = (1 / \tau) e^{-t/\tau}$. Suppose for now that the synapse is initially at rest, but this will be easy to account for at the end by linearity. % (simply add the initial state times $e^{-t/\tau}$).
-
-Let $\tilde{a}_i(t; s_i)$ be the estimated firing rate at time $t$ given that the first spike occurs at $s_i$. By translating the above description,
-\begin{align*}
-\tilde{a}_i(t; s_i) &= \sum_{0 \le j \le a_i(t - s_i)} (\delta_{j / a_i + s_i} \ast h)(t) \\
-&= \sum_{0 \le j \le a_i(t - s_i)} \frac{1}{\tau} e^{-(t - (j/a_i + s_i))/\tau} \\
-&= \sum_{0 \le j \le a_i(t - s_i)} \frac{1}{\tau} (\underbrace{e^{-1/a_i \tau}}_{r_i})^{a_i(t - s_i) -j} 
-\end{align*}
-where $0 < r_i < 1$ is an important quantity that we remark is invariant to time, and depends only on the firing rate and $\tau$.
+where $0 < c_i < 1$ is an important constant that we remark is dimensionless (i.e.,~unitless), and also time-invariant (i.e.,~depends only on $r_i$ and $\tau$).
+We then re-arrange as follows:
 \begin{align}
 \label{eq:neuron}
-\implies \quad \tilde{a}_i(t; s_i) &= \frac{r_i^{a_i(t - s_i) + 1}}{\tau} \sum_{1 \le j \le a_i(t - s_i) + 1} \left( r_i^{-1} \right)^j, \quad \text{(note: change of index)} \nonumber \\
-&= \frac{r_i^{a_i(t - s_i) + 1}}{\tau} \left( \frac{1}{r_i} \right) \frac{\left( \frac{1}{r_i} \right)^{\floor{a_i(t - s_i) + 1}} - 1}{\frac{1}{r_i} - 1}, \quad \text{by the geometric series} \nonumber \\
-\Aboxed{ &\,= \frac{r_i^{\Delta_i(t; s_i)} - r_i^{a_i(t - s_i) + 1}}{\tau(1 - r_i)}}
+\implies \quad \tilde{y}_i(t; t_i) &= \frac{c_i^{r_i \cdot (t - t_i) + 1}}{\tau} \sum_{1 \le j \le r_i \cdot (t - t_i) + 1} \left( c_i^{-1} \right)^j \quad \text{(note: altered index)} \nonumber \\
+&= \frac{c_i^{r_i \cdot (t - t_i) + 1}}{\tau} \left( \frac{1}{c_i} \right) \frac{\left( \frac{1}{c_i} \right)^{\floor{r_i \cdot (t - t_i) + 1}} - 1}{\frac{1}{c_i} - 1} \quad \text{(geometric series)} \nonumber \\
+\Aboxed{ &\,= \frac{c_i^{e_i(t; t_i)} - c_i^{r_i \cdot (t - t_i) + 1}}{\tau(1 - c_i)}} 
 \end{align}
-where
+where:
 \begin{equation}
 \begin{gathered}
-\label{eq:delta}
-\Delta_i(t; s_i) := (a_i(t - s_i) + 1) - \floor{a_i(t - s_i) + 1} = a_i(t - s_i) - \floor{a_i(t - s_i)} \\
-0 \le \Delta_i(t; s_i) < 1 .
+\label{eq:delta} %(r_i \cdot (t - t_i) + 1) - \floor{r_i \cdot (t - t_i) + 1} 
+e_i(t; t_i) = r_i \cdot (t - t_i) - \floor{r_i \cdot (t - t_i)} \\
+0 \le e_i(t; t_i) < 1 \text{,}
 \end{gathered}
 \end{equation}
-is again the same truncation error, but shifted to account for $s_i$. It is helpful to think of this geometrically: $\Delta_i(t; s_i)$ is simply the unit line rotated by $a_i s_i$ (modulo $1$).
-
-\begin{figure}[h!]
-\centering
-\includegraphics[width=1.0\textwidth]{slif-filtered}
-\caption{\label{fig:slif-filtered} Filtered spike train under constant input ($\tau = 5\,$ms), matched by equation (\ref{eq:neuron}) and its bounds.}
-\end{figure}
-
-The boxed equation (\ref{eq:neuron}) perfectly characterizes the neuron's filtered spike train under the given assumptions. In addition, the lower/upper bounds of $\Delta_i(t; s_i)$ give the upper- and lower-envelopes, respectively:
+is a type of truncation error.
+Equation~\ref{eq:neuron} provides a closed-form solution for $\tilde{y}_i$.
+In addition, the lower/upper bounds of $e_i(t; t_i)$ supply its upper- and lower-envelopes, respectively:
 \begin{equation*}
-\frac{r_i - r_i^{a_i(t - s_i) + 1}}{\tau(1 - r_i)} < \tilde{a}_i(t; s_i) \le \frac{1 - r_i^{a_i(t - s_i) + 1}}{\tau(1 - r_i)} .
+\frac{c_i - c_i^{r_i \cdot (t - t_i) + 1}}{\tau(1 - c_i)} < \tilde{y}_i(t; t_i) \le \frac{1 - c_i^{r_i \cdot (t - t_i) + 1}}{\tau(1 - c_i)} \text{.}
 \end{equation*}
 
-We also remark that for the LIF case, $s_i$ can be easily determined from the neuron's initial state and its input current $J_i$:
-\begin{align*}
-v_i(t) &= v_i(0) + (J_i - v_i(0))(1 - e^{-t/\tau_{RC}}) \\
-\implies \quad s_i &= -\tau_{RC} \ln \frac{J_i - 1}{J_i}
-\end{align*}
-where $\tau_{RC}$ is the neuron's membrane time-constant. See \href{https://github.com/nengo/nengo/pull/975}{PR \#975} for details.
-
-The analysis from \S\ref{sec:lowpass} can be used to obtain the precise form of the decoded estimate $\V{\tilde{x}}(t)$ at the population level. However, this depends on the initial spikes $s_i$, and so $\V{\tilde{x}}(t)$ can vary wildly depending on the initial state of all neurons.
-
-For instance, if all neurons are initially at rest, then the estimate is most certainly zero until the fastest neuron fires. More critically, if all neurons have the same firing rate, but their initial spikes are not evenly distributed, then the error at the population level will be the addition of all their envelopes (as in the aside from the end of \S\ref{sec:integrator}).
-
-For this work, we essentially assume that we have no control over the initial state of the system. That is, we suppose that the state of each neuron at $t = 0$ is independent and ``random'' (i.e., the previous input could have switched at any time). To be precise, we interpret $s_i$ as the realization of a random variable $S_i$ distributed by some chosen probability distribution.
-
-Although the following analysis lends itself to the use of arbitrary distributions, some preliminary experimentation has shown that it is reasonable to assume:
-\begin{equation}
-\begin{gathered}
-\label{eq:s}
-S_i \sim U[0, 1/a_i] \\
-\implies \quad f_{S_i}(s_i) = a_i \quad .  \quad \quad 
-\end{gathered}
-\end{equation}
-
-This implies that the neuron is not initially biased to spike at any time in particular. In order for this to occur, we essentially require that the majority of neurons had non-zero activity in response to their prior input. In that situation, an arbitrary neuron could be at any point along its inter-spike interval, since it is not colluding with any other neurons.
-
-In the NEF, this is typically a fair assumption, given that the tuning curves are broad (non-zero for half of the input space on average), and spike trains tend to be independent. However, for sparser encodings, or relatively large changes in input, the distribution becomes skewed towards $1 / a_i$. Similarly, if firing tends to be nearly synchronous, then the neurons will over-estimate whenever they spike together. This is noteworthy because this theory may give quantitative predictions regarding these trade-offs between encoding sparsity and firing rates, versus the desired accuracy and latency (see discussion).
-
-Now, the analysis proceeds as follows. Fix $t$\footnote{This can be interpreted as the time that we decide to observe/measure the state of the system.} and then independently sample each $s_i$. This determines $\Delta_i(t; s_i)$ for each neuron, by the cyclic rotation $a_i s_i$ (modulo $1$) from (\ref{eq:delta}). We then define the random variable $\tilde{A}_i(t) := \tilde{a}_i(t; S_i)$, which we should understand as being distributed by ``mapping'' $S_i$ through the function $\tilde{a}_i$ for some chosen $t$. As an aside, for the special case of uniform $S_i$, the mapping $\tilde{a}_i$ actually corresponds to a cyclically shifted version of the inverse CDF of $\tilde{A}_i(t)$\footnote{This requires a subtle monotonicity argument. The CDF of $\tilde{A}_i$ can therefore be derived by inverting the unshifted $\tilde{a}_i$, but the result is not very nice to work with due to some discontinuities in its derivative.}.
+Now, the analysis proceeds in the following manner.
+We pick our $t$, and then sample our $t_i$.
+This determines $e_i(t; t_i)$ for each neuron, by a cyclic rotation $r_i t_i$ (modulo $1$) from equation~\ref{eq:delta}.
+We then define a new random variable $\tilde{Y}_i(t) = \tilde{y}_i(t; T_i)$, which one can understand as being distributed by ``mapping'' the random variable $T_i$ through the function $\tilde{y}_i$ for some chosen $t$.
+Realizations of this random variable correspond directly to $\left(a_i \ast h \right)(t)$ by construction. 
+% As an aside, for the special case of uniform $T_i$, the mapping $\tilde{y}_i$ actually corresponds to a cyclically shifted version of the inverse CDF of $\tilde{Y}_i(t)$\footnote{This requires a subtle monotonicity argument. The CDF of $\tilde{Y}_i$ can therefore be derived by inverting the unshifted $\tilde{y}_i$, but the result is not very nice to work with due to some discontinuities in its derivative.}.
 %\begin{align}
 %\label{eq:z}
-%z_i(s_i; t) := \tilde{a}_i(t; s_i)
+%z_i(t_i; t) := \tilde{y}_i(t; t_i)
 %\end{align}
-%to view $Z_i(t)$ as a random variable that is obtained by ``mapping'' the distribution of $S_i$ through the function $\tilde{a}_i$ for some chosen $t$.  
+%to view $Z_i(t)$ as a random variable that is obtained by ``mapping'' the distribution of $T_i$ through the function $\tilde{y}_i$ for some chosen $t$.  
 
-Then the random variable $\V{\tilde{X}}(t) := \sum_i \V{d}_i \tilde{A}_i(t)$ is the decoded estimate obtained by forming a mixture of $\tilde{A}_i(t)$. The following subsections will analyze the expectation and variance of each $\tilde{A}_i(t)$ to determine the expected error and variability at time $t$.
+% Then the random variable $\V{\tilde{X}}(t) := \sum_i \V{d}_i \tilde{Y}_i(t)$ is the decoded estimate obtained by forming a mixture of $\tilde{Y}_i(t)$. The following subsections will analyze the expectation and variance of each $\tilde{Y}_i(t)$ to determine the expected error and variability at time $t$.
 
-\subsubsection{Expected Error}
+\subsubsection{Proof of zero-mean error}
 
-By the law of the unconscious statistician (LOTUS) applied to $\tilde{A}_i(t)$:
+We apply the law of the unconscious statistician~(LOTUS) to $\tilde{Y}_i(t)$:
 \begin{align}
 \label{eq:a_expectation}
-E \left[ \tilde{A}_i(t) \right] &= \int_D \tilde{a}_i(t; s_i) f_{S_i}(s_i) \,ds_i, \quad \text{where $D$ is the domain of $S_i$} \nonumber\\
-          &= \int_D \frac{r_i^{\Delta_i(t; s_i)} - r_i^{a_i(t - s_i) + 1}}{\tau(1 - r_i)} f_{S_i}(s_i) \,ds_i, \quad \text{by (\ref{eq:neuron})} \nonumber\\
-          &= \frac{1}{\tau(1 - r_i)} \left( \int_0^{1} r_i^{\Delta_i(t; s_i)} \,d\Delta_i(t; s_i) - \int_0^{1/a_i} r_i^{a_i(t - s_i) + 1} (a_i) \,ds_i \right) \nonumber\\
-          &= \frac{1}{\tau(1 - r_i)} \left( (-a_i \tau) e^{-\Delta_i(t; s_i)/a_i \tau} \bigg|_{\Delta_i(t; s_i) = 0}^{1} - (a_i \tau) r_i^{a_i(t - s_i) + 1} \bigg|_{s_i = 0}^{1/a_i} \right) \nonumber\\
-          &= \frac{a_i}{(1 - r_i)} \left(  (1 - r_i) - (r_i^{a_i t} - r_i^{a_i t + 1})  \right) \nonumber\\
-          &= a_i (1 - e^{-t/\tau}) .
+\expect{\tilde{Y}_i(t)} &= \int_D \tilde{y}_i(t; t_i) f_{T_i}(t_i) \,dt_i, \quad \text{where $D$ is the domain of $T_i$} \nonumber\\
+          &= \int_D \frac{c_i^{e_i(t; t_i)} - c_i^{r_i \cdot (t - t_i) + 1}}{\tau(1 - c_i)} f_{T_i}(t_i) \,dt_i, \quad \text{by equation~\ref{eq:neuron}} \nonumber\\
+          &= \frac{1}{\tau(1 - c_i)} \left( \int_0^{1} c_i^{e_i(t; t_i)} \,de_i(t; t_i) - \int_0^{1/r_i} c_i^{r_i \cdot (t - t_i) + 1} (r_i) \,dt_i \right) \nonumber\\
+          &= \frac{1}{\tau(1 - c_i)} \left( (-r_i \tau) e^{-e_i(t; t_i)/(r_i \tau)} \bigg|_{e_i(t; t_i) = 0}^{1} - (r_i \tau) c_i^{r_i \cdot (t - t_i) + 1} \bigg|_{t_i = 0}^{1/r_i} \right) \nonumber\\
+          &= \frac{r_i}{(1 - c_i)} \left(  (1 - c_i) - \left( c_i^{r_i t} - c_i^{r_i t + 1} \right)  \right) \nonumber\\
+          &= r_i \cdot (1 - e^{-t/\tau}) \text{.}
 \end{align}
+Therefore, by linearity of expectation, the expected error at time $t$ is:
+\begin{equation}
+\begin{aligned}
+\expect{\V{\eta}(t)} &= \expect{\sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i - \sum_{i=1}^n \left( r_i \ast h \right)(t) \V{d}^\V{f}_i } \\
+&= \sum_{i=1}^n r_i \cdot (1 - e^{-t/\tau}) \V{d}^\V{f}_i - \sum_{i=1}^n \left( r_i \ast h \right)(t) \V{d}^\V{f}_i \\
+&= 0 \text{.}
+\end{aligned}
+\end{equation}
+This completes our proof of the first statement.
 
-Including the initial state of the synapse, $\V{x}_0$, the expected error at time $t$ is:
-\begin{align}
-\label{eq:expectation}
-\implies \quad E\left[ \V{\hat{x}} - (\V{\tilde{X}}(t) + \V{x}_0 \, e^{-t/\tau}) \right] &= \sum_i \V{d}_i (a_i - E \left[ \tilde{A}_i(t) \right]) - \V{x}_0 \, e^{-t/\tau} \nonumber \\
-&= \sum_i \V{d}_i a_i e^{-t/\tau} - \V{x}_0 \, e^{-t/\tau} \nonumber  \\
-\Aboxed{ &\,= (\V{\hat{x}} - \V{x}_0) e^{-t/\tau} . }
-\end{align}
+Note that we have not needed to use our assumption about the independence of samples.
+However, to obtain a closed-form solution for the variance, we will need to assume that $T_i$ is independently distributed (e.g.,~the voltage vectors and refractory periods are not coupled with one another), as is the case for typical NEF networks.
+\citet{boerlin2013predictive} have shown that if the neural states do have a mechanism for collaborating in a global manner, then they can synchronize their activity, as a way of \emph{dependently} sampling, in order to reduce variance.
 
-\begin{figure}[h!]
-\centering
-\includegraphics[width=1.0\textwidth]{slif-error}
-\caption{\label{fig:slif-error} Error from filtered and decoded estimate using a population of $100$ neurons ($\tau = 5$\,ms, $\V{x}_0 = -0.2$, and $\V{\hat{x}} \approx \V{x}_0 + 1$). The expectation from (\ref{eq:expectation}) is given by the dashed line.}
-\end{figure}
+\subsubsection{Proof of spiking variance}
 
-On one hand this is what we should intuitively expect, since we are essentially filtering an error signal using the same lowpass with an initial state given by the initial error. But it should also be surprising that this result holds independently of the width ($1 / a_i$) of each inter-spike interval, while we have only assumed the initial spikes are uniformly distributed across these intervals (in fact the independence assumption has not been used). If all neurons were initially at rest, then this result clearly no longer holds (consider $0 < t < \min_i 1/a_i$).
-
-This assures us that we can set $\tau \rightarrow 0$ to minimize latency without hurting the expected error. However, as we will soon see, this comes at the cost of increasing the variability of the estimate.
-
-\subsubsection{Variance in Error}
-
-To compute $Var \left[ \tilde{A}_i(t) \right] = E \left[ \tilde{A}_i(t)^2 \right] - E \left[ \tilde{A}_i(t) \right]^2$ we rewrite the second moment:
+To compute $\variance{\tilde{Y}_i(t)} = \expect{\tilde{Y}_i(t)^2} - \expect{\tilde{Y}_i(t)}^2$ we rewrite the second moment:
 \begin{align*}
-E \left[ \tilde{A}_i(t)^2 \right] &= E \left[ \left( \frac{r_i^{\Delta_i(t; S_i)} - r_i^{a_i(t - S_i) + 1}}{\tau(1 - r_i)} \right)^2 \right] \\
-&= \left( \frac{1}{\tau(1 - r_i)} \right)^2 \left( E \left[ (r_i^{\Delta_i(t; S_i)})^2 \right ] - 2 E \left[ r_i^{\Delta_i(t; S_i) + a_i(t - S_i) + 1} \right] + E \left[ (r_i^{a_i(t - S_i) + 1})^2 \right] \right)
+\expect{\tilde{Y}_i(t)^2} &= \expect{\left( \frac{c_i^{e_i(t; T_i)} - c_i^{r_i \cdot (t - T_i) + 1}}{\tau(1 - c_i)} \right)^2} \\
+&= \left( \frac{1}{\tau(1 - c_i)} \right)^2 \left( \expect{\left(c_i^{e_i(t; T_i)}\right)^2 } - 2 \expect{c_i^{e_i(t; T_i) + r_i \cdot (t - T_i) + 1}} + \expect{\left( c_i^{r_i \cdot (t - T_i) + 1} \right)^2} \right)
 \end{align*}
 and then separately determine each expectation.
-
-The PDFs of $r_i^{\Delta_i(t; S_i)}$ and $r_i^{a_i(t - S_i) + 1}$ are both $a_i \tau / x$ over their respective domains. This can be seen directly:
+The PDFs of $c_i^{e_i(t; T_i)}$ and $c_i^{r_i \cdot (t - T_i) + 1}$ are both $r_i \tau / x$ over their respective domains. This can be seen directly:
 \begin{align*}
-\frac{\partial}{\partial x} Pr \left[ r_i^{\Delta_i(t; S_i)} \le x \right] &= \frac{\partial}{\partial x} Pr \left[ \Delta_i(t; S_i) \le -a_i \tau \ln x \right] \\
-&= \frac{\partial}{\partial x} (1 - (-a_i \tau \ln x)) \\
-&= a_i \tau / x .
+\frac{\partial}{\partial x} P \left( c_i^{e_i(t; T_i)} \le x \right) &= \frac{\partial}{\partial x} P \left( e_i(t; T_i) \le -r_i \tau \ln x \right) \\
+&= \frac{\partial}{\partial x} \left( 1 - (-r_i \tau \ln x) \right) \\
+&= r_i \tau / x .
 \end{align*}
-and the proof for $r_i^{a_i(t - S_i) + 1}$ is analogous. We remark that these two facts can be used to give a slightly different derivation for (\ref{eq:a_expectation}). 
-
+and the proof for $c_i^{r_i \cdot (t - T_i) + 1}$ is analogous.
+As an aside, these two facts can be used to give a slightly different derivation for equation~\ref{eq:a_expectation}.
 Applying LOTUS to each of these random variables gives:
 \begin{align*}
-E \left[ (r_i^{\Delta_i(t; S_i)})^2 \right ] &= \int_{r_i}^1 \frac{a_i \tau}{x} x^2 \,dx = \frac{a_i \tau x^2}{2} \bigg|_{x = r_i}^1 = \frac{a_i \tau (1 - r_i^2)}{2} \\
-E \left[ (r_i^{a_i(t - S_i) + 1})^2 \right] &= \int_{r_i^{a_i t + 1}}^{r_i^{a_i t}} \frac{a_i \tau}{x} x^2 \,dx = \frac{a_i \tau x^2}{2} \bigg|_{x = r_i^{a_i t + 1}}^{r_i^{a_i t}} = \frac{a_i \tau (1 - r_i^2) r_i^{2 a_i t}}{2} .
+\expect{\left(c_i^{e_i(t; T_i)}\right)^2} &= \int_{c_i}^1 \frac{r_i \tau}{x} x^2 \,dx = \frac{r_i \tau x^2}{2} \bigg|_{x = c_i}^1 = \frac{r_i \tau \left(1 - c_i^2 \right)}{2} \\
+\expect{\left(c_i^{r_i \cdot (t - T_i) + 1}\right)^2} &= \int_{c_i^{r_i t + 1}}^{c_i^{r_i t}} \frac{r_i \tau}{x} x^2 \,dx = \frac{r_i \tau x^2}{2} \bigg|_{x = c_i^{r_i t + 1}}^{c_i^{r_i t}} = \frac{r_i \tau \left(1 - c_i^2 \right) c_i^{2 r_i t}}{2} .
 \end{align*}
-
-To compute the remaining expectation, we need to get some further understanding of $\Delta_i(t; S_i) = (a_i(t - s_i) + 1) - \floor{a_i(t - s_i) + 1}$. Define $K_i(t) := \floor{a_i t}$ as the current interval independent of $s_i$. %Then the $i^{th}$ neuron has spiked $K_i(t - s_i) + 1 = \floor{a_i(t - s_i) + 1}$ times at time $t$. More importantly, 
-The point \mbox{$s_i = t - K_i(t)/a_i \equiv t \ (\text{mod}\ 1/a_i)$} gives the discontinuity in $\Delta_i(t; s_i)$ with respect to $s_i$, because that is when the spike becomes aligned with $t$ in the current interval. Namely, if $0 \le s_i \le t - K_i(t)/a_i$, then $\floor{a_i(t - s_i) + 1} = \floor{K_i(t) + 1} = K_i(t) + 1$. Likewise, if $t - K_i(t)/a_i < s_i \le 1/a_i$, then $\floor{a_i(t - s_i) + 1} = K_i(t)$\footnote{If this is confusing, recall that we are fixing $t$ and then sweeping $s_i$ from $0$ to $1 / a_i$.}. Then use LOTUS once more, along with the above fact to split up the integral.
+To compute the remaining expectation, we require further insight into $e_i(t; T_i) = r_i \cdot (t - t_i) - \floor{r_i \cdot (t - t_i)}$.
+Define $k_i(t) = \floor{r_i t}$ as the spike index of $t$. of $t_i$. %Then the $i^{th}$ neuron has spiked $k_i(t - t_i) + 1 = \floor{r_i \cdot (t - t_i) + 1}$ times at time $t$. More importantly, 
+Recall that $t$ is fixed in this discussion.
+The congruence relation \mbox{$t_i = t - k_i(t)/r_i \equiv t \ (\text{mod}\ 1/r_i)$} is also a discontinuity in $e_i(t; t_i)$ with respect to $t_i$; that is when the spike becomes aligned with $t$ in the current interval.
+Namely, if $0 \le t_i \le t - k_i(t)/r_i$, then $\floor{r_i \cdot (t - t_i) + 1} = \floor{k_i(t) + 1} = k_i(t) + 1$. Likewise, if $t - k_i(t)/r_i < t_i \le 1/r_i$, then $\floor{r_i \cdot (t - t_i) + 1} = k_i(t)$.
+We now apply LOTUS once more, along with the above facts to split up the integral.
 \begin{align*}
-E \left[ r_i^{\Delta_i(t; S_i) + a_i(t - S_i) + 1} \right] &= \int_0^{1/a_i} r_i^{2(a_i(t - s_i) + 1) - \floor{a_i(t - s_i) + 1}} (a_i) \, ds_i \\
-&= a_i \left( \int_0^{t - K_i(t)/a_i} r_i ^ {(2a_i t - K_i(t) + 1) - (2a_i s_i)} \, ds_i + \int_{t - K_i(t)/a_i}^{1/a_i} r_i^{(2a_i t - K_i(t) + 2) - (2a_i s_i)} \, ds_i \right) \\
-&= a_i r_i^{2a_i t - K_i(t) + 1} \tau / 2 \left( e^{2s_i / \tau} \bigg|_{s_i=0}^{t - K_i(t)/a_i} + r_i e^{2s_i / \tau} \bigg|_{s_i=t - K_i(t)/a_i}^{1/a_i} \right) \\
-&= a_i r_i^{2a_i t - K_i(t) + 1} \tau / 2 \left( r_i^{-2 a_i(t - K_i(t)/a_i)} - 1 + r_i^{-1} - r_i^{-2a_i(t - K_i(t)/a_i) + 1} \right) \\
-&= a_i \tau (1 - r_i)(r^{K_i(t) + 1} + r_i^{2a_i t - K_i(t)}) / 2
+\expect{ c_i^{e_i(t; T_i) + r_i \cdot (t - T_i) + 1} } &= \int_0^{1/r_i} c_i^{2(r_i \cdot (t - t_i) + 1) - \floor{r_i \cdot (t - t_i) + 1}} (r_i) \, dt_i \\
+&= r_i \left( \int_0^{t - k_i(t)/r_i} c_i ^ {(2r_i t - k_i(t) + 1) - (2r_i t_i)} \, dt_i + \int_{t - k_i(t)/r_i}^{1/r_i} c_i^{(2r_i t - k_i(t) + 2) - (2r_i t_i)} \, dt_i \right) \\
+&= r_i c_i^{2r_i t - k_i(t) + 1} (\tau / 2) \left( e^{2t_i / \tau} \bigg|_{t_i=0}^{t - k_i(t)/r_i} + c_i e^{2t_i / \tau} \bigg|_{t_i=t - k_i(t)/r_i}^{1/r_i} \right) \\
+&= r_i c_i^{2r_i t - k_i(t) + 1} (\tau / 2) \left( c_i^{-2 r_i \cdot (t - k_i(t)/r_i)} - 1 + c_i^{-1} - c_i^{-2r_i \cdot (t - k_i(t)/r_i) + 1} \right) \\
+&= r_i \tau (1 - c_i) \left(c_i^{k_i(t) + 1} + c_i^{2r_i t - k_i(t)} \right) / 2
 \end{align*}
-
-Plugging these all in then gives:
+Substituting all of these expectations into the initial formula yields:
 \begin{align*}
-Var \left[ \tilde{A}_i(t) \right] = \, \Aboxed{ a_i \left( \frac{(1 - r_i^2)(1 + r_i^{2a_i t})}{2\tau(1 - r_i)^2} - \frac{\left( r_i^{K_i(t) + 1} + r_i^{2a_i t - K_i(t)} \right)}{\tau(1 - r_i)} - a_i(1 - r_i^{a_i t})^2 \right) }
+\variance{\tilde{Y}_i(t)} = \, \Aboxed{ r_i \left( \frac{\left(1 - c_i^2 \right)\left(1 + c_i^{2r_i t}\right)}{2\tau \left(1 - c_i \right)^2} - \frac{\left( c_i^{k_i(t) + 1} + c_i^{2r_i t - k_i(t)} \right)}{\tau(1 - c_i)} - r_i \cdot \left(1 - c_i^{r_i t} \right)^2 \right) }
 \end{align*}
+Asymptotic analysis reveals that this scales as $\bigoh{\tau^{-2}}$.
+As well, we use the fact that regularized least-squares finds
+$\V{d}_i^\V{f}$ that are independently distributed according to $\mathcal{N}(0, \sigma^2)$ where $\sigma \propto n^{-1}$ -- i.e., variance scales as $\bigoh{n^{-2}}$.
+Finally we use the fact that $\eta(t)$ has an expected value of zero.
+Therefore,
+\begin{equation}
+\begin{aligned}
+\sqrt{ \variance{ \V{\eta}(t) } } &= \sqrt{ \variance{\sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i- \sum_{i=1}^n \left( r_i \ast h \right)(t) \V{d}^\V{f}_i} } \\
+&= \sqrt{ \variance{\sum_{i=1}^n \left( \tilde{Y}_i(t) - \expect{ \tilde{Y}_i(t) } \right) \V{d}^\V{f}_i } } \\
+&= \sqrt{ n \variance{\tilde{Y}_\cdot(t)} \variance{\V{d}^\V{f}_\cdot}} \\
+&= \bigoh{ \frac{1}{\tau \sqrt{n}} } \text{.}
+\end{aligned}
+\end{equation}
+This completes our proof of the second statement.
+The third statement holds by equation~\ref{eq:rate-approximation} for large $n$ by the central limit theorem and the first two moments of $\eta(t)$.
 
-\begin{align}
-\label{eq:variance}
-\implies \quad Var\left[ \V{\hat{x}} - (\V{\tilde{X}}(t) + \V{x}_0 \, e^{-t/\tau}) \right] = Var\left[ \V{\tilde{X}}(t) \right]
-= \sum_i \V{d}_i^2 \, Var\left[ \tilde{A}_i(t) \right] .
-\end{align}
+\subsubsection{Discussion of uniform ISIP criteria}
 
-\begin{figure}[h!]
-\centering
-\includegraphics[width=1.0\textwidth]{slif-variance}
-\caption{\label{fig:slif-variance} Filtered and decoded estimate using the same network as Fig.~\ref{fig:slif-error}. The variance is highlighted by one standard deviation from the mean.}
-\end{figure}
-
-\subsubsection{Validity of Uniform Assumption}
+Indeed this is the same assumption made on \citet[][p.~134]{eliasmith2003a}.
 
 \begin{figure}[h!]
 \centering
@@ -629,7 +611,7 @@ Var \left[ \tilde{A}_i(t) \right] = \, \Aboxed{ a_i \left( \frac{(1 - r_i^2)(1 +
 \end{figure}
 
 The previous analysis relies on the assumption that each neuron is ``uniformly ready to spike''.
-To validate this assumption from equation (\ref{eq:s}) that $S_i \sim U[0, 1/a_i]$, we empirically sampled this distribution for sinusoidal test stimuli of varying frequencies (Fig.~\ref{fig:frequency-ks-test}).
+To validate this assumption from equation (\ref{eq:s}) that $T_i \sim U[0, 1/a_i]$, we empirically sampled this distribution for sinusoidal test stimuli of varying frequencies (Fig.~\ref{fig:frequency-ks-test}).
 We define the \emph{ISI position} as $s_i \times a_i$. This is the realization of a random variable, in the range $[0, 1]$.
 Intuitively, this can be interpreted as the percent time remaining within the idealized inter-spike interval, given the current voltage of the neuron and its ideal spike rate.
 A value of $0$ implies the neuron is currently spiking and $1$ implies the neuron just spiked.
