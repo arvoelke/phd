@@ -581,8 +581,8 @@ Substituting all of these expectations into the initial formula yields:
 \end{align*}
 Asymptotic analysis reveals that this scales as $\bigoh{\tau^{-2}}$.
 As well, we use the fact that regularized least-squares finds
-$\V{d}_i^\V{f}$ that are independently distributed according to $\mathcal{N}(0, \sigma^2)$ where $\sigma \propto n^{-1}$ -- i.e., variance scales as $\bigoh{n^{-2}}$.
-Finally we use the fact that $\eta(t)$ has an expected value of zero.
+$\V{d}_i^\V{f}$ that are independently distributed according to $\mathcal{N}(0, \sigma^2)$ where $\sigma = \bigoh{n^{-1}}$ -- i.e., variance scales as $\bigoh{n^{-2}}$.
+Finally we use equation~\ref{eq:a_expectation} in the second step, which lets allows us to leverage the property that for two independent \emph{zero-mean} variables, $A$ and $B$, we have $\variance{AB} = \variance{A}\variance{B}$.
 Therefore,
 \begin{equation}
 \begin{aligned}
