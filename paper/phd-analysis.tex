@@ -2,7 +2,7 @@
 \label{chapt:analysis}
 
 In this chapter, we provide a thorough examination of the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a} that is not currently published elsewhere.
-The goals are two-fold: (1)~explore the consequences of its computational principles at a theoretical level, and in doing so debunk some of the common myths that have become associated with the NEF since its inception, and (2)~assess its suitability as a framework for deploying SNNs on neuromorphic hardware by analyzing its scalability, correctness, efficiency, Turing-completeness, robustness, and extensibility.\footnote{
+The goals are two-fold: (1)~explore the consequences of its computational principles at a theoretical level, and in doing so debunk some of the common myths that have become associated with the NEF since its inception, and (2)~assess its suitability as a framework for deploying SNNs on neuromorphic hardware by analyzing its correctness, scalability, efficiency, Turing-completeness, robustness, and extensibility.\footnote{
 To help delineate separate considerations, some sub-sections may be significantly shorter than others.
 }
 % This involves a proof of equation~\ref{eq:rate-approximation} thatextends and improves the discussion of \citet[][pp.~132--136]{eliasmith2003a} to provide a sufficient criteria for the correctness of the first two principles of the NEF at the level of individual spikes.
@@ -88,7 +88,7 @@ This leads to a fundamental inability to predict the trajectory of any physical 
 
 More to the point, this accusation is theoretically equivalent to suggesting the same of any algorithm or computer program for that matter.
 Even though \emph{any} computer program can be written down using a finite set of symbolic expressions, and realized as a discrete sequence of steps that dynamically evolve a set of registers---such as the machine of \citet{turing1938computable}---does not mean that we know what that program will compute ahead of time on any given input.
-The assertion that the behaviour of certain programs are in essence ``unpredictable'' corresponds to the notion of \emph{undecidability} in formal theories of computation; informally, most non-trivial programs need to be run in order to see what they will do with their inputs.
+The assertion that the behaviour of certain programs are in essence ``unpredictable'' corresponds with the notion of \emph{undecidability} in formal theories of computation; informally, most non-trivial programs need to be run in order to see what they will do with their inputs.
 
 This discussion extends to dynamical systems, where chaos and undecidability are also interwoven~\citep{moore1991generalized}.
 For example, suppose we take the linear time-invariant~(LTI) system of equation~\ref{eq:lti} and then include saturation within each of the state-variables (such that their absolute magnitudes cannot exceed one).
@@ -109,7 +109,7 @@ Notably, this saturation effect is exploited to overload working memory with seq
           Both simulations fall into the same strange attractor, close to zero.
       (Right)~Plotting the difference in representational states~($\Delta$) and neural states~($\delta$) on a logarithmic scale.
           The neural states diverge exponentially quickly---leaping 30 orders of magnitude in 3 seconds---according to $\| \delta(t) \| \approx \bigoh{e^{\lambda t}}$.
-          The representational difference is essentially zero until $\delta$ hits the diameter of the attractor.
+          The representational difference $\Delta$ is essentially zero until $\delta$ hits the diameter of the attractor.
           It is physically impossible to predict the future state of this system beyond a time-scale of $\bigoh{\lambda^{-1}} \approx 0.1$~seconds (see text for details).
     }
 \end{figure}
@@ -135,8 +135,8 @@ Despite this, the NEF is capable of taming the chaos at the neural level and pro
 
 More generally, the NEF may be used to implement arbitrary algorithms encoded as dynamical systems (see section~\ref{sec:nef-turing}), which implies that it is not exempt from computational-complexity theory. 
 Networks can perform interesting tasks via algorithmic manipulations of inputs and states~\citep{choo2018}.
-And, in this case, the network must in general be explicitly simulated in order to carry out the computations of said algorithm.
-At the same time, the NEF provides a framework for understanding the dynamical transformations being performed, examining relationships between structure and function, relating these functions to neurobiological systems, and compiling them onto neuromorphic hardware.
+Then, as is the case for any Turing machine, the network must in general be simulated to carry out the computations of said algorithm.
+At the same time, the NEF provides a framework---akin to having a programming language for some model of computation---to understand the dynamical transformations being performed, examine relationships between structure and function, relate these functions to neurobiological systems, and compile them onto neuromorphic hardware.
 
 \TODO{Forward reference where this disputes deneve's methods}
 
@@ -226,7 +226,7 @@ If one is interested in constructing functioning dynamical SNNs using neuromorph
 
 The confusion surrounding rate coding in the NEF has essentially risen from the adoption of equation~\ref{eq:rate-approximation}.
 However, as we have said, this merely reformulates the optimization procedure to be more efficient, without sacrificing correctness as proven in section~\ref{sec:spike-coding}.
-We remark that, in Figure~\ref{fig:spike-time-coding}, the firing statistics are completely unlike their rate-model counterparts, despite the target postsynaptic currents and overall system dynamics remaining the same.
+We remark that, in Figure~\ref{fig:spike-time-coding}, the firing statistics are completely unlike their rate model counterparts, despite the target postsynaptic currents and overall system dynamics remaining the same.
 That is, each neuron only fires at an average rate of $3$\,Hz across the simulation, much slower than the $20$--$40$\,Hz rate that they would fire at for constant inputs.
 Likewise, the postsynaptic impulse response that results from a single spike, decays to a factor of $e^{-\frac{10}{3}} \approx 3.5\%$, before \emph{that same} neuron triggers another spike, on average.
 In general neither the average rates, inter-spike intervals, nor spike times tell the entire story.
@@ -244,7 +244,8 @@ How this works in light of equation~\ref{eq:rate-approximation} requires careful
 But as our example illustrates, the NEF cannot be adhering to any single definition of rate or timing code.
 Rather, it is representing desired transformations by mapping latent state-variables onto postsynaptic currents.  %, with precision that scales as $\bigoh{\tau \sqrt{n}}$.
 % Anectodally, we find that it takes at least several months of working closely with the details of NEF simulations to appreciate these nuances, although the software package Nengo dramatically assists in abstracting them away from the user.
-% Later, we participate in further attempts to rectify these misunderstandings using detailed proofs and simulation results in order to tease apart the NEF's coding principles, scaling properties, and sources of error.
+% Later, we participate in further attempts to rectify these misunderstandings using detailed proofs and simulation results in order to
+In the following sections, we tease apart the NEF's coding principles, sources of error, and scaling properties.
 
 If one is still unconvinced, then, as mentioned in section~\ref{sec:relationships} when comparing the NEF to RC and FORCE, one can forego the substitution of equation~\ref{eq:rate-approximation} and perform the optimization directly in the spiking time-domain~\citep{voelker2016a, duggins2017incorporating}, or even apply backpropagation through time~\citep{rasmussen2018nengodl}.
 But the fact of the matter is that this becomes unnecessary (and inefficient) for a large class of interesting systems and models that we commonly explore.
@@ -304,8 +305,28 @@ Many of the reasons have already been mentioned in earlier discussions, and have
 validated by the recent deployments of the NEF on Braindrop~\citep{braindrop2019}, Loihi~\citep{blouw2018a}, and TrueNorth~\citep{fischl2018}.
 This section aims to theoretically formalize the reasons that we currently view as being of utmost importance, by rigorously exposing the computational properties and correctness of the NEF.
 
-\subsection{Correctness of Spike Coding}
+\subsection{Correctness of postsynaptic current coding}
 \label{sec:spike-coding}
+
+In the original formulation of the NEF~\citep{eliasmith2003a}, there exist three sources of error in the neural representation:
+\begin{enumerate}
+\item ``static distortion'' arising from the use of decoders; that is, the linear combination of nonlinear basis functions to approximate some desired transformation,
+\item ``spiking noise'' arising from the use of discontinuous spikes; that is, the substitution of a continuous non-spiking model with a spiking model that produces variable PSCs, and
+\item ``state discrepancy'' arising from the substitution of a stateless model with a stateful model.
+\end{enumerate}
+
+The first two sources of error have already been studied extensively throughout \citet{eliasmith2003a} and the software implementation Nengo.
+We review these findings below.
+However, as far as we know, the third has not received formal attention.
+A proof is found in \citet[][pp.~132--136, appendix~C.1]{eliasmith2003a} that addresses the same issue from the perspective of including noise within the neuron model, and the contents herein may be viewed as an updated treatment of that study, focusing on the one-dimensional case for convenience.
+
+Figure~\ref{fig:nef-error-types} illustrates all three types of error within the context of a single feed-forward simulation.
+Specifically, the network is a one-dimensional communication channel ($f(x) = x$, $n = 100$, $\tau = 50$\,ms, $\dt{} = \numprint{e-5}$\,s) with maximum firing rates of $10$--$20$\,Hz and intercepts uniformly distributed across $[-1, -0.5)$.
+Low firing rates are needed to bring the third source of error to the surface, which is normally masked by the other two at high firing rates for reasons that will become clear.
+The population encodes a constant input signal of $u(t) = 1$, that is directly mapped onto the PSCs without additional filtering.
+We also duplicate the population, and replace its neuron model with the corresponding continuous-valued rate model given by equation~\ref{eq:lif-rate}.
+For notational simplicity, $\transpose{\V{d}}a$ refers to the filtered and decoded spike-trains (i.e.,~the spiking solution), $\hat{x}$ denotes the filtered and decoded rate model (i.e.,~the non-spiking solution), and $x = u \ast h$ is the ideally filtered input signal (i.e.,~the desired output).
+We now describe each source of error in greater detail.
 
 \begin{figure}
   \centering
@@ -334,15 +355,84 @@ This section aims to theoretically formalize the reasons that we currently view 
     \label{fig:nef-error-types-d}
   \end{subfigure}
   \caption{ \label{fig:nef-error-types}
-    Summarizing the three types of error in a standard NEF network.
-(c) Noise KS-Test: KstestResult(statistic=0.0340334175772448, pvalue=1.6183411915874764e-15)
-(d) Maximum p-value: 6.984832323948373e-16
+    Visualizing the three sources of error in a standard NEF network.
+    (a)~A single simulation reveals all three types.
+    (b)~Static distortion describes the difference between the linear combination of rate models and the desired static function.
+    (b)~Spiking noise describes the difference between the spiking model and rate model.
+    (c)~State discrepancy provides an instantaneous measure of the difference between the spiking noise and a true Gaussian distribution ($p$-values~$< \numprint{e-6}$).
+    See text for details.
   }
 \end{figure}
 
-Mention the spike-time decoder optimization (Temporal Solver) for more detailed neurons.
 
-Also Appendix from NEF text on synaptic versus somatic dynamics.
+\subsubsection{Static distortion}
+
+The optimization problem described by equation~\ref{eq:decoder_solution} can be understood as fitting $n$ non-orthogonal (and undercomplete) static basis functions $r_i$ to some desired static function $f$~\citep{broomhead1988radial}.
+Assuming relatively weak conditions on each $r_i$, namely monotonicity and continuity, any contintuous $f$ may be approximated arbitrarily well by a linear combination of these basis functions, as in equation~\ref{eq:trans-decode}.
+
+Specifically, for a given $f$, a linear increase in the number of basis functions will reduce the root-mean-squared error~(RMSE) by the same factor.
+This RMSE is named \emph{static distortion}, since it corresponds to the difference between the two static (i.e.,~non-temporal) functions.
+We commonly refer to the RMSE as simply the ``error'' throughout,\footnote{
+\citet{eliasmith2003a} uses ``error'' to refer to mean-squared error~(MSE), rather than the RMSE. This may lead to confusion when comparing across sources.}
+and define ``precision'' to be the reciprocal of error.
+Thus, we say that the precision of static distortion, or a non-spiking network, scales as $\bigoh{n}$.
+
+Figure~\ref{fig:nef-error-types}(a) visualizes the static distortion in two different ways.
+The bottom plot, $x$ versus $\hat{x}$, compares the ideal against the approximation, and includes the dashed line $x = x$ for reference.
+The upper plot, $x$ versus $\hat{x} - x$, provides a closer look to demonstrate that the error is continuous and with a mean close to zero.
+The root-mean-squared value of the latter curve is the static distortion.
+
+\subsubsection{Spiking noise}
+
+By separating out the static distortion and looking at the difference $\transpose{\V{d}}a - \hat{x}$, we can isolate the role of equation~\ref{eq:rate-approximation} in the approximation error.
+This is the difference between the spiking and non-spiking estimates, using the same set of basis functions.
+We refer to this as the \emph{spiking noise}, since it corresponds to the variability in the estimate that is introduced by filtered spikes.
+
+When a filter with a variance of $\bigoh{\tau^{-1}}$ in its impulse response---such as equation~\ref{eq:lowpass-impulse}---is applied to both the decoded spikes and the encoded input, then the error is scaled by $\tau^{-1}$.
+On the other hand, the variability across the population leads to an increase in error by a factor of $\sqrt{n}$.
+This latter factor follows from the convergence rate of the central limit theorem~\citep[CLT;][]{berry1941accuracy, esseen1942liapunov}, assuming the spiking noise is Gaussian and independent.
+Under these assumption, the spike noise asymptotically dominates the static distortion, and the SNN's feed-forward precision scales as $\bigoh{\tau \sqrt{n}}$.
+However, in the context of Principle 3, the transformations of the signals are scaled by $\tau$, which results in a cancellation and the recurrent SNN having precision that scales as $\bigoh{\sqrt{n}}$.
+
+Figure~\ref{fig:nef-error-types}(b) visualizes a kernel density estimate~\citep[KDE;][]{michael_waskom_2015_19108} of this error ($t > 0.15$\,s).
+A Kolmogorov-Smirnov~(KS) test of $\transpose{\V{d}}a - \hat{x}$, versus a zero-mean Gaussian distribution with equal variance, produces a KS-statistic of $\approx 0.034$ ($p$-value~$< \numprint{e-6}$).
+The KS-statistic is defined as the maximal discrepancy between the empirical cumulative density function~(CDF) and the model CDF (i.e.,~the supremum of their absolute difference)~\citep{massey1951kolmogorov}.
+In this case, the distribution of spike noise is at most $3.4$\% different from a true Gaussian distribution.
+This justifies the usage of the white noise term $\eta$ in equation~\ref{eq:trans-decode} and~\ref{eq:rate-approximation}, since it captures $\approx 96.6$\% of the statistical variance between the filtered and decoded spiking and non-spiking models.
+But why is there a difference?
+In theory it should approach $0$ for sufficiently many samples, due to the CLT, but it unfortunately does not; there is a remaining systematic bias that never scales away.
+It turns out that our assumption of independent Gaussian noise was not entirely correct -- a mistake that we will rectify at the end of this section.
+But first, this motivates the discovery of a third and final source of error, that we now describe and analyze in significant detail.
+
+\subsubsection{State discrepancy}
+
+Intuitively, unbiased variability in spike-trains is achieved by all of the neurons being independently and uniformly \emph{ready to spike}.
+Looking at the ``transient'' portion ($t < 0.05$\,s) of Figure~\ref{fig:nef-error-types}(a), we see that all of the neurons are initially at rest, and thus physically cannot spike in time to keep up with the target.
+This results in a period of time in which the error is quite large.
+The error is overall the smallest towards the end of the simulation, at which point we say the neural states have ``mixed'' together.
+We formalize these ideas by appealing to the inter-spike interval~(ISI) in a manner that will turn out to be quite important.
+
+We define a neuron's relative ``ISI position''~(ISIP) to be its normalized position within the inter-spike interval that corresponds to the instantaneous firing rate of the ideal rate model.
+Specifically, we consider the LIF neuron's current state (although this same approach extends more generally to other neuron models) to have a voltage of $v_i$, remaining refractory period of $0 \le \rho_i \le \tau_\text{ref}$, input current of $s_i$, and a corresponding instantaneous target rate of $r_i$.
+In the same way that we derived the rate model of the LIF neuron~(see derivation leading to equation~\ref{eq:lif-rate}), we may derive the neuron's ISIP according to how far along it is within the ideal ISI normalized by its length, $r_i^{-1}$:
+\begin{equation} \label{eq:isi-position}
+\begin{aligned}
+g_i &= 1 - \left( \rho_i + \tau_\text{RC} \ln \left( 1 + \frac{1 - v_i}{s_i - 1} \right) \right) r_i \\
+% &= 1 - \frac{\rho_i + \tau_\text{RC} \ln \left( 1 + \frac{1 - v_i}{s_i - 1} \right)}{\tau_\text{ref} -\tau_\text{RC} \ln \left( 1 - \frac{1}{s_i} \right)} \text{.}
+&= 1 - \frac{\rho_i + \tau_\text{RC} \ln \left( 1 + \frac{1 - v_i}{s_i - 1} \right)}{\tau_\text{ref} + \tau_\text{RC} \ln \left( 1 + \frac{1}{s_i - 1} \right)} \text{.}
+\end{aligned}
+\end{equation}
+For example, if $\rho_i = \tau_\text{ref}$ and $v_i = 0$, then $g_i = 0$, since the neuron is at the very beginning of its ISI.
+Likewise, if $\rho_i = 0$ and $v_i = 1$, then $g_i = 1$, as it has just spiked.
+We now define the \emph{state discrepancy} to be the KS-statistic between the empirical ISIP distribution ($g_i$) and a uniform distribution over $\mathcal{U}[0, 1)$.
+
+In Figure~\ref{fig:nef-error-types}(c), we measure this value empirically across all of neurons, and at every point in the simulation, using a window of $25$\,ms to smooth the estimate.
+We see that the magnitude of the KS-statistic corresponds very closely to the error between the ideal and the spiking solution.
+Although here we are looking at just a constant input for ease of visualization, we find that this statistic correlates highly with the spiking noise across a wide range of input frequencies (see Figure~\ref{fig:frequency-ks-test}).
+
+We now prove why our definition of state discrepancy is indeed the correct one, and in doing so provide a sufficient (but not necessary) criteria for scaling away this source of error.
+Specifically, this remaining source of error---state discprepancy---is tamed by minimizing the difference (KS-statistic) between a uniform distribution and the actual neuron's ``readiness to spike'', as characterized by its ISIP~(e.g.,~$g_i$ for the case of a LIF model).
+
 
 \subsubsection{Integrating a Spiking LIF Neuron}
 
