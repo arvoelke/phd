@@ -582,7 +582,7 @@ Substituting all of these expectations into the initial formula yields:
 Asymptotic analysis reveals that this scales as $\bigoh{\tau^{-2}}$.
 As well, we use the fact that regularized least-squares finds
 $\V{d}_i^\V{f}$ that are independently distributed according to $\mathcal{N}(0, \sigma^2)$ where $\sigma = \bigoh{n^{-1}}$ -- i.e., variance scales as $\bigoh{n^{-2}}$.
-Finally we use equation~\ref{eq:a_expectation} in the second step, which lets allows us to leverage the property that for two independent \emph{zero-mean} variables, $A$ and $B$, we have $\variance{AB} = \variance{A}\variance{B}$.
+Finally we use equation~\ref{eq:a_expectation} in the second step below, which lets us leverage the property that for any two uncorrelated \emph{zero-mean} variables, $A$ and $B$, we have $\variance{AB} = \variance{A}\variance{B}$.
 Therefore,
 \begin{equation}
 \begin{aligned}
