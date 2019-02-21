@@ -318,12 +318,12 @@ In the original formulation of the NEF~\citep{eliasmith2003a}, there exist three
 The first two sources of error have already been studied extensively throughout \citet{eliasmith2003a} and the software implementation Nengo.
 We review these findings below.
 However, as far as we know, the third has not received formal attention.
-A proof is found in \citet[][pp.~132--136, appendix~C.1]{eliasmith2003a} that addresses the same issue from the perspective of including noise within the neuron model, and the contents herein may be viewed as an updated treatment of that study, focusing on the one-dimensional case for convenience.
+A proof is found in \citet[][pp.~132--136, appendix~C.1]{eliasmith2003a} that addresses the same issue from the perspective of including noise within the neuron model, and the contents herein may be viewed as an updated treatment of that study.
 
-Figure~\ref{fig:nef-error-types} illustrates all three types of error within the context of a single feed-forward simulation.
-Specifically, the network is a one-dimensional communication channel ($f(x) = x$, $n = 100$, $\tau = 50$\,ms, $\dt{} = \numprint{e-5}$\,s, $\tau_\text{RC} = 20$\,ms, $\tau_\text{ref} = 2$\,ms) with maximum firing rates of $10$--$20$\,Hz and intercepts uniformly distributed across $[-1, -0.5)$.
-Low firing rates are needed to bring the third source of error to the surface, which is normally masked by the other two at high firing rates for reasons that will become clear.
-The population encodes a constant input signal of $u(t) = 1$, that is directly mapped onto the PSCs without additional filtering.
+Figure~\ref{fig:nef-error-types} illustrates all three types of error within of a single feed-forward simulation.
+The network is a one-dimensional communication channel ($f(x) = x$, $n = 100$, $\tau = 50$\,ms, $\dt{} = \numprint{e-5}$\,s, $\tau_\text{RC} = 20$\,ms, $\tau_\text{ref} = 2$\,ms) with maximum firing rates of $10$--$20$\,Hz and intercepts uniformly distributed across $[-1, -0.5)$.
+Low firing rates are needed to expose the third source of error, which is normally masked by the other two at high firing rates for reasons that will become clear.
+The population, initially at rest, encodes a constant input signal of $u(t) = 1$, that is directly mapped onto the PSCs without additional filtering.
 We also duplicate the population, using the same decoders, but replacing its neuron model with the corresponding continuous-valued rate model given by equation~\ref{eq:lif-rate}.
 For notational simplicity, $\transpose{\V{d}}a$ refers to the filtered and decoded spike-trains (i.e.,~the spiking solution), $\hat{x}$ denotes the filtered and decoded rate model (i.e.,~the non-spiking solution), and $x = u \ast h$ is the ideally filtered input signal (i.e.,~the desired output).
 We now describe each source of error in greater detail.
@@ -356,10 +356,10 @@ We now describe each source of error in greater detail.
   \end{subfigure}
   \caption{ \label{fig:nef-error-types}
     Visualizing the three sources of error in a standard NEF network.
-    (a)~A single simulation reveals all three types.
+    (a)~A single simulation with arrows pointing to each type (b, c, d).
     (b)~Static distortion describes the difference between the linear combination of rate models and the desired static function.
     (b)~Spiking noise describes the difference between the spiking model and rate model.
-    (c)~State discrepancy provides an instantaneous measure of the difference between the spiking noise and a true Gaussian distribution ($p$-values~$< \numprint{e-6}$).
+    (c)~State discrepancy provides an instantaneous statistic for the difference between the spiking noise and a true Gaussian distribution ($p$-values~$< \numprint{e-6}$).
     See text for details.
   }
 \end{figure}
@@ -370,12 +370,12 @@ We now describe each source of error in greater detail.
 The optimization problem described by equation~\ref{eq:decoder_solution} can be understood as fitting $n$ non-orthogonal (and undercomplete) static basis functions $r_i$ to some desired static function $f$~\citep{broomhead1988radial}.
 Assuming relatively weak conditions on each $r_i$, namely monotonicity and continuity, any contintuous $f$ may be approximated arbitrarily well by a linear combination of these basis functions, as in equation~\ref{eq:trans-decode}.
 
-Specifically, for a given $f$, a linear increase in the number of basis functions will reduce the root-mean-squared error~(RMSE) by the same factor.
-This RMSE is named \emph{static distortion}, since it corresponds to the difference between the two static (i.e.,~non-temporal) functions.
+Specifically, for a given $f$, a linear increase in the number of basis functions will reduce the root-mean-squared error~(RMSE) of the fit by the same factor.
+This particular RMSE is named \emph{static distortion}, since it corresponds to the difference between the two static (i.e.,~non-temporal) functions.
 We commonly refer to the RMSE as simply the ``error'' throughout,\footnote{
-\citet{eliasmith2003a} uses ``error'' to refer to mean-squared error~(MSE), rather than the RMSE. This may lead to confusion when comparing across sources.}
+\citet{eliasmith2003a} use ``error'' to refer to mean-squared error~(MSE), rather than the RMSE. This may lead to confusion when comparing across sources.}
 and define ``precision'' to be the reciprocal of error.
-Thus, we say that the precision of static distortion, or a non-spiking network, scales as $\bigoh{n}$.
+Thus we say that the precision of a non-spiking network scales as $\bigoh{n}$.
 
 Figure~\ref{fig:nef-error-types}(b) visualizes the static distortion in two different ways.
 The bottom plot, $x$ versus $\hat{x}$, compares the ideal against the approximation, and includes the dashed line $x = x$ for reference.
@@ -390,7 +390,7 @@ We refer to this as the \emph{spiking noise}, since it corresponds to the variab
 
 The variability in spike-trains across the population leads to an additional error term that scales as $\left( \tau \sqrt{n} \right)^{-1}$.
 The $\tau^{-1}$ term comes from the variance of the filter's impulse response -- supposing equation~\ref{eq:lowpass-impulse} is applied to both the decoded spikes and the encoded input.
-The $\sqrt{n}^{-1}$ term follows from the convergence rate of the central limit theorem~\citep[CLT;][]{berry1941accuracy, esseen1942liapunov}, assuming the spiking noise is Gaussian and independent.
+The $\sqrt{n}^{-1}$ term follows from the convergence rate of the central limit theorem~\citep[CLT;][]{berry1941accuracy, esseen1942liapunov}, and assuming the spiking noise is Gaussian and independent.
 Under these assumption, the spike noise asymptotically dominates the static distortion, and the SNN's feed-forward precision scales as $\bigoh{\tau \sqrt{n}}$.
 However, in the context of Principle 3, the transformations of the signals are scaled by $\tau$, which results in a cancellation and the recurrent SNN having precision that scales as $\bigoh{\sqrt{n}}$.
 
@@ -412,7 +412,7 @@ This results in a period of time in which the error is quite large.
 The error is overall the smallest towards the end of the simulation, at which point we say the neural states have ``mixed'' together.
 We formalize these ideas by appealing to the inter-spike interval~(ISI) in a manner that will turn out to be quite important.
 
-We define a neuron's relative ``ISI position''~(ISIP) to be its normalized position within the inter-spike interval that corresponds to the instantaneous firing rate of the ideal rate model.
+We define a neuron's relative ``ISI position''~(ISIP), $g_i$, to be its normalized position within the inter-spike interval that corresponds to the instantaneous firing rate of the ideal rate model.
 For this, we fix our analysis at \emph{any given moment in time}.
 Specifically, we consider the LIF neuron's current state (although this same approach extends more generally to other neuron models) to have a voltage of $v_i$, remaining refractory period of $0 \le \rho_i \le \tau_\text{ref}$, input current of $s_i$, and a corresponding instantaneous target rate of $r_i$.
 In the same way that we derived the rate model of the LIF neuron~(see derivation leading to equation~\ref{eq:lif-rate}), we may derive the neuron's ISIP according to how far along it is within the ideal ISI normalized by its length, $r_i^{-1}$:\footnote{
@@ -426,7 +426,10 @@ g_i(v_i, \rho_i) &= 1 - \left( \rho_i + \tau_\text{RC} \ln \left( 1 + \frac{1 - 
 \end{equation}
 For example, $g_i(0, \tau_\text{ref}) = 0$, since the neuron is at the very beginning of its ISI.
 Likewise, $g_i(1, 0) = 1$, as it has just spiked.
-We now define the \emph{state discrepancy}, at some chosen moment in time, to be the KS-statistic between the empirical ISIP distribution across the population, $\{g_i(v_i, \rho_i) \, : \, i = 1 \ldots n\}$, and a uniform distribution over $\mathcal{U}[0, 1]$.
+
+\begin{definition} \label{def:state-discrepancy}
+The \emph{state discrepancy}, at some chosen moment in time, is the KS-statistic between the empirical ISIP distribution across the population, $\{g_i \, : \, i = 1 \ldots n\}$, and a true uniform distribution, $\mathcal{U}[0, 1]$.
+\end{definition}
 
 In Figure~\ref{fig:nef-error-types}(d), we measure this value empirically across all of neurons, and at each time-step in the simulation, using a centered window of width $25$\,ms to smooth the estimate.
 We see that the magnitude of the KS-statistic corresponds very closely to the error between the ideal and the spiking solution.
@@ -439,38 +442,39 @@ Specifically, this remaining source of error---state discprepancy---is tamed by 
 
 \begin{theorem}
 \label{thm:correctness}
-Let $\V{\eta}(t) = \sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i- \sum_{i=1}^n \left( r_i(\V{x}(t)) \ast h \right)(t) \V{d}^\V{f}_i$
+Let $\V{\mu}(t) = \sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i- \sum_{i=1}^n \left( r_i(\V{x}) \ast h \right)(t) \V{d}^\V{f}_i$
 % \transpose{\V{d}}a - \hat{x}$
 be the spiking noise.
-If the ISIP is uniformly and independently distributed, as in $g_i \sim \mathcal{U}[0, 1]$, then:
+If the ISIP is uniformly and independently distributed---$g_i$ are realizations of $\mathcal{U}[0, 1]$---then:
 \begin{enumerate}
-\item $\expect{ \V{\eta}(t) } = 0$; hence the expected spike noise is exactly zero at all times (no systematic bias), 
-\item $\sqrt{\variance{\V{\eta}(t)}} = \bigoh{\left(\tau \sqrt{n}\right)^{-1}}$ is the standard error, or root-mean-squared error; hence the precision scales as $\bigoh{ \tau \sqrt{n} }$ at all times, and therefore:
-\item equation~\ref{eq:rate-approximation} holds for the noise term $\V{\eta}(\cdot) \sim \mathcal{N}\left(0, \sigma^2 \right)$, where $\sigma = \bigoh{ \left( \tau \sqrt{n} \right)^{-1} }$.
+\item $\expect{ \V{\mu}(t) } = 0$; hence the expected spike noise is exactly zero at all times (no systematic bias), 
+\item $\sqrt{\variance{\V{\mu}(t)}} = \bigoh{\left(\tau \sqrt{n}\right)^{-1}}$ is the standard error, or root-mean-squared error; hence the precision scales as $\bigoh{ \tau \sqrt{n} }$ at all times.
+% \item equation~\ref{eq:rate-approximation} has residual error with the statistic $\V{\mu}(\cdot) \sim \mathcal{N}\left(0, \sigma^2 \right)$, where $\sigma = \bigoh{ \left( \tau \sqrt{n} \right)^{-1} }$.
 \end{enumerate}
 \end{theorem}
-We prove each statement in turn.
-For the first two statements, we prove something slightly more general, and without invoking asymptotics until the very end.
-We also shift our frame of reference, without loss of generality, such that we are currently observing $t = 0$.
+We prove these statements in order after a few remarks.
+We prove something slightly more general, and without invoking asymptotics until the very end.
+We also do so without assuming any particular neuron model -- only that it has a well-defined ISIP.
+We shift our frame of reference, without loss of generality, such that we are currently observing $t = 0$.
 We then forecast the system out into the future, assuming the representation is held constant.
 But this does not make any assertions about the causal dynamics of the representation.
-This is because the statements in this theorem are only interested in taking a measurement at arbitrarily small values of $t$.
+This is because the statements in this theorem are only interested in the distribution of a statistic at arbitrarily small values of $t \rightarrow 0^+$ with respect to the shifted time frame.
 % $t = \epsilon$ in the one-sided limit of $\lim_{\epsilon \rightarrow 0^+} \eta(t)$.
 Hence, our work provides a more general result than what is needed, specifically a forecast of how the variance continues to evolve along its strange attractor assuming a fixed-point in state-space.
-In order to make this concrete, we suppose the synapse model is equation~\ref{eq:lowpass-impulse}, but this is not a hard requirement.
-Likewise, we initialize the synapse to $0$, which serves only to simplify the discussion.
+In order to give a concrete result, we suppose the synapse model is equation~\ref{eq:lowpass-impulse}, but this is not a hard requirement.
+Likewise, we initialize the synapses to $0$, without loss of generality by linearity.
 To remove boilerplate in the notation we substitute $r_i \leftarrow r_i(\V{x}(t))$.
-We have verified the following equations with rigorous numerical experiments~(not shown).
+We have verified each of the following equations with rigorous numerical experiments~(not shown).
 
 \subsubsection{Preliminaries}
 
-Let $\tilde{y}_i(t; t_i) = \left(a_i \ast h \right)(t)$ be the foreward simulation of the $i^\text{th}$ neuron up to time $t \ge 0$, where $t_i = \left(1 - g_i\right)r_i^{-1}$ is the next spike-time ($0 \le t_i \le r_i^{-1}$) by our definition of the ISIP.
-The initial state of the synapse is some constant, that we assume to be zero without loss of generality.
+Let $\tilde{y}_i(t; t_i) = \left(a_i \ast h \right)(t)$ be the fast-forward simulation of the $i^\text{th}$ neuron up to time $t \ge 0$, supposing $t_i = \left(1 - g_i\right)r_i^{-1}$ is the next spike-time ($0 \le t_i \le r_i^{-1}$) by our definition of the ISIP.
+% The initial state of the synapse is some constant, that we assume to be zero without loss of generality.
 Let $T_i$ be the random variable whose realizations are $t_i$.
 Hence, $T_i \sim \mathcal{U} [ 0, r_i^{-1} ]$,
 with a probability density function~(PDF) and cumulative density function~(CDF) described by:
 \begin{equation} \label{eq:spike-distribution}
-f_{T_i}(t_i) = r_i^{-1} \quad \iff \quad P(T_i \le t_i) = t_i r_i \text{.}
+f_{T_i}(t_i) = r_i \quad \iff \quad P(T_i \le t_i) = t_i r_i \text{.}
 \end{equation}
 By enumerating over the spike-times, we have:
 \begin{align*}
@@ -530,7 +534,7 @@ We apply the law of the unconscious statistician~(LOTUS) to $\tilde{Y}_i(t)$:
 Therefore, by linearity of expectation, the expected error at time $t$ is:
 \begin{equation}
 \begin{aligned}
-\expect{\V{\eta}(t)} &= \expect{\sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i - \sum_{i=1}^n \left( r_i \ast h \right)(t) \V{d}^\V{f}_i } \\
+\expect{\V{\mu}(t)} &= \expect{\sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i - \sum_{i=1}^n \left( r_i \ast h \right)(t) \V{d}^\V{f}_i } \\
 &= \sum_{i=1}^n r_i \cdot (1 - e^{-t/\tau}) \V{d}^\V{f}_i - \sum_{i=1}^n \left( r_i \ast h \right)(t) \V{d}^\V{f}_i \\
 &= 0 \text{.}
 \end{aligned}
@@ -538,8 +542,8 @@ Therefore, by linearity of expectation, the expected error at time $t$ is:
 This completes our proof of the first statement.
 
 Note that we have not needed to use our assumption about the independence of samples.
-However, to obtain a closed-form solution for the variance, we will need to assume that $T_i$ is independently distributed (e.g.,~the voltage vectors and refractory periods are not coupled with one another), as is the case for typical NEF networks.
-\citet{boerlin2013predictive} have shown that if the neural states do have a mechanism for collaborating in a global manner, then they can synchronize their activity, as a way of \emph{dependently} sampling, in order to reduce variance.
+However, to obtain a closed-form solution for the variance, we will need to assume that $g_i$, and thus $t_i$, are independently sampled (i.e.,~the voltage vectors and refractory periods are not coupled with one another across time), as is the case for typical NEF networks.
+\citet{boerlin2013predictive} have shown that if the neural states do have a mechanism for collaborating in a global manner, then they can synchronize their activity; this corresponds to a means of \emph{dependent} sampling that reduces the following variance.
 
 \subsubsection{Proof of spiking variance}
 
@@ -586,14 +590,13 @@ Finally we use equation~\ref{eq:a_expectation} in the second step below, which l
 Therefore,
 \begin{equation}
 \begin{aligned}
-\sqrt{ \variance{ \V{\eta}(t) } } &= \sqrt{ \variance{\sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i- \sum_{i=1}^n \left( r_i \ast h \right)(t) \V{d}^\V{f}_i} } \\
+\sqrt{ \variance{ \V{\mu}(t) } } &= \sqrt{ \variance{\sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i- \sum_{i=1}^n \left( r_i \ast h \right)(t) \V{d}^\V{f}_i} } \\
 &= \sqrt{ \variance{\sum_{i=1}^n \left( \tilde{Y}_i(t) - \expect{ \tilde{Y}_i(t) } \right) \V{d}^\V{f}_i } } \\
 &= \sqrt{ n \variance{\tilde{Y}_\cdot(t)} \variance{\V{d}^\V{f}_\cdot}} \\
 &= \bigoh{ \frac{1}{\tau \sqrt{n}} } \text{.}
 \end{aligned}
 \end{equation}
-This completes our proof of the second statement.
-The third statement holds by equation~\ref{eq:rate-approximation} for large $n$ by the central limit theorem and the first two moments of $\eta(t)$.
+This completes our proof of the second and final statement. $\hfill \qed$
 
 \subsubsection{Discussion of uniform ISIP criteria}
 
