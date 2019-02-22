@@ -274,7 +274,7 @@ To analyze the frequency content of this code, we apply the Laplace transform to
 \end{aligned}
 \end{equation}
 $G_i(s)$ is defined as the Laplace transform of the weighted combination of presynaptic (unfiltered) spike-trains.
-The magnitude of $| G(2\pi i f) |$, evaluated at real frequencies $f$, is a (dimensionless) measure of the absolute power required to drive all of the synapses of the $i^\text{th}$ postsynaptic neuron, in order to generate such a PSC.
+The magnitude of $| G(2\pi i f) |$, evaluated at real frequencies $f$, is a (dimensionless) measure of the relative amount of energy required to drive all of the synapses of the $i^\text{th}$ postsynaptic neuron, in order to generate such a PSC.
 Rearranging equation~\ref{eq:psc-code-laplace} yields:
 \begin{equation} \label{eq:psc-code-rearranged}
 G_i(s) \approx \left( \tau s + 1 \right) \left( \alpha_i \left\langle \V{e}_i\text{,}\, \laplace{ \V{x}(t) }(s) \right\rangle + \beta_i \right) \text{.}
@@ -286,7 +286,7 @@ Specifically, our dimensional analysis identifies the following asymptotic relat
 \end{equation}
 where the Big~$\mathcal{O}$ constants involve the length of the encoder (typically unit-length) and the gains and biases (unitless).
 
-From equation~\ref{eq:psc-code-power} it directly follows that, in order to represent $\V{x}(t)$ with an absolute power of one (unitless) at a frequency of $f$, via the postsynaptic current code (i.e.,~linear projection onto each PSC), the total amount of energy needed to drive all of the synapses scales as $\bigoh{2 \pi \tau f }$.
+From equation~\ref{eq:psc-code-power} it directly follows that, in order to represent $\V{x}(t)$ with an absolute power of one (unitless) at a frequency of $f$, via the postsynaptic current code (i.e.,~linear projection onto each PSC), the relative amount of energy needed to drive all of the synapses scales as $\bigoh{2 \pi \tau f }$.
 Therefore, for a \emph{fixed} energy budget, the frequencies that can be successfully transmitted using this code scale by the inverse law (which just-so-happens to be the cut-off frequency of the filter):
 \begin{equation} \label{eq:low-frequency-representation}
 \bigoh{\left( 2 \pi \tau \right)^{-1}} \text{.}
@@ -652,11 +652,52 @@ Future work is required for more biologically-detailed neuron models and synapse
 We conjecture that the role of many adaptive mechanisms in biological systems is to invariantly maintain the uniform ISIP criteria with respect to the time-varying statistics of the represented signal.
 Such mechanisms would facilitate maximum information throughput for a fixed energy-budget (see section~\ref{sec:energy-minimization}).
 
-\subsection{Scalability of Precision}
+\subsection{Scalability and trade-offs}
 \label{sec:scalability}
 
-\TODO{Comment on dimensional analysis for speeding up / slowing down timescales}
+In this section we summarize the general trade-offs associated with scaling NEF networks.
+Some application-specific trade-offs are discussed in section~\ref{sec:delay-applications}.
 
+\begin{sidewaystable}
+\centering
+  \begin{tabular}{@{}llll@{}} \toprule
+    Property & Scaling & Context & References \\
+    \midrule
+    Multiply-adds per step & $\bigoh{nq}$ & Inference & \citet{voelker2018} \\
+    Total memory & $\bigoh{nq}$ & Inference & \citet{mundy2015, voelker2018} \\
+    Time \& memory & $\bigoh{nq}$ & Training & section~\ref{sec:principle2} (assuming randomized SVD) \\
+    Static precision & $\bigoh{n}$ & Recurrent & section~\ref{sec:psc-coding} and \citet[][p.~47]{eliasmith2003a} \\
+    Spiking precision & $\bigoh{\sqrt{n}}$ & Recurrent & section~\ref{sec:psc-coding} and \citet[][p.~47]{eliasmith2003a} \\
+    Spiking precision & $\bigoh{\tau \sqrt{n}}$ & Feed-forward & section~\ref{sec:psc-coding} \\
+    Bandwidth & $\bigoh{\left(2\pi \tau \right)^{-1}}$ & Fixed energy & section~\ref{sec:energy-minimization} \\
+    Relative energy & $\bigoh{2\pi \tau f }$ & Fixed precision & section~\ref{sec:energy-minimization} \\
+    Neuron count & $\bigoh{2 \pi f}$ & Fixed precision & equation~\ref{eq:psc-code-power} and Figure~\ref{fig:poisson-frequency-scaling} \\
+    Synaptic time-constant & $\bigoh{\left(2 \pi f\right)^{-1}}$ & Fixed precision & equation~\ref{eq:psc-code-power} and Figure~\ref{fig:poisson-frequency-scaling} \\
+    Dimensionality & $\bigoh{ n^{\frac{2}{3}} }$ & Fixed precision & \citet[][p.~60]{gosmann2018} \\ % this is actually big omega
+    \bottomrule
+  \end{tabular}
+  \caption{ \label{tab:scalability}
+    A summary of trade-offs present in standard NEF networks.
+    Each property's scaling is context-dependent.
+    % Many of these are abusing big-oh notation and should be big-theta or big-omega...
+  }
+\end{sidewaystable}
+
+Table~\ref{tab:scalability} provides a comprehensive list of all such trade-offs that we are aware of to date.
+This includes guarantees on training time, resources for simulation, precision (in spiking, non-spiking, feed-forward, and recurrent architectures), energy usage, dimensionality, and finally relationships between signal bandwidth, synaptic time-constants, and neuron counts.
+For the scaling of spiking networks, we assume that the uniform ISIP criteria of Theorem~\ref{thm:correctness} is satisfied.
+References to relevant sections and literature are included in the right-hand column.
+
+As a brief but important aside, the trade-offs that involve time do so by fixing some time-scale of interest.
+That is, one chooses some unit associated with $\tau$ (e.g.,~seconds), or $f$ (e.g.,~Hertz), and so forth.
+In theory, and in practice, the relative time-scales are what end up being important in determining the behaviour of the system.
+% As every time-constant has some unit of time associated with it, their relation to one another is what determines the system's behaviour.
+For example, if one were to slow down all of the time-constants in the network ($\tau$, $\tau_\text{RC}$, $\tau_\text{ref}$, $\dt{}$) by a factor of $10$, while increasing all of the rates in the network by the same factor, this would automatically be equivalent to speeding up the stimulus' frequency (reciprocal of time) by a factor of $10$ in the original network.
+Nothing else needs to be changed in order to compress or expand our perspective of time; weights, neuron counts, and decoded quantities are all unit-less.
+This simply follows from dimensional analysis and consistent usage of time-constants and frequencies throughout, which highlights the importance of taking units into consideration throughout each level of analysis.
+In theory, this means these trade-offs can be applied to any time-scale, although in practice biological and hardware constraints often choose them for us.
+
+\iffalse
 \TODO{Discuss all of the scaling.}
 We usually set $n$ to about $50 \times q$, as this has been found to provide tolerable performance in practice~\citep{braindrop2019}. 
 More neurons may be required depending on the difficulty of the function and the frequency of the inputs.
@@ -665,8 +706,7 @@ Although we don't know the upper-bound, we conjecture that it is $\bigoh{n}$.
 That is, the dimensionality should not be able to scale faster than the neuron count.
 If it could, then each neuron would represent $\omega(1)$ dimensions, which seems physically implausible given access to only $\bigoh{1}$ state variables.
 This limitation could be broken by dendritic computation, for instance if each neuron had access to $\bigoh{n}$ variables distributed along the dendritic tree.
-
-$\bigoh{ \tau \sqrt{n} }$ precision following from the convergence of the central limit theorem~\citep[CLT;][]{berry1941accuracy, esseen1942liapunov} and the $\tau^{-1}$ peak-amplitude of equation~\ref{eq:lowpass}.
+\fi
 
 \subsection{Efficiency in Time and Space}
 
