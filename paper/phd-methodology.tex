@@ -1,28 +1,36 @@
 \chapter{Methodology}
 \label{chapt:methodology}
 
+This chapter is devoted to a brief overview of our methods, namely the software tools that we use, and our approaches to modelling useful computations as dynamical systems.
+Additional details are the focus of later chapters.
 
 \section{Software}
 
-\subsection{Nengo Package}
+The simulations in this thesis make extensive use of the following Python software packages (versions listed when important):
+\begin{itemize}
+\item Nengo 2.8.0~\citep{bekolay2014}; to construct and simulate NEF models on the CPU, which depends on NumPy for its algebraic routines,
+\item Nengo-Loihi 0.5.0~\citep{blouw2018a}; to compile Nengo models onto the Loihi emulator and hardware (courtesy of ABR),
+\item Nengo-Brainstorm~\citep[pre-release;][]{neckar2018optimizing, braindrop2019}; to compile Nengo models onto Braindrop (courtesy of Terry Stewart), which depends on PyStorm (courtesy of Femtosense),
+\item HyperOpt 0.0.2~\citep{bergstra2015hyperopt}; to optimize the hyperparameters associated with RC networks,
+\item Keras 2.2.4~\citep{gulli2017deep}; to train LSTMs and some custom RNNs,
+\item TensorFlow 1.12.0~\citep{abadi2016tensorflow}; as a backend for Keras,
+\item Seaborn~\citep{michael_waskom_2015_19108}; to generate figures, which depends on Matplotlib and Pandas for plotting and formatting data, respectively.
+\end{itemize}
+We do not take credit for any of the above software.
+However, we have created the Python package, NengoLib 0.4.3~\citep[][patent~pending]{dynamicspatent, nengolib}, open-sourced on GitHub, to make the contributions of this thesis publicly available.
+% which also depends on SciPy for many routines ported from MatLab
+Code, \LaTeX{}, and instructions for reproducing figures, are located at: \url{https://github.com/arvoelke/phd/}.
 
-Summarize key constructs.
+Experiments involving the methods of \citet{boerlin2013predictive} in Nengo are currently unpublished (provided by Dan Rasmussen).
 
-Resummarize Principle 3 with a focus on architecture / diagrams / Nengo code.
-
-Unless stated otherwise, all simulations use a time-step of $1$\,ms, and assume the input signal is held constant across each time-step -- a ``zero-order hold''~(ZOH) assumption.
+Unless stated otherwise, all simulations use a time-step of $\dt{} = 1$\,ms, and assume the input signal is held constant across each time-step, also known as the ``zero-order hold''~(ZOH) assumption.
 
 \subsection{NengoLib Package}
 \label{sec:nengolib}
 
-Summarize main contributions.
- - ZOH LIF
- - Multi-spiking LIF
- - RK45
- - Dynamic extensions
- - Geometric extensions
- - Temporal learning (offline), RLS (online alternative to PES)
- - FORCE, Reservoir Computing
+NengoLib includes the core code for most of the extensions discussed in chapter~\ref{chapt:nef-extensions} and the networks discussed in chapter~\ref{chapt:delays}.
+In addition, it is used to construct RC, FORCE, full-FORCE, and Nengo networks---each in spiking and non-spiking mode, and in an analagous manner to one another---in order to facilitate meaningful comparisons between these architectures.
+We now summarize some of the important facets of this software that are used throughout the remaining chapters.
 
 \subsubsection{State-Space Realizations}
 
