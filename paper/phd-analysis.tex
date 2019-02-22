@@ -765,4 +765,19 @@ For these reasons, it is also robust to a number of different neuron models and 
 \subsection{Extensibility}
 \label{sec:nef-extensibility}
 
-Section~\ref{chapt:nef-extensions}. Loihi delay harnessing.
+As stated in section~\ref{sec:neuromorphic}, NEF networks have been deployed on a number of different backends, including:
+SpiNNaker~\citep{mundy2015},
+Neurogrid~\citep{choudhary2012silicon},
+Braindrop~\citep{braindrop2019},
+Loihi~\citep{davies2018loihi},
+TrueNorth~\citep{fischl2018},
+a VLSI prototype~\citep{corradi2014},
+several FPGA implementations~\citep{naylor2013managing, wang2014compact, berzish2016, wang2017neuromorphic} including ABR's own FPGA backend~(unpublished),
+and several GPUs~\citep{bekolay2014, rasmussen2018nengodl, blouw2018a}.
+This would not have been possible if not for the extensibility of the framework, that is, its flexibility in accounting for various non-idealities~\citep[e.g.,~][]{voelker2017iscas}.
+
+Our work in this direction is the topic of chapter~\ref{chapt:nef-extensions}.
+Of particular focus are the higher-order synapses with variable time-constants on Braindrop, and the configurably-delayed axons on Loihi.
+Our extensions can successfully leverage both to improve network-level computation.
+The focus of chapter~\ref{chapt:results} is then to show-case several recurrent SNNs deployed on both architectures, while using the same high-level model description for each network.
+The machinery of the NEF and Nengo, together with the extensions in this thesis, take care of compiling the model description onto the hardware while respecting its constraints and leveraging the properties of its dynamical primitives~\citep{braindrop2019}.
