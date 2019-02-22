@@ -343,7 +343,6 @@ Note that this optimization only depends on $r_i(\V{v})$ for $\V{v} \in S$, as o
 In other words, the optimization is determined strictly by the distribution of the signal, and not according to its particular dynamics.
 Since we have replaced the optimization problem involving spikes (equation~\ref{eq:trans-decode}) with one involving rates, this side-steps the need to explicitly simulate the neurons over time when training.
 Furthermore, this is a convex optimization problem, which may be solved by uniformly sampling $S$~\citep{voelker2017} and applying a standard regularized least-squares solver to the sampled data~\citep{bekolay2014}.
-Monte Carlo sampling introduces $\bigoh{ m^{-\frac{1}{2}} }$ error into the integral from equation~\ref{eq:decoder_solution}, where $m$ is the number of samples, but this can be improved to $\widetilde{\mathcal{O}} \left( m^{-1} \right)$---effectively squaring $m$---by the use of quasi-Monte Carlo methods~\citep{fang1994, knight2016}.
 In the context of machine learning, the samples of $S$ are the example inputs from training data.
 Nengo also supports alternative decoder solvers that optimize variants of equation~\ref{eq:decoder_solution}~\citep[e.g.,][]{voelker2016a, abrams2017}, and randomized singular-value-decomposition~(SVD) solvers that take $\bigoh{mn}$ time and space~\citep{halko2011finding} -- but we do not use them here.
 %This provides the decoders needed by equations~\ref{eq:repn_decode} and \ref{eq:trans-decode} to represent the vector or compute transformations, respectively.

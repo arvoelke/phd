@@ -30,7 +30,9 @@ Unless stated otherwise, all simulations use a time-step of $\dt{} = 1$\,ms, and
 
 NengoLib includes the core code for most of the extensions discussed in chapter~\ref{chapt:nef-extensions} and the networks discussed in chapter~\ref{chapt:delays}.
 In addition, it is used to construct RC, FORCE, full-FORCE, and Nengo networks---each in spiking and non-spiking mode, and in an analagous manner to one another---in order to facilitate meaningful comparisons between these architectures.
-We now summarize some of the important features of this software that are used throughout the remaining chapters.
+Another useful aspect of the software is that it provides a unified toolkit for constructing and analyzing linear time-invariant systems, in a number of representations (state-space, transfer function, zero-pole-gain), while being compatible with the synapses of Nengo.
+This unifies the language used to both build, describe, and analyze LTI networks and synapses.
+We now summarize some of the remaining features of this software that are used throughout.
 
 \subsubsection{State-space realizations}
 
@@ -46,10 +48,10 @@ We then set the encoders to be unit-length and axis-aligned, and optimize each d
 
 There is also the support to normalize each dimension by a diagonal transformation $T$ with the $i^{\text{th}}$ diagonal equaling $\max_t \left| x_i(t) \right|^{-1}$ where $x_i(t)$ is obtained by simulating the ideal system directly on a randomly sampled input.
 
-Finally, NengoLib supports a diagonal transformation $T$ with the $i^{\text{th}}$ diagonal corresponding to the reciprocal of $2$ times the sum of the Hankel singular values~\citep{glover1987bounds} of the subsystem corresponding to $x_i(t)$.
+Finally, NengoLib supports a diagonal transformation $T$ with the $i^{\text{th}}$ diagonal corresponding to the reciprocal of two times the sum of the Hankel singular values~\citep{glover1987bounds} of the subsystem corresponding to $x_i(t)$.
 This has the effect of bounding the absolute value of each dimension above by $1$ in the worst case~\citep{khaisongkram2007computing}.
 
-In general, we have found that each of these methods of normalizing state-space models typically improve the robustness of our networks across a wide range of parameters, but one is never strictly better than all others in every situation.
+In general, we find that each method of normalizing state-space models typically improves the robustness of our networks across a wide range of parameters, but one is never strictly better than all others in every situation.
 
 % Likewise, any change of basis in the state-space model of $F^H$ does not impact the dynamics of $F^H(H(s)^{-1})$
 % But there is really no reason to do that as far as I can tell.
@@ -58,50 +60,22 @@ In general, we have found that each of these methods of normalizing state-space 
 %Yet, it is also the case that the dynamics of the system mapped by equation~\ref{eq:general-linear-approx} do not depend on the chosen state-space model.
 %This fact is proven implicitly in the following appendix, by characterizing the dynamics in terms of $F(s)$ and $H(s)$ alone.
 
-\subsubsection{Geometric Decoder Optimization}
+%\url{https://arvoelke.github.io/nengolib-docs/master/notebooks/research/geometric\_decoders.html}
 
-\url{https://arvoelke.github.io/nengolib-docs/master/notebooks/research/geometric\_decoders.html}
+\subsubsection{Random sampling}
 
-\subsubsection{Encoders, Evaluation Points, and Semantic Pointers}
+Many common routines in Nengo employ the use of high-dimensional random sampling~\citep{voelker2017}, in particular the uniform sampling of encoders $\V{e}_i$ from the surface of the hypersphere, and the uniform sampling of evaluation points from $S$ (typically the interior of the hyperball).
 
-\subsubsection{Sampling High-Dimensional Vectors and Coordinates}
+Considering the NEF's optimization problem from equation~\ref{eq:decoder_solution},
+Monte Carlo~(MC) sampling $S$ introduces $\bigoh{ m^{-\frac{1}{2}} }$ error into the integral, where $m$ is the number of samples, but this can be improved to $\widetilde{\mathcal{O}} \left( m^{-1} \right)$---effectively squaring $m$---by the use of quasi-Monte Carlo methods~\citep{fang1994, knight2016}.
+For this, NengoLib overloads Nengo's default versions of these distributions, with its own method of uniformly scattering the samples using quasi-MC sampling.
+Specifically, we take a scattered sample from the hypercube, and then apply the inverse transform method with a spherical coordinate transform~\citep{fang1994} to map samples onto either the hyperball or hypersphere.
+This supports the use of any number of quasi-MC methods for sampling from the cube, although we have implemented the most promising ones: Sobol sequence and $R_2$~\citep{Sobol1967, quasimc}.
 
-We often sample encoding vectors $\V{e}_i$ to be scattered uniformly along the surface of the hypersphere using quasi-Monte Carlo sampling---specifically, using the inverse transform method applied to the Sobol sequence with a spherical coordinate transform~\citep{fang1994, knight2016}---to visualize a distributed representation.
+We find that quasi-MC sampling the encoders also improves the representation at low numbers of neurons on average, by ensuring a better tiling or coverage of the encoded space.
+For efficient coding in higher dimensions, methods of randomly sampling points from the Leech lattice---a 24-dimensional Lattice built from \numprint{196560} unit-length vectors, with beautiful mathematical properties regarding their similarity in relation to efficient sphere-packing and error-correction codes~\citep{Conway1999}---used by \citet{knight2016} are also available in software.
 
-\subsubsection{Quanti-Monte Carlo Sampling}
-
-\subsubsection{Leech Lattice}
-
-Also mention?
-Binary Semantic Pointers (generalized birthday paradox)
-Locality Sensitive Hashing
-See email chain on LSH. Also see email [cnrg-lab] bit of history
-
-\subsubsection{Vector Oja Learning Rule}
-
-
-\subsection{Hardware Backends}
-
-nengo\_dl, nengo\_ocl, nengo\_fpga, nengo\_brainstorm, nengo\_loihi
-
-
-\section{Optimization and Learning}
-
-Some of this is going to be repetitive / overlapping with stuff from before, but I think they are the kind of things that are important to repeat...
-
-We'll use this as an opportunity to point out the default scenario.
-
-\subsection{Online versus Offline}
-
-Online rules (PES, RLS), versus their offline analogs (stochastic gradient descent, least-squares)
-
-\subsection{Explicit versus Implicit}
-
-Using closed-form equations to generate the data (implicit), versus numerically simulating (explicit)
-
-\subsection{Spikes versus Rates}
-
-Learning from spikes versus learning from rates. And their equivalence in limiting conditions.
+% \subsubsection{Vector Oja Learning Rule}
 
 \section{Dynamics as a Language}
 \label{sec:dynamics-language}
