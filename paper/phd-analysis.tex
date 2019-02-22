@@ -2,7 +2,7 @@
 \label{chapt:analysis}
 
 In this chapter, we provide a thorough examination of the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a} that is not currently published elsewhere.
-The goals are two-fold: (1)~explore the consequences of its computational principles at a theoretical level, and in doing so debunk some of the common myths that have become associated with the NEF since its inception, and (2)~assess its suitability as a framework for deploying SNNs on neuromorphic hardware by analyzing its correctness, scalability, efficiency, Turing-completeness, robustness, and extensibility.\footnote{
+The goals are two-fold: (1)~explore the consequences of its computational principles at a theoretical level, and in doing so debunk some of the common myths that have become associated with the NEF since its inception, and (2)~assess its suitability as a framework for deploying SNNs on neuromorphic hardware by proving its correctness, scalability, completeness, robustness, and extensibility.\footnote{%
 To help delineate separate considerations, some sub-sections may be significantly shorter than others.
 }
 % This involves a proof of equation~\ref{eq:rate-approximation} thatextends and improves the discussion of \citet[][pp.~132--136]{eliasmith2003a} to provide a sufficient criteria for the correctness of the first two principles of the NEF at the level of individual spikes.
@@ -11,6 +11,7 @@ To help delineate separate considerations, some sub-sections may be significantl
 \section{Computational Sub-Principles}
 
 In this section, we focus primarily on the third principle of the NEF, and elucidate some high-level observations, or ``sub-principles'', that follow from its adoption.
+, by rigorously exposing the computational properties 
 In particular, \TODO{...}
 
 \subsection{Reducibility to a single layer}
@@ -45,7 +46,7 @@ In terms of training, the challenges involved in globally optimizing an RNN may 
 An important observation is that neurons~(equation~\ref{eq:lif-model}), synapses~(equation~\ref{eq:lowpass-impulse}), and even the functional behaviour of entire recurrent networks~(equations~\ref{eq:discrete-dynamical-system} and~\ref{eq:lti}), can all be described in terms of differential equations.
 These ``dynamical primitives'' all have certain filtering properties, linear and nonlinear transfer functions, and internal states that evolve over time in response to some input in order to produce some output.
 
-On the other hand, a central insight from deep learning is that a variety\footnote{
+On the other hand, a central insight from deep learning is that a variety\footnote{%
 The variety of nonlinear responses comes from the distribution of weights and biases, analagous to the hetereogeneity obtained in equation~\ref{eq:encoding} via encoding vectors, gains, and biases.}
 of static nonlinear functions, when structurally composed, enhances the \emph{spatial complexity} of network function.
 An analagous insight in the above context is that a variety of transfer functions, when temporally composed, enhances the \emph{dynamical complexity} of network function.
@@ -78,6 +79,7 @@ In section~\ref{sec:pure_delay}, we demonstrate a method of systematically harne
 \TODO{example application in section~\ref{sec:applications} -- if $B \rightarrow B$ is a delay network, we can then use what we know about amplifying axonal spike delays to make an even longer delay out of the entire system}
 
 \subsection{Unpredictability, chaos, and strange attractors}
+\label{sec:chaos}
 
 An apparent misconception associated with NEF networks is that we already ``understand'' the computations being engineered into the network, and therefore have nothing to learn from such simulations.
 But just because a network's function can be written down using equations, does not mean that its effects are fully understood ahead of time.
@@ -93,7 +95,7 @@ The assertion that the behaviour of certain programs are in essence ``unpredicta
 This discussion extends to dynamical systems, where chaos and undecidability are also interwoven~\citep{moore1991generalized}.
 For example, suppose we take the linear time-invariant~(LTI) system of equation~\ref{eq:lti} and then include saturation within each of the state-variables (such that their absolute magnitudes cannot exceed one).
 Surprisingly, this is a sufficient route to chaos.
-The inclusion of this single nonlinearity spawns attractors with properties that are undecidable~\citep{blondel2001stability}; basic questions about the system's response cannot be resolved in a finite number of steps.
+The inclusion of this single nonlinearity spawns attractors with properties that are undecidable~\citep{blondel2001stability}; basic questions about the system's response cannot be resolved in a finite number of steps~\citep{bennett1990undecidable}.
 This example is of special interest to us since the LIF neuron (equation~\ref{eq:lif-model}) exhibits a similar saturation effect, namely $r(\V{v}) \le \tau_\text{ref}^{-1}$, where the upper-bound is approached as $\V{x}(t) \in \mathbb{R}^q$ extends beyond the representational range established by the encoding parameters selected by Principle~1.
 It follows that even the most basic spiking instantiation of Principle~3 must, in general, be simulated in order to determine its behaviour whenever the input signal drives the state-space outside the range of neural representation.
 Notably, this saturation effect is exploited to overload working memory with sequential items in the Spaun model~\citep{eliasmith2012}, which suggests that the model behaviour is chaotic at multiple levels of analysis.
@@ -133,7 +135,7 @@ We find that $\Delta$ remains bounded above by the accuracy of neural representa
 However, $\delta$ diverges exponentially over time, indicating that the neural states are within a strange attractor (the Lyapunov exponent $\lambda \approx 8.9$\,s${}^{-1}$ gives the exponential rate of divergence); the voltage vectors are tracing out a fractal manifold embedded within an $n$-dimensional space that cannot be predicted beyond a time-horizon on the order of $\bigoh{\lambda^{-1}} \approx 0.1$\,s.
 Despite this, the NEF is capable of taming the chaos at the neural level and providing a robust estimate at the population level, due to the correspondance between each strange attractor and a stable point in representational space~\citep[][p.~237]{eliasmith2003a}.
 
-More generally, the NEF may be used to implement arbitrary algorithms encoded as dynamical systems (see section~\ref{sec:nef-turing}), which implies that it is not exempt from computational-complexity theory. 
+More generally, the NEF may be used to implement arbitrary algorithms encoded as dynamical systems (see section~\ref{sec:nef-turing}), which implies that it is not exempt from computability theory. 
 Networks can perform interesting tasks via algorithmic manipulations of inputs and states~\citep{choo2018}.
 Then, as is the case for any Turing machine, the network must in general be simulated to carry out the computations of said algorithm.
 At the same time, the NEF provides a framework---akin to having a programming language for some model of computation---to understand the dynamical transformations being performed, examine relationships between structure and function, relate these functions to neurobiological systems, and compile them onto neuromorphic hardware.
@@ -196,7 +198,7 @@ When comparing the spike-trains between two separate oscillations at the same ph
 
 \paragraph{2. The NEF readily supports high speed neural information processing.}
 
-In our example, neurons respond quickly to encode the rapidly-fluctuating oscillatory state, and do so without any system-level ``delay'' or undersired filtering.\footnote{
+In our example, neurons respond quickly to encode the rapidly-fluctuating oscillatory state, and do so without any system-level ``delay'' or undersired filtering.\footnote{%
 The postsynaptic filter that is applied is leveraged to participate in the required computation (see Principle~3; section~\ref{sec:principle3}).
 There is no unwanted phase-shift.
 }
@@ -258,7 +260,7 @@ But the fact of the matter is that this becomes unnecessary (and inefficient) fo
 \label{sec:energy-minimization}
 
 We define a \emph{low-frequency representation} as one in which the represented vector, $\V{x}(t)$, carries its information within frequencies on the order of the cut-off frequency of the synaptic filter.
-That is, $\left( 2 \pi \tau \right)^{-1}$\,Hz, where $\tau$ is the synaptic time-constant of equation~\ref{eq:lowpass-laplace} in seconds.\footnote{
+That is, $\left( 2 \pi \tau \right)^{-1}$\,Hz, where $\tau$ is the synaptic time-constant of equation~\ref{eq:lowpass-laplace} in seconds.\footnote{%
 For example, a typical time-constant of $\tau = 5$\,ms would imply that most information is present within a frequency band of $< 32$\,Hz.
 }
 Such representations are known to be ubiquitous in biological systems~\citep{pulvermuller1997high, singer1999neuronal, szendro2001bio}.
@@ -304,9 +306,10 @@ We provide additional examples of such trade-offs in the following sections.
 In the prospectus of \citet{boahen2017neuromorph}, the NEF is recognized as an imperfect yet suitable framework for neuromorphic engineering.
 Many of the reasons have already been mentioned in earlier discussions, and have been 
 validated by the recent deployments of the NEF on Braindrop~\citep{braindrop2019}, Loihi~\citep{blouw2018a}, and TrueNorth~\citep{fischl2018}.
-This section aims to theoretically formalize the reasons that we currently view as being of utmost importance, by rigorously exposing the computational properties and correctness of the NEF.
+This section aims to theoretically formalize the reasons that we currently view as being of utmost importance.
+We look to determine whether the NEF is correct, scalable, complete, robust, extensible, and thus ultimately useful.
 
-\subsection{Correctness of postsynaptic current coding}
+\subsection{Correctness} % of postsynaptic current coding}
 \label{sec:spike-coding}
 
 In the original formulation of the NEF~\citep{eliasmith2003a}, there exist three sources of error in the neural representation:
@@ -321,7 +324,7 @@ We review these findings below.
 However, as far as we know, the third has not received formal attention.
 A proof is found in \citet[][pp.~132--136, appendix~C.1]{eliasmith2003a} that addresses the same issue from the perspective of including noise within the neuron model, and the contents herein may be viewed as an updated treatment of that study.
 
-Figure~\ref{fig:nef-error-types} illustrates all three types of error within of a single feed-forward simulation.
+Figure~\ref{fig:nef-error-types} illustrates all three types of error within a single feed-forward simulation.
 The network is a one-dimensional communication channel ($f(x) = x$, $n = 100$, $\tau = 50$\,ms, $\dt{} = \numprint{e-5}$\,s, $\tau_\text{RC} = 20$\,ms, $\tau_\text{ref} = 2$\,ms) with maximum firing rates of $10$--$20$\,Hz and intercepts uniformly distributed across $[-1, -0.5)$.
 Low firing rates are needed to expose the third source of error, which is normally masked by the other two at high firing rates for reasons that will become clear.
 The population, initially at rest, encodes a constant input signal of $u(t) = 1$, that is directly mapped onto the PSCs without additional filtering.
@@ -373,7 +376,7 @@ Assuming relatively weak conditions on each $r_i$, namely monotonicity and conti
 
 Specifically, for a given $f$, a linear increase in the number of basis functions will reduce the root-mean-squared error~(RMSE) of the fit by the same factor.
 This particular RMSE is named \emph{static distortion}, since it corresponds to the difference between the two static (i.e.,~non-temporal) functions.
-We commonly refer to the RMSE as simply the ``error'' throughout,\footnote{
+We commonly refer to the RMSE as simply the ``error'' throughout,\footnote{%
 \citet{eliasmith2003a} use ``error'' to refer to mean-squared error~(MSE), rather than the RMSE. This may lead to confusion when comparing across sources.}
 and define ``precision'' to be the reciprocal of error.
 Thus we say that the precision of a non-spiking network scales as $\bigoh{n}$.
@@ -416,7 +419,7 @@ We formalize these ideas by appealing to the inter-spike interval~(ISI) in a man
 We define a neuron's relative ``ISI position''~(ISIP), $g_i$, to be its normalized position within the inter-spike interval that corresponds to the instantaneous firing rate of the ideal rate model.
 For this, we fix our analysis at \emph{any given moment in time}.
 Specifically, we consider the LIF neuron's current state (although this same approach extends more generally to other neuron models) to have a voltage of $v_i$, remaining refractory period of $0 \le \rho_i \le \tau_\text{ref}$, input current of $s_i$, and a corresponding instantaneous target rate of $r_i$.
-In the same way that we derived the rate model of the LIF neuron~(see derivation leading to equation~\ref{eq:lif-rate}), we may derive the neuron's ISIP according to how far along it is within the ideal ISI normalized by its length, $r_i^{-1}$:\footnote{
+In the same way that we derived the rate model of the LIF neuron~(see derivation leading to equation~\ref{eq:lif-rate}), we may derive the neuron's ISIP according to how far along it is within the ideal ISI normalized by its length, $r_i^{-1}$:\footnote{%
 If $r_i = 0$ then the neuron will not be active (and does not need to be), and so we can simply ignore it; the discussion, analysis, and results do not change.}
 \begin{equation} \label{eq:lif-isip}
 \begin{aligned}
@@ -601,11 +604,12 @@ This completes our proof of the second and final statement. $\hfill \qed$
 
 \subsubsection{Satisfying the uniform ISIP criteria}
 
-Theorem~\ref{thm:correctness} has important consequences for the correctness of NEF networks and the precision of neural computation more generally.
-Assuming neural states remain distributed in a manner that satisfies the criteria of uniform ISIPs, then precision continues to scale (i.e.,~error converges to zero by the CLT), even as:
+Theorem~\ref{thm:correctness} has important consequences for the correctness of NEF networks and the precision of neural computation in general.
+Assuming neural states remain distributed in a manner that satisfies the criteria of uniform ISIPs, then equation~\ref{eq:rate-approximation}, which forms the basis for the efficient training of NEF networks, is mathematically correct.
+Thus, precision continues to scale (i.e.,~error converges to zero by the CLT), even as:
 (1)~the number of neurons goes towards infinity~(see Figure~\ref{fig:poisson-neuron-scaling}), and
 (2)~for arbitrarily high-frequency stimuli~(see Figure~\ref{fig:poisson-frequency-scaling}).
-This ensures that the NEF, and its postsynaptic current coding scheme, is asymptotically correct -- even when coding arbitrarily high-frequency signals into spikes with arbitrarily small synaptic time-constants.
+This ensures that the NEF, and its postsynaptic current coding scheme (see section~\ref{sec:psc-coding}), is asymptotically correct -- even when encoding arbitrarily high-frequency signals into spikes with arbitrarily small synaptic time-constants.
 We summarize many of these scaling properties in section~\ref{sec:scalability}.
 
 \begin{figure}[h!]
@@ -645,14 +649,14 @@ Incidentally, \citet[][pp.~238--239]{eliasmith2003a} discovered that performance
 Indeed, this is the same assumption made by \citet[][p.~134]{eliasmith2003a} in their assessment of the quality of spiking neural representation.
 
 \item The neuron model is replaced by its Poisson-spiking counterpart; that is, \emph{any} static nonlinearity supplied to a Poisson spike-generator.
-Due to the memoryless nature of the Poisson process, at any given moment in time, the model is always uniformly ready to spike with the ideal probability.
+Due to the memoryless nature of the Poisson process, at any given moment in time, the model is always uniformly ready to spike with the ideal probability (see section~\ref{sec:poisson-spiking}).
 
 \end{enumerate}
 Future work is required for more biologically-detailed neuron models and synapses.
 We conjecture that the role of many adaptive mechanisms in biological systems is to invariantly maintain the uniform ISIP criteria with respect to the time-varying statistics of the represented signal.
-Such mechanisms would facilitate maximum information throughput for a fixed energy-budget (see section~\ref{sec:energy-minimization}).
+Such mechanisms would be able to facilitate efficient coding by maximizing information throughput for a fixed energy-budget (see section~\ref{sec:energy-minimization} and \citet[][pp.~127,~Table~4.1]{eliasmith2003a}).
 
-\subsection{Scalability and trade-offs}
+\subsection{Scalability}
 \label{sec:scalability}
 
 In this section we summarize the general trade-offs associated with scaling NEF networks.
@@ -708,16 +712,32 @@ If it could, then each neuron would represent $\omega(1)$ dimensions, which seem
 This limitation could be broken by dendritic computation, for instance if each neuron had access to $\bigoh{n}$ variables distributed along the dendritic tree.
 \fi
 
-\subsection{Efficiency in Time and Space}
-
-Low-rank factorization is optimal in space and time assuming linear weights (there is no advantage to factoring it any further by linearity).
-
-\subsection{Turing-Completeness}
+\subsection{Completeness}
 \label{sec:nef-turing}
 
-A Turing machine, and a digital computer for that matter, are describable as discrete dynamical systems.
-``Computing with a Distributed Reaction-Diffusion Model''
+Continuous-time dynamical systems, such as those implemented by the NEF, serve as powerful, \emph{universal models} of computation~\citep{bennett1995universal}.
+For example, a dynamical system describing the motion of a particle in three-dimensional space, consisting of a finite number of equations, is capable of simulating a Turing machine~\citep{moore1990unpredictability}.
+Such systems are physically implementable, while being undecidable in the sense that virtually every question about their long-term behaviour is impossible to predict, even with perfect knowledge~\citep[][]{moore1991generalized}.
 
+As established in the previous sections, the NEF may be used to train a network to approximate any continuous-time dynamical system arbitrarily well, with precision scaling in the number of neurons.
+Therefore, it follows that the class of NEF networks are equivalent in power to a Turing machine.
+The same can be said for continuous-time RNNs and other SNN models~\citep{funahashi1993approximation, thalmeier2016learning}.
+In theory, this means that these methods have the potential to implement arbitrary algorithms in distributed networks of computing elements.
+
+In some ways, the universality of continuous-time dynamical computations should not come as a surprise, as 
+a Turing machine is nothing more than a discrete-time dynamical system with an unbounded\footnote{%
+Not to be confused with infinite. Unbounded means resources can be made finite for decidable tasks.}
+number of state-variables~\citep{turing1938computable}.
+Early work by \citet{voelker2014controlling} provided a constructive proof of Turing-completeness in the NEF, by using the Semantic Pointer Architecture~\citep[SPA;][]{eliasmith2013build} to process the instructions of algorithms encoded into graphs that were sufficiently powerful to emulate multiple pushdown automata.
+% However, we have since moved away from this line of work, towards developing a systematic understanding of leveraging neuromorphic models of computation towards NEF-based computations.
+
+There is extensive literature on computability in both physical and non-physical substrates, leveraging dynamics that are either discrete or continuous in space and time.
+However, these theoretical results do not have much to say in practice about the constraints that a certain task will impose on the system, the resources needed by an optimal solution, or likewise the algorithms that demand the least amount of power according to the physical devices leveraged by the model of computation.
+
+We see these concerns as being in the realm of what should, and can, be addressed by frameworks, methods, and tools (e.g.,~NEF and~Nengo) that aim to expose and leverage some underlying model of computation.
+Thus, we do not take Turing-completeness to be the ultimate arbiter of whether some model of computation is suitable for describing the brain.
+Rather, we take this discussion as theoretical justification for the expressive power of dynamical systems, and therefore the utility in having well-understood tools for realizing them in neuromorphic hardware.
+The following sections are concerned with the robustness and extensibility of these tools.
 
 \subsection{Robustness}
 \label{sec:nef-robustness}

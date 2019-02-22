@@ -52,13 +52,13 @@ That is,
 \end{aligned}
 \end{equation}
 where $\V{x} \in \mathbb{R}^d$ is a finite-dimensional ($d \in \mathbb{N}$) state-vector, $\V{u}$ is some input vector, and $\V{y}$ is some output vector -- all indexed at discrete units of time, $t$.\footnote{
-There is a similar theorem for continuous-time dynamical systems~\citep{funahashi1993approximation}.
+There is a similar theorem for continuous-time dynamical systems~\citep{funahashi1993approximation, bennett1995universal}.
 }
 The state updates according to a nonlinear mixing of itself with the input.
 The output is a static mapping (i.e., ``readout'') of the state.
 The causality constraint implies that these functions do not require knowledge of future inputs (although they are free to make predictions).
 % Intuitively, the input and recurrent connections correspond to $\V{f}\left(\cdot, \cdot\right)$ while the outputs correspond to $\V{g}\left(\cdot\right)$.
-Crucially, an RNN with sufficiently many nonlinear units can approximate any instantiation of equation~\ref{eq:discrete-dynamical-system} arbitrarily well.
+Crucially, an RNN with sufficiently many nonlinear units can approximate any instantiation of equation~\ref{eq:discrete-dynamical-system} arbitrarily well, which in turn serves as a universal model of computation~\citep{turing1938computable}.
 
 On the other hand, the human brain itself, is a highly recurrent system~\citep{dayan2001theoretical}.
 Assuming its mechanisms obey the laws of physics, it must also necessarily be a dynamical system~\citep{amit1989modeling, mckenna1994brain, port1995mind}.
