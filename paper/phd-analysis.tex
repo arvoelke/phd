@@ -11,8 +11,7 @@ To help delineate separate considerations, some sub-sections may be significantl
 \section{Computational Sub-Principles}
 
 In this section, we focus primarily on the third principle of the NEF, and elucidate some high-level observations, or ``sub-principles'', that follow from its adoption.
-, by rigorously exposing the computational properties 
-In particular, \TODO{...}
+In doing so, we expose some new insights, including the chaotic nature of NEF networks, its strategy for encoding, and a relationship between the energy of synaptic transmission and the bandwidth of the signal.
 
 \subsection{Reducibility to a single layer}
 
@@ -43,13 +42,13 @@ In terms of training, the challenges involved in globally optimizing an RNN may 
 
 \subsection{Heterogeneity of dynamical primitives}
 
-An important observation is that neurons~(equation~\ref{eq:lif-model}), synapses~(equation~\ref{eq:lowpass-impulse}), and even the functional behaviour of entire recurrent networks~(equations~\ref{eq:discrete-dynamical-system} and~\ref{eq:lti}), can all be described in terms of differential equations.
-These ``dynamical primitives'' all have certain filtering properties, linear and nonlinear transfer functions, and internal states that evolve over time in response to some input in order to produce some output.
+We make the observation that neurons~(equation~\ref{eq:lif-model}), synapses~(equation~\ref{eq:lowpass-impulse}), and even the functional behaviour of entire recurrent networks~(equations~\ref{eq:discrete-dynamical-system} and~\ref{eq:lti}), are all described in terms of differential equations.
+These dynamical systems, each of which can be thought of as a \emph{primitive} for use in some larger computation, all have distinct filtering properties, linear and nonlinear transfer functions, and internal states that evolve over time in response to some input in order to produce some output.
 
 On the other hand, a central insight from deep learning is that a variety\footnote{%
 The variety of nonlinear responses comes from the distribution of weights and biases, analagous to the hetereogeneity obtained in equation~\ref{eq:encoding} via encoding vectors, gains, and biases.}
-of static nonlinear functions, when structurally composed, enhances the \emph{spatial complexity} of network function.
-An analagous insight in the above context is that a variety of transfer functions, when temporally composed, enhances the \emph{dynamical complexity} of network function.
+of static nonlinear functions, when structurally composed, enhance the \emph{spatial complexity} of network function.
+An analagous insight in the above context is that a variety of transfer functions, when temporally composed, enhance the \emph{dynamical complexity} of network function.
 In particular, the time-constants of synapses, neuron leakages, and recurrent network dynamics -- all act along different time-scales.
 In effect, NEF networks compose rich temporal functions by leveraging dynamical primitives that are heterogeneous in time.
 A compelling example is provided in section~\ref{sec:delay-lstm} that applies BPTT to a deep recurrent NEF network to predict a chaotic time-series.
@@ -58,7 +57,8 @@ A compelling example is provided in section~\ref{sec:delay-lstm} that applies BP
 
 As a corollary to the previous observation,
 once all primitive operations are expressed in the same language (i.e.,~differential equations), they become both \emph{composable} and \emph{interchangeable}.
-To the point of interchangeability, one can implement a lowpass filter by using a single synapse, or by training a population to emulate the same dynamical system via Principle~3.
+To the point of interchangeability, one can implement a lowpass filter by using a single synapse, or by training a population to emulate the same dynamical system via Principle~3.\footnote{%
+As simple as this point might sound, a potent example is when one student, who had been working with the Nengo for many years, used an entire network to implement the same computation as a single alpha synapse. This was due to not having them described in the same language, thus highlighting the utility of the point that we are attempting to make here.}
 To the point of composability, one can substitute the transfer function of a single synapse with that of an entire recurrent network.
 
 We illustrate this with a specific example by considering the following architecture:
@@ -241,7 +241,7 @@ This is summarized by taking the encoding equation~\ref{eq:encoding} and decodin
 \end{equation}
 In plain words, the represented state-vector is linearly projected onto the postsynaptic current of each neuron. 
 Nothing needs to change about our exposition of the NEF in order to accomodate this viewpoint of how it codes information.
-How this works in light of equation~\ref{eq:rate-approximation} requires careful proof, and the subtleties surrounding why this can matter are often lost even amongst experts in the field~[personal communication].
+How this works in light of equation~\ref{eq:rate-approximation} requires careful proof~(Theorem~\ref{thm:correctness}), and the subtleties surrounding why this can matter are often lost even amongst experts in the field~[personal communication].
 But as our example illustrates, the NEF cannot be adhering to any single definition of rate or timing code.
 Rather, it is representing desired transformations by mapping latent state-variables onto postsynaptic currents.  %, with precision that scales as $\bigoh{\tau \sqrt{n}}$.
 % Anectodally, we find that it takes at least several months of working closely with the details of NEF simulations to appreciate these nuances, although the software package Nengo dramatically assists in abstracting them away from the user.
@@ -316,8 +316,7 @@ In the original formulation of the NEF~\citep{eliasmith2003a}, there exist three
 \item ``spiking noise'' arising from the use of discontinuous spikes; that is, the substitution of a continuous non-spiking model with a spiking model that produces variable PSCs, and
 \item ``state discrepancy'' arising from the substitution of a stateless model with a stateful model.
 \end{enumerate}
-
-The first two sources of error have already been studied extensively throughout \citet{eliasmith2003a} and the software implementation Nengo.
+The first two sources of error have already been studied extensively throughout \citet{eliasmith2003a} and the software implementation, Nengo.
 We review these findings below.
 However, as far as we know, the third has not received formal attention.
 A proof is found in \citet[][pp.~132--136, appendix~C.1]{eliasmith2003a} that addresses the same issue from the perspective of including noise within the neuron model, and the contents herein may be viewed as an updated treatment of that study.
