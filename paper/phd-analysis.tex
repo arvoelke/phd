@@ -304,10 +304,9 @@ We provide additional examples of such trade-offs in the following sections.
 \label{sec:nef-suitability}
 
 In the prospectus of \citet{boahen2017neuromorph}, the NEF is recognized as an imperfect yet suitable framework for neuromorphic engineering.
-Many of the reasons have already been mentioned in earlier discussions, and have been 
+Many of these reasons have already been mentioned in earlier discussions, and have been 
 validated by the recent deployments of the NEF on Braindrop~\citep{braindrop2019}, Loihi~\citep{blouw2018a}, and TrueNorth~\citep{fischl2018}.
-This section aims to theoretically formalize the reasons that we currently view as being of utmost importance.
-We look to determine whether the NEF is correct, scalable, complete, robust, extensible, and thus ultimately useful.
+This section aims to theoretically formalize the reasons that we currently view as being of utmost importance -- specifically, how the NEF is correct, scalable, complete, robust, extensible, and thus ultimately, \emph{useful}.
 
 \subsection{Correctness} % of postsynaptic current coding}
 \label{sec:spike-coding}
@@ -609,7 +608,7 @@ Assuming neural states remain distributed in a manner that satisfies the criteri
 Thus, precision continues to scale (i.e.,~error converges to zero by the CLT), even as:
 (1)~the number of neurons goes towards infinity~(see Figure~\ref{fig:poisson-neuron-scaling}), and
 (2)~for arbitrarily high-frequency stimuli~(see Figure~\ref{fig:poisson-frequency-scaling}).
-This ensures that the NEF, and its postsynaptic current coding scheme (see section~\ref{sec:psc-coding}), is asymptotically correct -- even when encoding arbitrarily high-frequency signals into spikes with arbitrarily small synaptic time-constants.
+This ensures that the NEF, and its postsynaptic current coding scheme (see section~\ref{sec:psc-coding}), is asymptotically correct -- even when encoding arbitrarily high-frequency signals into spikes with arbitrarily small synaptic time-constants and low firing rates.
 We summarize many of these scaling properties in section~\ref{sec:scalability}.
 
 \begin{figure}[h!]
