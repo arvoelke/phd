@@ -255,6 +255,7 @@ But the fact of the matter is that this becomes unnecessary (and inefficient) fo
 
 
 \subsection{Energy-minimization via low-frequency representation}
+\label{sec:energy-minimization}
 
 We define a \emph{low-frequency representation} as one in which the represented vector, $\V{x}(t)$, carries its information within frequencies on the order of the cut-off frequency of the synaptic filter.
 That is, $\left( 2 \pi \tau \right)^{-1}$\,Hz, where $\tau$ is the synaptic time-constant of equation~\ref{eq:lowpass-laplace} in seconds.\footnote{
@@ -435,8 +436,8 @@ In Figure~\ref{fig:nef-error-types}(d), we measure this value empirically across
 We see that the magnitude of the KS-statistic corresponds very closely to the error between the ideal and the spiking solution.
 Although here we are looking at just a constant input for ease of visualization, we find that this statistic correlates highly (Pearson correlation coefficient $R = 0.90$, $p$-value~$< \numprint{e-6}$) with the spiking noise across a wide range of input frequencies (see Figure~\ref{fig:frequency-ks-test}).
 
-We now prove that our definition of state discrepancy is indeed the correct one, and in doing so provide a sufficient (but not necessary) criteria for scaling away this source of error.
-Specifically, this remaining source of error---state discprepancy---is tamed by minimizing the difference (KS-statistic) between a uniform distribution and the actual neuron's ``readiness to spike'', as characterized by its ISIP~(e.g.,~equation~\ref{eq:lif-isip} for the case of a LIF model).
+We now prove that our definition of state discrepancy is indeed the correct one, and in doing so provide a sufficient criteria for scaling away this source of error.
+Specifically, this remaining source of error---state discrepancy---is tamed by minimizing the difference (KS-statistic) between a uniform distribution and the actual neuron's ``readiness to spike'', as characterized by its ISIP~(e.g.,~equation~\ref{eq:lif-isip} for the case of a LIF model).
 
 \vspace{1em}
 
@@ -445,14 +446,14 @@ Specifically, this remaining source of error---state discprepancy---is tamed by 
 Let $\V{\mu}(t) = \sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i- \sum_{i=1}^n \left( r_i(\V{x}) \ast h \right)(t) \V{d}^\V{f}_i$
 % \transpose{\V{d}}a - \hat{x}$
 be the spiking noise.
-If the ISIP is uniformly and independently distributed---$g_i$ are realizations of $\mathcal{U}[0, 1]$---then:
+If the ISIPs, $g_i$, are uniformly and independently distributed, then:
 \begin{enumerate}
 \item $\expect{ \V{\mu}(t) } = 0$; hence the expected spike noise is exactly zero at all times (no systematic bias), 
 \item $\sqrt{\variance{\V{\mu}(t)}} = \bigoh{\left(\tau \sqrt{n}\right)^{-1}}$ is the standard error, or root-mean-squared error; hence the precision scales as $\bigoh{ \tau \sqrt{n} }$ at all times.
 % \item equation~\ref{eq:rate-approximation} has residual error with the statistic $\V{\mu}(\cdot) \sim \mathcal{N}\left(0, \sigma^2 \right)$, where $\sigma = \bigoh{ \left( \tau \sqrt{n} \right)^{-1} }$.
 \end{enumerate}
 \end{theorem}
-We prove these statements in order after a few remarks.
+We prove each statement, in order, after a few remarks.
 We prove something slightly more general, and without invoking asymptotics until the very end.
 We also do so without assuming any particular neuron model -- only that it has a well-defined ISIP.
 We shift our frame of reference, without loss of generality, such that we are currently observing $t = 0$.
@@ -598,42 +599,58 @@ Therefore,
 \end{equation}
 This completes our proof of the second and final statement. $\hfill \qed$
 
-\subsubsection{Discussion of uniform ISIP criteria}
+\subsubsection{Satisfying the uniform ISIP criteria}
 
-Indeed this is the same assumption made on \citet[][p.~134]{eliasmith2003a}.
+Theorem~\ref{thm:correctness} has important consequences for the correctness of NEF networks and the precision of neural computation more generally.
+Assuming neural states remain distributed in a manner that satisfies the criteria of uniform ISIPs, then precision continues to scale (i.e.,~error converges to zero by the CLT), even as:
+(1)~the number of neurons goes towards infinity~(see Figure~\ref{fig:poisson-neuron-scaling}), and
+(2)~for arbitrarily high-frequency stimuli~(see Figure~\ref{fig:poisson-frequency-scaling}).
+This ensures that the NEF, and its postsynaptic current coding scheme, is asymptotically correct -- even when coding arbitrarily high-frequency signals into spikes with arbitrarily small synaptic time-constants.
+We summarize many of these scaling properties in section~\ref{sec:scalability}.
 
 \begin{figure}[h!]
 \centering
 \includegraphics[width=1.0\textwidth]{frequency-ks-test}
 \caption{\label{fig:frequency-ks-test}
-  Relationship between the uniformity of neural states (KS-Statistic) and the representational error (RMSE) for sinusoidal stimuli of varying frequencies.
-  (Left)~Empirical distribution of ISI positions---$s_i$ normalized by the instaneous rate $a_i$---is compared to the ideal uniform distribution using the Kolmogorov-Smirnov (KS) test ($p$-value~$< 0.0001$).
+  Relationship between \emph{state discrepancy}~(KS-statistic; definition~\ref{def:state-discrepancy}) and representational error induced by filtered spikes~(RMSE), for sinusoidal stimuli of varying frequencies.
+  (Left)~Empirical distribution of ISI positions (equation~\ref{eq:lif-isip}) is compared to the ideal uniform distribution using the KS-statistic ($p$-values~$< \numprint{e-6}$).
   % In the ideal case, the spiking LIF model is equal to its non-spiking counterpart in the sense of expectation.
-  (Right)~The RMSE is highly correlated with the KS-Statistic, with a Pearson correlation coefficient of $R = 0.90$ ($p$-value~$< \numprint{e-6}$).
+  (Right)~The RMSE is highly correlated with the KS-statistic, with a Pearson correlation coefficient of $R = 0.90$ ($p$-value~$< \numprint{e-6}$).
 }
 \end{figure}
 
-The previous analysis relies on the assumption that each neuron is ``uniformly ready to spike''.
-To validate this assumption from equation (\ref{eq:s}) that $T_i \sim U[0, 1/a_i]$, we empirically sampled this distribution for sinusoidal test stimuli of varying frequencies (Fig.~\ref{fig:frequency-ks-test}).
-We define the \emph{ISI position} as $s_i \times a_i$. This is the realization of a random variable, in the range $[0, 1]$.
-Intuitively, this can be interpreted as the percent time remaining within the idealized inter-spike interval, given the current voltage of the neuron and its ideal spike rate.
-A value of $0$ implies the neuron is currently spiking and $1$ implies the neuron just spiked.
-This quantity is calculated by solving the LIF ODE and rearranging to obtain:
-\begin{equation}
-\left(\tau_\text{RC} \log\left(1 + \frac{1 - v_i}{J_i - 1}\right) + r_i \right) a_i \text{,}
-\end{equation}
-where $0 \le r_i \le \tau_\text{ref}$ is the time remaining in the refractory period.
+However, in the NEF, when using LIF neurons, this criteria is violated as the frequency of the represented signal increases.
+To demonstrate, Figure~\ref{fig:frequency-ks-test} simulates a communication channel ($n = \numprint{2500}$, $\dt{} = 0.1$\,ms, $\tau = 1.6$\,ms, $\tau_\text{RC} = 20$\,ms, $\tau_\text{ref} = 2$\,ms), with tuning curves uniformly distributed to achieve maximum firing rates of $50$--$100$\,Hz, in order to encode sinusoid stimuli of increasing frequencies (visualizing 95\% confidence interval, bootstrapped across 5 random configurations at each frequency).
+For $0$\,Hz (constant) inputs, the ISIP distribution is uniform (KS-statistic~$<0.0002$), as we should expect (i.e.,~the neural states remain independently mixed for a constant input).
+% This verifies the numerics of our spiking LIF implementation\TODO{cite Nengo LIF improvements}, as we should expect that a constant input causes each neuron to spend an equal amount of time at each position within its ideal ISI.
+However, as the frequency increases, so does the state discrepancy (see left).
+Likewise, the state discrepancy is highly correlated ($R = 0.90$) with the RMSE of the spike noise (see right).
+Even though the state discrepancy is $< 6$\% for input frequencies up to $100$\,Hz, it is important to remind the reader that this is a systematic error that \emph{does not scale away} with higher neuron counts.
+On one hand this makes theoretical predictions regarding the information-processing capabilities of LIF neurons for stimuli with various statistics, and in particular suggests a nonlinear transfer function that may have some functional relevance -- but, on the other hand, here we are interested in understanding how this formalism relates to minimizing error and maximizing information throughput.
 
-As shown in Fig.~\ref{fig:frequency-ks-test}, the default LIF model ($\tau_\text{RC} = 20$\,ms, $\tau_\text{ref} = 2$\,ms, and tuning curves uniformly distributed to achieve maximum firing rates of $50-100$\,Hz) closely follows the ideal uniform distribution ($< 6$\% error) for input frequencies up to $100$\,Hz. For $0$\,Hz (constant) inputs, the two distributions are the same (Kolmogorov-Smirnov statistic\footnote{
-The maximum absolute distance between the empirical and model CDFs.
-If samples are drawn from the model distribution, its Kolmogorov-Smirnov statistic approaches $0$ with probability $1$ as the number of samples approaches infinity.}%
-$<0.0002$, $p$-value~$> 1-\numprint{e-15}$).
-This verifies the numerics of our spiking LIF implementation\TODO{cite Nengo LIF improvements}, as we should expect that a constant input causes each neuron to spend an equal amount of time at each position within its ideal ISI.
+In order to scale away the state discrepancy, we note that the uniform ISIP assumption may be satisfied in a number of ways, many of which are validated in
+section~\ref{sec:poisson-spiking}:
+\begin{enumerate}
+\item The state of the system is initialized such that $g_i$ is uniform.
+For the case of the LIF model, one can invert equation~\ref{eq:lif-isip} and solve for $(v_i, \rho_i)$ from a uniform sample, and then use this to initialize the state of each neuron.
+We do so in many of our experiments (including Figure~\ref{fig:frequency-ks-test}) in order to remove the initial transient that would otherwise be a statistical anomaly~(see Figure~\ref{fig:nef-error-types}(d)).
+Given a constant representation, the neural states naturally remain mixed due to hetereogeneity in the encoding.
+However, this does not guarantee invariance over time for time-varying stimuli; leakage in the model as well as rapid inhibition can skew the ISIPs back towards zero.
 
-Taken together, this means that any approximation error arising from the substitution of spiking LIF for non-spiking LIF models must arise from two sources: (1) the variability in equation \ref{eq:variance}, which is a function of $\tau$, the number of neurons, and the magnitude of the decoders, and (2) a systematic bias (Fig.~\ref{fig:frequency-ks-test}) resulting from the ISI positions being non-uniform with respect to the input stimuli.
-In summary, this provides a theoretical framework for understanding the differences between spiking and non-spiking neuron models in the context of some desired PSC.
-This also provides some theoretical justification for using spiking LIF models following an offline optimization using static tuning curves -- a procedure that the NEF and Nengo use regularly.
-Lastly, this suggests criteria for optimizing the information-processing capabilities of spiking neurons in the context of high-frequency signals, as done in section~\ref{sec:poisson-spiking}.
+\item The neuron model is replaced by a spiking rectified linear (ReLU) unit, also known as a (non-leaky) integrate-and-fire neuron that rectifies its input current, such that its state can only evolve in one direction.
+This can also be achieved by setting the $\tau_\text{RC}$ to be sufficiently large, and preventing the neuron's voltage floor from being hit, as in \citet{boerlin2013predictive}.
+Incidentally, \citet[][pp.~238--239]{eliasmith2003a} discovered that performance was improved by increasing $\tau_\text{RC}$, but attributed this improvement to static distortion being minimized by linear tuning curves, instead of having reduced the overall state discrepancy~\citep[also see][Appendix~F.1]{eliasmith2003a}.
+
+\item Noise is introduced to the neuron model, to maintain a uniform subthreshold state~\citep[][pp.~132--133]{eliasmith2003a}.
+Indeed, this is the same assumption made by \citet[][p.~134]{eliasmith2003a} in their assessment of the quality of spiking neural representation.
+
+\item The neuron model is replaced by its Poisson-spiking counterpart; that is, \emph{any} static nonlinearity supplied to a Poisson spike-generator.
+Due to the memoryless nature of the Poisson process, at any given moment in time, the model is always uniformly ready to spike with the ideal probability.
+
+\end{enumerate}
+Future work is required for more biologically-detailed neuron models and synapses.
+We conjecture that the role of many adaptive mechanisms in biological systems is to invariantly maintain the uniform ISIP criteria with respect to the time-varying statistics of the represented signal.
+Such mechanisms would facilitate maximum information throughput for a fixed energy-budget (see section~\ref{sec:energy-minimization}).
 
 \subsection{Scalability of Precision}
 \label{sec:scalability}
