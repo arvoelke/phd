@@ -30,32 +30,33 @@ Unless stated otherwise, all simulations use a time-step of $\dt{} = 1$\,ms, and
 
 NengoLib includes the core code for most of the extensions discussed in chapter~\ref{chapt:nef-extensions} and the networks discussed in chapter~\ref{chapt:delays}.
 In addition, it is used to construct RC, FORCE, full-FORCE, and Nengo networks---each in spiking and non-spiking mode, and in an analagous manner to one another---in order to facilitate meaningful comparisons between these architectures.
-We now summarize some of the important facets of this software that are used throughout the remaining chapters.
+We now summarize some of the important features of this software that are used throughout the remaining chapters.
 
-\subsubsection{State-Space Realizations}
+\subsubsection{State-space realizations}
 
-Although the transfer function is in fact a unique description of the input-output behavior of a LTI system, the state-space model (equation~\ref{eq:lti}) is not.
+The state-space model (equation~\ref{eq:lti}) is \emph{not} a unique description of the input-output behaviour of an LTI system.
 In general, one may consider any invertible matrix $T$ with the same shape as $A$, and observe that the state-space model $(TAT^{-1}\text{,}\, TB\text{,}\, CT^{-1}\text{,}\, D)$ has the same transfer function as $(A\text{,}\, B\text{,}\, C\text{,}\, D)$.
 Thus, the state-space model is only unique up to a change of basis.
 However, in the NEF, the basis $T$ may be ``absorbed'' into the representation of $\V{x}(t)$ by using the encoders $ET$ in Principle~1, which, in turn, results in the decoders $D^\V{f} \transpose{\left(T^{-1}\right)}$ from Principle~2.
 In other words, considering an alternative state-space model is equivalent to considering a change of basis for the representation.
+Nevertheless, in practice, when aiming to accurately represent $\V{x}(t)$ using few neurons, it is important to balance the relative range of values within each dimension, such that a typical trajectory for $\V{x}(t)$ stays within the space represented by the distribution of encoders, consistent with the samples of $S$ (see equation~\ref{eq:decoder_solution}), and the dynamic range of each neuron.
 
-In practice, when aiming to accurately represent $\V{x}(t)$ using few neurons, it is important to balance the relative range of values within each dimension, such that a typical trajectory for $\V{x}(t)$ stays within the space represented by the distribution of encoders, consistent with the samples of $S$ (see equation~\ref{eq:decoder_solution}), and the dynamic range of each neuron.
-We balance the range of values by numerically computing the $T$ that results in a ``balanced realization'' of $(A\text{,}\, B\text{,}\, C\text{,}\, D)$~\citep{laub1987computation, perevapproximation}.
+For this, there is a feature to \emph{balance} the range of values by numerically computing the $T$ that results in a ``balanced realization'' of $(A\text{,}\, B\text{,}\, C\text{,}\, D)$~\citep{laub1987computation, perevapproximation}.
 We then set the encoders to be unit-length and axis-aligned, and optimize each dimension independently by using the methods from section~\ref{sec:principle2}.
-As mentioned in the main text, we occasionally include encoders that are scattered uniformly along the surface of the hypersphere using quasi-Monte Carlo sampling---specifically, using the inverse transform method applied to the Sobol sequence with a spherical coordinate transform~\citep{fang1994, voelker2016b}---to visualize a distributed representation.
-Finally, we occasionally scale each dimension by a diagonal transformation $T$ with the $i^{\text{th}}$ diagonal equaling $\max_t \left| x_i(t) \right|$ where $x_i(t)$ is obtained by simulating the desired system directly on a randomly sampled input.
-We also experimented with a diagonal transformation $T$ with the $i^{\text{th}}$ diagonal corresponding to the reciprocal of $2$ times the sum of the Hankel singular values~\citep{glover1987bounds} of the subsystem corresponding to $x_i(t)$.
+
+There is also the support to normalize each dimension by a diagonal transformation $T$ with the $i^{\text{th}}$ diagonal equaling $\max_t \left| x_i(t) \right|^{-1}$ where $x_i(t)$ is obtained by simulating the ideal system directly on a randomly sampled input.
+
+Finally, NengoLib supports a diagonal transformation $T$ with the $i^{\text{th}}$ diagonal corresponding to the reciprocal of $2$ times the sum of the Hankel singular values~\citep{glover1987bounds} of the subsystem corresponding to $x_i(t)$.
 This has the effect of bounding the absolute value of each dimension above by $1$ in the worst case~\citep{khaisongkram2007computing}.
-We have found that these methods of normalizing state-space models typically improve the robustness of our networks across a wide range of parameters.
+
+In general, we have found that each of these methods of normalizing state-space models typically improve the robustness of our networks across a wide range of parameters, but one is never strictly better than all others in every situation.
 
 % Likewise, any change of basis in the state-space model of $F^H$ does not impact the dynamics of $F^H(H(s)^{-1})$
 % But there is really no reason to do that as far as I can tell.
-
-It is worth noting that the mappings from section~\ref{sec:extensions}---with the exception of equations~\ref{eq:lambert-delay} and~\ref{eq:general-linear-approx}---do not alter the representation of $\V{x}(t)$.
-Disregarding these exceptions, the same choice of basis is conveniently carried over to the implemented network.
-Yet, it is also the case that the dynamics of the system mapped by equation~\ref{eq:general-linear-approx} do not depend on the chosen state-space model.
-This fact is proven implicitly in the following appendix, by characterizing the dynamics in terms of $F(s)$ and $H(s)$ alone.
+%It is worth noting that the mappings from section~\ref{sec:extensions}---with the exception of equations~\ref{eq:lambert-delay} and~\ref{eq:general-linear-approx}---do not alter the representation of $\V{x}(t)$.
+%Disregarding these exceptions, the same choice of basis is conveniently carried over to the implemented network.
+%Yet, it is also the case that the dynamics of the system mapped by equation~\ref{eq:general-linear-approx} do not depend on the chosen state-space model.
+%This fact is proven implicitly in the following appendix, by characterizing the dynamics in terms of $F(s)$ and $H(s)$ alone.
 
 \subsubsection{Geometric Decoder Optimization}
 
@@ -64,6 +65,8 @@ This fact is proven implicitly in the following appendix, by characterizing the 
 \subsubsection{Encoders, Evaluation Points, and Semantic Pointers}
 
 \subsubsection{Sampling High-Dimensional Vectors and Coordinates}
+
+We often sample encoding vectors $\V{e}_i$ to be scattered uniformly along the surface of the hypersphere using quasi-Monte Carlo sampling---specifically, using the inverse transform method applied to the Sobol sequence with a spherical coordinate transform~\citep{fang1994, knight2016}---to visualize a distributed representation.
 
 \subsubsection{Quanti-Monte Carlo Sampling}
 
