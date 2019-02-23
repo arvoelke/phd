@@ -233,7 +233,7 @@ We remark that each of $d$, $c$, and $r$ are dimensionless (i.e.,~unitless) cons
 \subsubsection{Coordinate transformation}
 
 Before proceeding with the general solution, we introduce some useful intermediate results:
-\begin{lemma} \label{thm:coord-transform}
+\begin{lemma} \label{lemma:coord-transform}
 Let $\V{f}(t)$ and $\V{g}(t)$ be infinitely time-differentiable signals, that are related by:
 \begin{equation} \label{eq:f}
 \V{f} = \sum_{i=0}^\infty c_i \V{g}^{(i)} \text{,}
@@ -303,6 +303,7 @@ H^q_{c \rightarrow b}(z) = \frac{z^{q}}{\sum_{i=0}^q c_i z^{q - i}} \text{,}
 $$
 and likewise, $H^q_{b \rightarrow c}(z)$ has the impulse-response $\coords{c}{i=0\ldots q}$.
 Furthermore, $$\lim_{q \rightarrow \infty} H^q_{c \rightarrow b}(z) H^q_{b \rightarrow c}(z) = 1,$$ analogously to equation~\ref{eq:inv}.
+Lastly, we note that the above Lemma and Corollary also apply to the case where differentials are replaced by discrete time-shifts and the Laplace transform is replaced by the $\mathcal{Z}$-transform.
 
 \subsubsection{General linear synapse}
 \label{sec:general-linear-synapse}
@@ -326,27 +327,27 @@ Such synapses have been used to model bandpass filtering from mechanoreceptors i
 
 As well, in the following section we demonstrate that equation~\ref{eq:synapse} may be used to model synapses with pure delays, which proves a complete connection to ZOH discretization.
 %Within the NEF, both the alpha and double-exponential have the advantage of filtering the neural activity twice, thus reducing the spike-noise relative to the first-order lowpass.  CE: just didn't fit well anymore.
-Specifically, by the use of Pad\'e approximants, we may rewrite any transfer function with a Taylor series expansion (even those that are irrational or improper) in the form of equation~\ref{eq:synapse}---albeit with some radius of convergence.
-This permits us to model, for instance, synapses with pulse-extended responses~\citep{voelker2017iscas}.
+%Specifically, by the use of Pad\'e approximants, we may rewrite any transfer function with a Taylor series expansion (even those that are irrational or improper) in the form of equation~\ref{eq:synapse-rewritten}---albeit with some radius of convergence.
+This same technique permits us to model, for instance, synapses with pulse-extended responses~\citep{voelker2017iscas}.
 %\footnote{
 %Pad\'e approximants are computed ``manually'' by \citet[][equations~9--11]{voelker2017iscas} to obtain a second-order approximation in the form of equation~\ref{eq:synapse}.
 Similarly, the delayed lowpass (equation~\ref{eq:delayed-lowpass}) may be expressed in the form of equation~\ref{eq:synapse}.
 % Therefore, equation~\ref{eq:synapse} captures a wide variety of linear postsynaptic responses to some desired degree of accuracy.
 Finally, any linear combinations of the aforementioned synapse models will also be a member of this class.
-Nonlinear synapse models, such as conductance-based synapses~\citep[e.g.,][equation~6]{destexhe1994efficient}, are a current subject of study in the NEF~\citep{stockel2017, stoeckel2018}.
+Nonlinear synapse models, such as conductance-based synapses~\citep[e.g.,][equation~6]{destexhe1994efficient}, are the active subject of study in the NEF~\citep{stockel2017, stoeckel2018}.
 
 %It is interesting to note that although our characterization does not include nonlinear synapse models, such as conductance-based synapses~\citep[][equation~6]{destexhe1994efficient}, recent results indicate that, at least in some common cases, such models may also be accounted for without significantly impacting overall accuracy~\citep{stockel2017}.
 %However, these results remain to be thoroughly tested and quantified.
 
 The first step is to apply Corollary~\ref{cor:coord-transform} to the numerator $\{b\}_{i=0}^p$ in order to rewrite the transfer function in the following form:
-\begin{equation}
+\begin{equation} \label{eq:synapse-rewritten}
 F(s) = \frac{1}{\sum_{i=0}^k c_i s^i} \text{,}
 \end{equation}
 where $k$ is potentially infinite. Now we state and prove the main theorem of this section.
 
 \begin{theorem}
 \label{thm:general-linear}
-To map $F$ onto equation~\ref{eq:synapse}, we begin by defining our solution to $F^{H}(s)$ in the form of its state-space model (see equation~\ref{eq:ss-mapped}):
+To map $F$ onto equation~\ref{eq:synapse-rewritten}, we begin by defining our solution to $F^{H}(s)$ in the form of its state-space model (see equation~\ref{eq:ss-mapped}):
 \begin{equation} \label{eq:general-linear}
 \begin{aligned}
 A^H &= \sum_{i=0}^k c_i A^i \text{,} & \quad C^H &= C \text{,} \\
@@ -406,7 +407,7 @@ Finally, we again note that these results translate directly to the discrete-tim
 The required state-space matrices are the same as in equation~\ref{eq:general-linear}, but with $\left( \bar{c}_i \right)$ corresponding to the coefficients of $H(z)$, bars affixed to each state-space matrix, and $z$ substituted for $s$ in $\bar{B}^H$.
 However, the $z^j$ operator is a shift backwards by $j$ time-steps (i.e.,~an acausal lookahead), and so the ZOH assumption is instead $\V{u}[t+j\dt{}] = \V{u}[t]$ for all $j = 1 \ldots k - 1$.
 Thus, the discrete analog to equation~\ref{eq:general-linear-approx} is:
-\begin{equation}
+\begin{equation} \label{eq:general-linear-approx-discrete}
 \bar{B}^H = \left( \sum_{j=0}^{k-1} \sum_{i=j+1}^k \bar{c}_i \bar{A}^{i-j-1} \right) \bar{B} \text{.}
 \end{equation}
 
@@ -419,8 +420,9 @@ Focusing on point~1, this is precisely the notion captured by definition~\ref{de
 H(s) = e^{-\dt{}s} = \frac{1}{e^{\dt{}s}} = \frac{1}{\sum_{i=0}^\infty \frac{\dt{}^i}{i!} s^i} \text{,}
 \end{equation*}
 by the Maclaurin series of $e^{x}$.
-This is in the form of equation~\ref{eq:synapse} with $c_i = \frac{\dt{}^i}{i!}$ as $k \rightarrow \infty$.
-These coefficients are also the $\left[ 0 / \infty \right]$ Pad\'e approximants of $\sum_{i=0}^\infty \frac{(-\dt{})^i}{i!} s^i$.
+That is, a synapse model that represents a pure delay of $\lambda = \dt{}$ without any additional filtering.
+This is in the form of equation~\ref{eq:synapse-rewritten} with $c_i = \frac{\dt{}^i}{i!}$ as $k \rightarrow \infty$.
+These coefficients are also the $\left[ 0 / \infty \right]$ Pad\'e approximants of $\sum_{i=0}^\infty \frac{(-\dt{})^i}{i!} s^i$, and likewise the result of the coordinate transformation equation~\ref{eq:b}.
 
 If we make the ZOH assumption---that the input signal is held piecewise-constant over each continuous-time interval of length $\dt{}$---then $\V{u}^{(j)} = 0$ for all $j \ge 1$.
 Therefore, by equation~\ref{eq:general-linear-approx}, an equivalent state-space model is:
@@ -435,25 +437,135 @@ This connection helps to illustrate the scope and consistency of our theory.
 In particular, the important procedure of discretizing linear state-space models may be viewed as a special case of accounting for changes in dynamical primitives.
 Furthermore, as one should hope, the ZOH assumption recovers the correct result, which is normally proven by integrating the linear differential equations over the interval $[0\text{,}\, \dt{}]$.
 
-\subsection{Nonlinear State-Space Characterization}
+\subsection{Nonlinear state-spaces}
 \label{sec:nonlinear-extensions}
 
-\citet{voelker2017iscas} and \citet{voelker2017neuromorphic} for recent nonlinear extensions.
+This section has been adapted from the work of \citet{voelker2017iscas}, which in turn extends the work of \citet{voelker2017neuromorphic} in applying the NEF to the mixed-signal synapses of Braindrop~\citep{braindrop2019}.
+Here we derive two theorems for nonlinear systems, by taking a subtly different perspective than that of the previous section.
+This generalizes the approach taken in \citet{voelker2017neuromorphic}, which considered the special case of a pulse-extended (i.e.,~time-delayed) double-exponential synapse.
+%, which was inspired by Wilten Nicola's phase-space derivation of Principle~3 with double exponential synapses for autonomous systems [personal communication].
 
-Lemma~\ref{lemma:coord-transform} is a more general version of the analysis we do in ISCAS~2017. To be concrete, we have:
+We wish to implement some desired nonlinear dynamical system,
+\begin{equation} \label{eq:nonlinear}
+\dot{\V{x}}(t) = f(\V{x}, \V{u}) \text{,}
+\end{equation}
+using equation~\ref{eq:synapse-rewritten} (rewritten from the form of equation~\ref{eq:synapse}) as the synaptic filter, $h(t)$.
+Letting $\V{w}(t) = f^h(\V{x}, \V{u})$ for some recurrent function $f^h$ and observing that $\V{x}(t) = (\V{w} \ast h)(t)$, we may express these dynamics in the Laplace domain:
+\begin{align*}
+&& \frac{\V{X}(s)}{\V{W}(s)} &= \frac{1}{\sum_{i=0}^k c_i s^i} \\
+\iff && \V{W}(s) &= \V{X}(s) \sum_{i=0}^k c_i s^i = \sum_{i=0}^k c_i \left[ s^i \V{X}(s) \right] \\
+\iff && \V{w}(t) &= \sum_{i=0}^k c_i \V{x}^{(i)}
+\end{align*}
+since $s$ is the differential operator. This proves the following theorem:
+\begin{theorem} \label{thm:p3cont-nonlinear}
+Let the function computed along the recurrent connection be:
+\begin{align}
+f^h(\V{x}, \V{u}) = \sum_{i=0}^k c_i \V{x}^{(i)}
+\end{align}
+where $\V{x}^{(i)}$ denotes the $i^\text{th}$ time-derivative of $\V{x}(t)$, and $c_i$ are given by equation~\ref{eq:synapse-rewritten}. Then the resulting dynamical system is precisely equation~\ref{eq:nonlinear}.
+\end{theorem}
+
+For the discrete case, we begin with some desired nonlinear dynamics expressed over discrete time-steps:
+\begin{equation} \label{eq:disc-nonlinear}
+\V{x}[t+dt] = \bar{f}(\V{x}, \V{u}) \text{,}
+\end{equation}
+using equation~\ref{eq:synapse-rewritten} (with $s$ replaced by $z$; the coordinate transformation still applies) as the synaptic filter $h[t]$, followed by an analogous theorem:
+\begin{theorem} \label{thm:p3disc-nonlinear}
+Let the function computed along the recurrent connection be:
+\begin{align}
+\bar{f}^h(\V{x}, \V{u}) = \sum_{i=0}^k \bar{c}_i \V{x}^{[i]}
+\end{align}
+where $\V{x}^{[i]}$ denotes the $i^\text{th}$ discrete forwards time-shift of $\V{x}$, and $\bar{c}_i$ are likewise read from the denominator of $H(z)$.
+Then the resulting dynamical system is precisely equation~\ref{eq:disc-nonlinear}.
+\end{theorem}
+The proof for the discrete case is nearly identical.
+For sake of completeness, let $\V{w}[t] = \bar{f}^h(\V{x}, \V{u})$ for some recurrent function $\bar{f}^h$ and observe that $\V{x}[t] = (\V{w} \ast h)[t]$:
+\begin{align*}
+&& \frac{\V{X}(z)}{\V{W}(z)} &= \frac{1}{\sum_{i=0}^k \bar{c}_i z^i} \\
+\iff && \V{W}(z) &= \V{X}(z) \sum_{i=0}^k \bar{c}_i z^i = \sum_{i=0}^k \bar{c}_i \left[ z^i \V{X}(z) \right] \\
+\iff && \V{w}[t] &= \sum_{i=0}^k \bar{c}_i \V{x}^{[i]}
+\end{align*}
+since $z$ is the forwards time-shift operator. \qed
+
+\subsubsection{Continuous lowpass synapse}
+
+For standard Principle~3, we have $H(s) = \frac{1}{\tau s + 1}$ $\implies$ $k = 1$, $c_0 = 1$ and $c_1 = \tau$, 
+\begin{equation} \label{eq:p3cont-nonlinear}
+\implies f^h(\V{x}, \V{u}) = c_0 \V{x}^{(0)} + c_1 \V{x}^{(1)} = \V{x} + \tau \dot{\V{x}} = \tau f(\V{x}, \V{u}) + \V{x} \text{.}
+\end{equation}
+Note that equation~\ref{eq:p3cont-nonlinear} is consistent with equation~\ref{eq:p3-novel} and with Principle~3 from the NEF.
+
+\subsubsection{Discrete lowpass synapse}
+
+For the discrete case of Principle~3, we have $H(z) = \frac{1 - a}{z - a}$, where $a = e^{-\dt{} / \tau}$ $\implies$ $k = 1$, $\bar{c}_0 = -a(1 - a)^{-1}$, $\bar{c}_1 = (1 - a)^{-1}$,
+\begin{equation} \label{eq:p3discrete-nonlinear}
+\implies \bar{f}^h(\V{x}, \V{u}) = \bar{c}_0 \V{x}^{[0]} + \bar{c}_1 \V{x}^{[1]} =  (1 - a)^{-1}(\bar{f}(\V{x}, \V{u}) - a\V{x}) \text{.}
+\end{equation}
+Note that equation~\ref{eq:p3discrete-nonlinear} is consistent with equation~\ref{eq:discrete-p3}.
+
+\subsubsection{Continuous double-exponential synapse}
+
+For the double exponential synapse:
+\begin{equation} \label{eq:double-exp}
+H(s) = \frac{1}{(\tau_1 s + 1)(\tau_2 s + 1)} = \frac{1}{\tau_1 \tau_2 s^2 + (\tau_1 + \tau_2)s + 1}
+\end{equation}
+\begin{align} \label{eq:double-exp-solution}
+\implies f^h(\V{x}, \V{u}) &= \V{x} + (\tau_1 + \tau_2) \dot{\V{x}} + \tau_1 \tau_2 \ddot{\V{x}} \nonumber \\
+&= \V{x} + (\tau_1 + \tau_2) f(\V{x}, \V{u}) + \tau_1 \tau_2 \left( \frac{\partial f(\V{x}, \V{u})}{\partial \V{x}} \cdot f(\V{x}, \V{u}) + \frac{\partial f(\V{x}, \V{u})}{\partial \V{u}} \cdot \dot{\V{u}} \right) \text{.}
+\end{align}
+In the linear case, this simplifies to:
+\begin{align*}
+f^h(\V{x}, \V{u}) = \left( \tau_1 \tau_2 A^2 + (\tau_1 + \tau_2) A + I \right) \V{x} + \left( \tau_1 + \tau_2 + \tau_1 \tau_2 A \right) B \V{u} + \tau_1 \tau_2 B \dot{\V{u}} \text{.}
+\end{align*}
+
+\subsubsection{General linear synapses}
+
+Consistent with what was found in section~\ref{sec:linear-extensions}, Theorems~\ref{thm:p3cont-nonlinear} and~\ref{thm:p3disc-nonlinear} require that we differentiate the desired dynamical system.
+For the case of nonlinear systems, this means (if $k \ge 2$) determining the (possibly higher-order) Jacobians of $f$, as shown in equation~\ref{eq:double-exp-solution}.
+For the special case of LTI systems, we can determine this analytically to obtain a closed-form expression.
+By induction it can be shown that:
+$$\V{x}^{(i)} = A^i\V{x} + \sum_{j=0}^{i-1} A^{i-j-1} B \V{u}^{(j)} \text{.}$$
+Then by expanding and rewriting the summations:
+\begin{align}
+f^h(\V{x}, \V{u}) &= \sum_{i=0}^k c_i \V{x}^{(i)} \nonumber \\
+&= \sum_{i=0}^k c_i \left[ A^i \V{x} + \sum_{j=0}^{i-1} A^{i-j-1} B \V{u}^{(j)} \right] \nonumber \\
+&= \underbrace{\left( \sum_{i=0}^k c_i A^i \right)}_{\text{Recurrent
+Matrix}}\V{x} + \sum_{j=0}^{k-1} \underbrace{\left( \sum_{i=j+1}^k c_i A^{i-j-1} \right)B}_{\text{Input Matrices}} \V{u}^{(j)} \text{.} \label{eq:p3general-lti}
+\end{align}
+The discrete case is identical:
+\begin{align}
+\bar{f}^h(\V{x}, \V{u}) = \underbrace{\left( \sum_{i=0}^k \bar{c}_i \bar{A}^i \right)}_{\text{Recurrent
+Matrix}}\V{x} + \sum_{j=0}^{k-1} \underbrace{\left( \sum_{i=j+1}^k \bar{c}_i \bar{A}^{i-j-1} \right)\bar{B}}_{\text{Input Matrices}} \V{u}^{[j]} \text{.} \label{eq:p3general-lti-discrete}
+\end{align}
+This gives a matrix form for any LTI system with a $k^\text{th}$ order synapse, provided we can determine $\V{u}^{(j)}$ or $\V{u}^{[j]}$ for $0 \le j \le k-1$.
+% Note that since $u$ and $x$ do not interact nonlinearly, we can separate them into input and recurrent transformations respectively, and only represent $x$ in the ensemble.
+%For example, we can apply equation~\ref{eq:p3general-lti} to the double exponential synapse equation~\ref{eq:double-exp}:
+%\begin{align*}
+%f^h(\V{x}, \V{u}) = \, & (\tau_1 \tau_2 A^2 + (\tau_1 + \tau_2) A + I)\V{x} +  (\tau_1 + \tau_2 + \tau_1 \tau_2 A) B \V{u} + \tau_1 \tau_2 B \dot{\V{u}} \text{.}
+%\end{align*}
+Again, equation~\ref{eq:p3general-lti} is consistent with equation~\ref{eq:general-linear} and equation~\ref{eq:general-linear-approx}, as is equation~\ref{eq:p3general-lti-discrete} with equation~\ref{eq:general-linear-approx-discrete}.
+
+\subsubsection{Pulse-extended double-exponential}
+
+Finally, we show how this all connects to the higher-order dynamics of the pulse-extended double-exponential synapses in Braindrop~\citep{voelker2017iscas}.
+Specifically, due to parasitic capacitances in the analog circuitry, a double-exponential ($\tau_1$, $\tau_2$) emerges, and, due to the pulse-extension from digital-to-analog (i.e.,~spike-to-synapse) conversion, a pulse is generated that is modelled as a box-filter with finite width, $\epsilon$, and height, $\gamma$.
+This model is summarized by~\citet[][equation~8]{voelker2017iscas}:
+\begin{equation} \label{eq:braindrop-synapse}
+H(s) = \frac{ \gamma \left(1 - e^{-\epsilon s} \right) s^{-1}}{ \left( \tau_1 s + 1 \right) \left( \tau_2 s + 1 \right) }
+\end{equation}
+Now we apply lemma~\ref{lemma:coord-transform} in the following context:
 $$
 \V{f} = (\epsilon \gamma)^{-1} \left( \V{x} + (\tau_1 + \tau_2) \dot{\V{x}} + \tau_1 \tau_2 \ddot{\V{x}} \right) \text{,}
 $$
 $$
 c_i = \frac{(-\epsilon)^i}{(i + 1)!} \text{,}
 $$
-and $\V{g}$ is the signal being used to drive the pulse-extender, such that $\V{f} = \sum_{i=0}^\infty c_i \V{g}^{(i)}$ (see my other notes on improving Kwabena's box filter analysis).
-
-In my refined analysis, we only keep the terms $i \le 2$ (or $i \le 1$ in the paper), but we can still use the above coordinate transformation as a sanity check. In particular, we have:
+where $\V{g}$ from the lemma is the signal that will be be used to drive the pulse-extender to satisfy $\V{f} = \sum_{i=0}^\infty c_i \V{g}^{(i)}$.
+We now apply a fourth-order truncation to the coefficients:
 $$
 c_0 = 1, \quad c_1 = -\frac{\epsilon}{2}, \quad c_2 = \frac{\epsilon^2}{6}, \quad c_3 = -\frac{\epsilon^3}{24}, \quad c_i \approx 0 \quad \forall i \ge 4 \text{.}
 $$
-Then using the transformation equation~\ref{eq:b}, we get:
+And then the coordinate transformation of equation~\ref{eq:b} yields:
 $$
 b_0 = 1, \quad b_1 = \frac{\epsilon}{2}, \quad b_2 = \frac{\epsilon^2}{4} - \frac{\epsilon^2}{6} = \frac{\epsilon^2}{12}, \quad b_3 = \frac{\epsilon^3}{24} - \frac{\epsilon^3}{12} + \frac{\epsilon^3}{24} = 0 \text{,}
 $$
@@ -463,6 +575,7 @@ and so:
         &= \V{f}^{(0)} + \frac{\epsilon}{2} \V{f}^{(1)} + \frac{\epsilon^2}{12} \V{f}^{(2)} + \ldots \\
         &= (\epsilon \gamma)^{-1} \left( \V{x} + (\tau_1 + \tau_2 + \epsilon / 2) \dot{\V{x}} + (\tau_1 \tau_2 + (\epsilon / 2 ) (\tau_1 + \tau_2) + \epsilon^2 / 12) \ddot{\V{x}} \right) + \ldots
 \end{align*}
+which is a refined version of, and alternate derivation for, \citet[][equation~11]{voelker2017iscas}.
 
 \subsection{Approximating Derivatives}
 
@@ -590,7 +703,7 @@ h_{ij}(t) = (h^e_i \ast h^d_j)(t) .
 
 If, for example, $h^e_i$ and $h^d_j$ are lowpass filters, then $h_{ij}$ will be the double-exponential synapse. If further  they are identical, then this is the alpha synapse.
 
-This can be interpreted as a generalization of Principle~II from the NEF, which normally supposes $h_{ij}(t) = h(t)$ for all $i$ and $j$ within the same ensemble.
+This can be interpreted as a generalization of Principle~2 from the NEF, which normally supposes $h_{ij}(t) = h(t)$ for all $i$ and $j$ within the same ensemble.
 This can be used to model the synaptic heterogeneity that arises in real biological systems, or in neuromorphic hardware resulting from transistor mismatch. 
 
 Furthermore equation~\ref{eq:syn-factored} can be interpreted as a factorization of the synapses, analogous to the factorization of connection weights \mbox{$w_{ij} = \V{e}_i \, \cdot \, \V{d}_j$}.
