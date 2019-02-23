@@ -224,7 +224,8 @@ We note that the PES learning rule is also supported by Loihi~[personal communic
 We solve the discrete dynamical system for the case of constant inputs and no noise, to show that the decoding vectors given by the NEF have a simple closed-form expression in terms of the number of simulation timesteps. Moreover, with $\gamma = (1 - \kappa \|\V{a}\|^2) < 1$, where $\kappa$ is the learning rate and $\V{a}$ is the vector of firing rates, the error at timestep $k$ is the initial error times $\gamma^k$. Thus, $\gamma > - 1$ implies exponential convergence to a unique stable solution, $\gamma < 0 $ results in oscillatory weight changes, and $\gamma \le -1$ implies instability.
 \begin{theorem}
 \label{thm:pes-dynamics}
-\normalfont{\citep{voelker2015}}
+{\normalfont \citep{voelker2015}}
+\newline
 Let $\gamma = (1 - \kappa \|\V{a}\|^2) < 1$, and $e_0 = y^* - \V{d}[0]^T \V{a}$, then:
 \begin{align}
 \label{eq:dk}
@@ -265,6 +266,7 @@ Finally, we conclude by discussing some implications for learning spiking dynami
   A dynamic reference signal $r(t)$ determines the error $e(t) = \left((y - r) \ast h\right)(t)$~(equation~\ref{eq:error}), which in turn drives $y(t)$ towards $r(t)$ by modulating the connection weights via PES~(equation~\ref{eq:pes}).
   These learned connection weights decode $y(t)$ via the decoders $\V{d}(t) \in \mathbb{R}^n$~(equation~\ref{eq:decoding}).
   A linear filter $h(t)$ models the post-synaptic current induced by each spike.
+  Reproduced from \citet[][Figure~1]{voelker2017c}.
 }
 \end{figure}
 
@@ -301,6 +303,8 @@ Alternatively, we could characterize the dynamics of $y(t)$ or $\V{d}(t)$, but t
 
 \begin{theorem}
 \label{thm:pes-filtered}
+{\normalfont \citep{voelker2017c}}
+\newline
 Let $\phi = \tau \kappa \|\V{a}\|^2$.
 For the network described in Figure~\ref{fig:pes-filtered-network}, we have:
 \begin{equation}
@@ -397,6 +401,7 @@ In Figure~\ref{fig:pes-oscillator}(Bottom), we evaluate \texttt{np.abs(F.evaluat
   Comparison of the analytical error (equation~\ref{eq:lowpass-solution}) to the numerical $e(t)$ obtained by simulating the network from Figure~\ref{fig:pes-filtered-network} ($\kappa = \numprint{e-3}$).
   The control signal $r(t)$ is randomly sampled white noise with a cutoff frequency of $10\,$Hz.
   The normalized root-mean-square error is approximately $3.7\%$.
+  Reproduced from \citet[][Figure~2]{voelker2017c}.
 }
 \end{figure}
 
@@ -411,6 +416,7 @@ In Figure~\ref{fig:pes-oscillator}(Bottom), we evaluate \texttt{np.abs(F.evaluat
   (Bottom)~Visualizing the ideal frequency response of $F(s)$ (equation~\ref{eq:lowpass-solution}).
   Dashed lines at $\omega$ (equation~\ref{eq:bandpass-w}) align with the peak of each bandpass filter, or equivalently the frequency of each oscillation.
   The width of each filter is proportional to the decay rate $Q^{-1}$ (equation~\ref{eq:bandpass-Q}).
+  Reproduced from \citet[][Figure~3]{voelker2017c}.
 }
 \end{figure}
 
@@ -463,6 +469,7 @@ We mention this because, similar to our lessons learned in the above discussion,
   When $\phi > \frac{1}{4}$, the weight changes become oscillatory (due to complex poles).
   As $\kappa$ increases, the oscillatory frequency, $\omega$, scales as $\mathcal{O}\left(\sqrt{\kappa}\right)$.
   As $\kappa$ decreases, the first pole converges to $s = -\frac{1}{\tau}$ (marked by a solid \texttt{x}) while the second pole cancels the zero at $s = 0$. %(i.e.,~$F(s) = -H(s)$, $s \ne 0$).
+  Reproduced from \citet[][Figure~4]{voelker2017c}.
 }
 \end{figure}
 

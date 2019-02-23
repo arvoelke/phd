@@ -78,10 +78,7 @@ Equation~\ref{eq:tf-delay} should be understood as an equivalent way of expressi
 Thus far, we have only described the transfer function that we would like the network to implement. %while $t$ is non-negative in the time domain.
 % Unimportant reminder? The transfer function is the Laplace transform of system's impulse response.
 
-The state-space model discussed in section~\ref{sec:principle3} (equation~\ref{eq:lti}) is related to its transfer function by the following:
-\begin{align} \label{eq:ss2tf}
-F(s) = C(sI - A)^{-1}B + D \text{.}
-\end{align}
+The state-space model discussed in section~\ref{sec:principle3} (equation~\ref{eq:lti}) is related to its transfer function by equation~\ref{eq:ss2tf}.
 Conversely, a transfer function can be converted into a state-space model satisfying equation~\ref{eq:ss2tf} \emph{if and only if} it can be written as a proper ratio of finite polynomials in $s$~\citep{brogan1982modern}.
 The ratio is proper when the degree of the numerator does not exceed that of the denominator.
 In such a case, the output will not depend on future input, and so the system is \emph{causal}.
