@@ -703,8 +703,45 @@ More generally, for $H(s)^{-1} = \sum_{i=0}^k c_i s^i$, we have $g_1 = \frac{1}{
 Although here we have shown just a simple example, the advantage of this method is that, through the use of symbolic differentiation, one may extend equation~\ref{eq:lagrange} out to any finite order for any rational and finite $F(s)$ and $H(s)$.
 In other words, this math does not need to be figured out by hand; this procedure may be automated up to any desired order by Lemma~\ref{lemma:coord-transform} and equation~\ref{eq:lagrange}.
 
-\subsection{Time-Constant Mismatch}
+\subsection{Temporal heterogeneity}
 \label{sec:mismatch}
+
+This section has been adapted from \citet{voelker2017neuromorphic} which abstracts the approach taken by \citet{voelker2017iscas} to account for time-constant variability in Braindrop.
+Specifically, due to transistor mismatch in analog hardware, a variety of synapse models emerge with log-normal distributions in time-constants~\citep{benjamintemp2019}.
+Assuming these can be accurately measured, we show how they can be accounted for by Principle~3.
+
+Now the $i^\text{th}$ postsynaptic neuron has a distinct synaptic filter, $h_{i}(t)$, shared across each of its synapses, as is the case in Braindrop~\citep{braindrop2019}:
+\begin{equation} \label{eq:synapse-general}
+H_i(s) = \frac{1}{\sum_{j=0}^{k_i} c_{ij} s^j} \text{.}
+\end{equation}
+Recalling the intuition behind Principle~3, our approach is to separately drive each synapse $h_{i}$ with the required signal $f^{h_i}(\V{x}, \V{u})$ such that each PSC becomes a projection of the desired representation $\V{x}$.
+%For example, if each neuron has one of two possible lowpass filters (say, either $\tau_A$ or $\tau_B$), then we must decode the two functions $\tau_A f(\V{x}, \V{u}) + \V{x}$ and $\tau_B f(\V{x}, \V{u}) + \V{x}$ and apply each set of decoders ...
+Thus, the connection weights to the $i^\text{th}$ neuron should be determined by solving the decoder optimization problems for $f^{h_i}(\V{x}, \V{u})$ using the methods of section~\ref{sec:principle3} with respect to the synapse model $h_i$. 
+This can be repeated for each postsynaptic neuron, to obtain a full set of connection weights.
+While correct in theory, this approach displays two shortcomings in practice: (1)~we must solve $n$ optimization problems, where $n$ is the number of post-synaptic neurons, and (2)~there are $\bigoh{n^2}$ weights, which eliminates the space and time efficiency of using factorized weight matrices.
+
+Instead, we solve both issues simultaneously by taking advantage of the linear structure within $f^{h_i}$ that is common between all $h_i$.
+Considering Theorem~\ref{thm:p3cont-nonlinear}, we must drive the $i^\text{th}$ synapse with the function:\footnote{%
+We do this for Theorem~\ref{thm:p3cont-nonlinear} in particular, but this naturally applies to all other methods as well (both linear, nonlinear, discrete, and continuous).}
+\begin{equation*}
+f^{h_i}(\V{x}, \V{u}) = \sum_{j=0}^{k_i} c_{ij} \V{x}^{(j)} \text{.}
+\end{equation*}
+Let $\V{d}^j$ be the set of decoders optimized to approximate $\V{x}^{(j)}$, for all $j = 0 \ldots k$, where $k = \max_i k_i$.
+By linearity, the optimal decoders used to represent each $f^{h_i}(\V{x}, \V{u})$ may be decomposed as:
+\begin{equation*}
+\V{d}^{f^{h_i}} = \sum_{j=0}^{k_i} c_{ij} \V{d}^j \text{.}
+\end{equation*}
+Next, we express our estimate of each variable $\V{x}^{(j)}$ using the same activity vector $\V{a}$:
+\begin{align*}
+\V{\hat{x}}^{(j)} = \transpose{\V{a}}{\V{d}^j} \text{.}
+\end{align*}
+Now, putting this all together, we obtain:
+\begin{equation} \label{eq:hetero-decoding}
+\transpose{\V{a}}{\V{d}^{f^{h_i}}} = \sum_{j=0}^{k_i} c_{ij} \transpose{\V{a}}{\V{d}^j} = \sum_{j=0}^{k_i} c_{ij} \V{\hat{x}}^{(j)} \approx f^{h_i}(\V{x}, \V{u}) \text{.}
+\end{equation}
+Therefore, we only need to solve $k+1$ optimization problems, decode the ``matrix representation'' $\left[ \V{\hat{x}}^{(0)}, \V{\hat{x}}^{(1)}, \ldots, \V{\hat{x}}^{(k)} \right]$, and then linearly combine these $k+1$ different decodings as shown in equation~\ref{eq:hetero-decoding}---using the matrix of coefficients $c_{ij}$---to determine the input to each synapse.
+This approach reclaims the advantages of using factorized connection weight matrices, at the expense of a factor $\mathcal{O}(k)$ increase in space and time efficiency.
+Since Braindrop supports an efficient way of structuring the linear operations between pools~\citep[][Figure~5]{braindrop2019}, we use this technique to account for time-constant mismatch in our simulations in section~\ref{sec:integrator}.
 
 \subsection{Encoding Filters}
 
