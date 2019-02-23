@@ -16,7 +16,8 @@ Here, we focus on the dynamical primitive of SNNs known as the synapse model, $h
 \subsection{Linear transfer functions}
 \label{sec:linear-extensions}
 
-We focus on building a comprehensive theory for including arbitrary linear synapse models in the implementation of linear systems, but many of these same techniques also carry over to the later sections in the case of nonlinear systems. % the case of nonlinear dynamical systems with heterogeneous synapses~\citep{voelker2017iscas, voelker2017neuromorphic}.
+We build a comprehensive theory, adapted from \citet{voelker2018}, for including arbitrary linear synapse models in the neural architecture.
+This is applied to the case of implementing linear systems, but many of these same techniques also carry over to later sections in the case of nonlinear systems. % the case of nonlinear dynamical systems with heterogeneous synapses~\citep{voelker2017iscas, voelker2017neuromorphic}.
 
 Consider the linear time-inviant~(LTI) system (repeating equation~\ref{eq:lti}, for clarity):
 \begin{equation} \label{eq:lti-repeated}
@@ -347,7 +348,7 @@ where $k$ is potentially infinite. Now we state and prove the main theorem of th
 
 \begin{theorem}
 \label{thm:general-linear}
-To map $F$ onto equation~\ref{eq:synapse-rewritten}, we begin by defining our solution to $F^{H}(s)$ in the form of its state-space model (see equation~\ref{eq:ss-mapped}):
+To map $F$ onto equation~\ref{eq:synapse-rewritten}, we let: %we begin by defining our solution to $F^{H}(s)$ in the form of its state-space model (see equation~\ref{eq:ss-mapped}):
 \begin{equation} \label{eq:general-linear}
 \begin{aligned}
 A^H &= \sum_{i=0}^k c_i A^i \text{,} & \quad C^H &= C \text{,} \\
@@ -393,7 +394,7 @@ B^H = B^H_0 =  \left( \sum_{i=1}^k c_i A^{i-1} \right) B \text{,}
 \end{equation}
 with $A^H$, $C^H$, and $D^H$ as before (see equation~\ref{eq:general-linear}).
 This is now an equivalent model to equation~\ref{eq:general-linear} assuming ZOH, and in the form of the standard state-space model (equation~\ref{eq:lti}).
-\TODO{In appendix~\ref{app:poles}, we characterize the dynamics of this new system in terms of $F$ and $H$ (independently of the chosen state-space model) for general inputs.}
+In section~\ref{sec:derivatives}, we characterize the dynamics of this new system in terms of $F$ and $H$ (independently of the chosen state-space model) for general inputs.
 We find that equation~\ref{eq:general-linear-approx} adds $k - 1$ new dimensions, for every dimension in $F$, to the state underlying the resulting dynamical system.
 In the following section, we show that the our results yield a novel derivation of ZOH discretization for LTI systems.
 
@@ -577,24 +578,32 @@ and so:
 \end{align*}
 which is a refined version of, and alternate derivation for, \citet[][equation~11]{voelker2017iscas}.
 
-\subsection{Approximating Derivatives}
+\subsection{Approximating derivatives}
+\label{sec:derivatives}
 
-Motivated by the theoretical need for driving the synapse with higher-order input derivatives...
-Talk about Bryan's paper, and the fact we can approximate the required transfer function $F(s) = s$ or a lowpass filtered version.
+In the two previous sections, we discovered that higher-order synapses must be driven with higher-order derivatives of the state-vector, in order to cancel out the additional rounds of integration and successfully encode $\V{x}$. 
+These computations could be facilitated by adaptive mechanisms in more biologically-realistic neuron models~\citep{lundstrom2008fractional}, approximated at the population level~\citep{tripp2010}, computed using models of the system's Jacobian, modelled from the input's dynamics, or obtained directly from sensors that represent such derivatives.
+If none of these cases are possible, we resort to the following analysis of what can be done at a theoretical level. 
 
-\subsubsection{Constant Input Analysis}
+\subsubsection{Zero-order assumption}
 
-Consider the $F^H$ determined by equation~\ref{eq:general-linear-approx}, when the derivatives of the input signal are inaccessible.
+This section has been adapted from \citet[][appendix~A.4]{voelker2018}.
+The approach that we take here is to apply the ZOH assumption and pretend that the higher-order derivatives are all zero.
+We then examine the consequences of making this assumption.
+
+Consider the $F^H$ determined by equation~\ref{eq:general-linear-approx}, when the derivatives of the input signal are completely inaccessible.
 Let $\hat{F}(s) := F^{H}(H(s)^{-1})$ be the dynamics of the implemented system for this particular $F^H$.
 Due to the ZOH assumption, $\hat{F} \ne F$ in general, and so $F^H$ does not technically map $F$ onto $H$ (see definition~\ref{def:maps-onto}).
-As discussed in section~\ref{sec:general}, the approximation only satisfies equation~\ref{eq:maps-onto} when the input is held constant.
+% As discussed in section~\ref{sec:general}, the approximation only satisfies equation~\ref{eq:maps-onto} when the input is held constant.
 To be clear, $\hat{F}(s) = F(s)$ for $s = 0$, but not necessarily for $s \ne 0$.
 Thus, it is important to characterize the difference between $\hat{F}$ and $F$ for general inputs.
 
 To do so, we can examine the \emph{poles} of the transfer function $F(s) = \frac{\mathcal{C}(s)}{\mathcal{D}(s)}$, which are defined as the complex roots of $\mathcal{D}(s)$.
 The poles of a system fully define the dynamics of its state (up to a change of basis).
-For instance, a system is exponentially stable if and only if $\text{Re} \left[ s \right] < 0$ for all poles $s \in \mathbb{C}$.
-Furthermore, $s \in \text{sp}(A)$ if and only if $s$ is a pole, where $\text{sp}(A)$ denotes the eigenvalues of the state-space matrix $A$.\footnote{
+For instance,
+each pole $\lambda$ is related to a time-constant via $\tau = -\lambda^{-1}$.
+A system is exponentially stable if and only if $\text{Re} \left[ \lambda \right] < 0$ for all poles $\lambda \in \mathbb{C}$, since all time-constants will be positive.
+Furthermore, $\lambda \in \text{sp}(A)$ if and only if $\lambda$ is a pole, where $\text{sp}(A)$ denotes the eigenvalues of the state-space matrix $A$.\footnote{
 Note that $\text{sp}(A) = \text{sp}(TAT^{-1})$ for any invertible matrix $T$ with the same shape as $A$.
 }
 % $\text{sp}(A) = det(sI - A)$
@@ -630,65 +639,69 @@ In this instance, the `$+$' case gives back the known poles, $\phi = \lambda$, a
 Consequently, the poles of $\hat{F}$ are the poles of $F$, duplicated and reflected horizontally about the real line $- b$, where $b := \frac{\tau_1 + \tau_2}{2 \tau_1 \tau_2}$ (and the imaginary components are unchanged).
 
 Interestingly, $b$ may be rewritten as $\left( \frac{ \tau_1 + \tau_2}{2} \right) / \sqrt{\tau_1^2 \tau_2^2}$, which is the ratio of the arithmetic mean to the geometric mean of $\{\tau_1, \tau_2\}$, which may in turn be interpreted as a cross-entropy expression~\citep{woodhouse2001ratio}.
+Regardless, $\hat{F}$ behaves like $F$ when $\left(-\text{Re}^{-1} \left[ \lambda \right]\right) \gg b^{-1}$.
+%For the delay system (equation~\ref{eq:ss-delay}), $\text{Re} \left[ \lambda \right] \propto -\frac{q}{\theta}$ (in fact, the mean value across all $q$ poles achieves equality), and so we need $b \gg \frac{q}{\theta}$.
+%This predicts that a delay system using the double-exponential synapse, without access to the input's derivative, must necessarily implement a delay that is proportionally longer than $\frac{q}{b}$.
+%Otherwise, the second-order dynamics from the synapse will dominate the system-level dynamics.
+We note that $b^{-1}$ is largest for the case of the alpha synapse ($b^{-1} = \tau$), and smallest for the case of the lowpass synapse ($b^{-1} \rightarrow 0$ as $\tau_2 \rightarrow 0$).
 
-Regardless, $\hat{F}$ behaves like $F$ when $\text{Re} \left[ \lambda \right] \gg -b$.
-For the delay system (equation~\ref{eq:ss-delay}), $\text{Re} \left[ \lambda \right] \propto -\frac{q}{\theta}$ (in fact, the mean value across all $q$ poles achieves equality), and so we need $b \gg \frac{q}{\theta}$.
-This predicts that a delay system using the double-exponential synapse, without access to the input's derivative, must necessarily implement a delay that is proportionally longer than $\frac{q}{b}$.
-Otherwise, the second-order dynamics from the synapse will dominate the system-level dynamics.
-We note that $b^{-1}$ is longest for the case of the alpha synapse ($b^{-1} = \tau$), and shortest for the case of the lowpass synapse ($b^{-1} \rightarrow 0$ as $\tau_2 \rightarrow 0$).
+\subsubsection{Taylor-series approximation}
 
+Another way to avoid needing the derivatives is to work out a different approximation when attempting to satisfy definition~\ref{def:maps-onto}.
+Here we use an example discussed in \citet{dynamicspatent} and explore some consequences.
+This method is very similar to that of the delayed lowpass example in section~\ref{sec:linear-extensions}.
 
-
-\subsubsection{Taylor-Series Approximation}
-
-\TODO{Include patent method}
-...
-we considered the alpha synapse:
+Considereding the alpha synapse:
 $$H(s) = \frac{1}{(\tau s + 1)^2} = \frac{1}{\tau^2 s^2 + 2\tau s + 1}$$
-and observed that:
-$$F' \left( H(s)^{-1} \right) = F(s) \quad \iff \quad F'(s) = F \left( \frac{\sqrt{s} - 1}{\tau} \right) .$$
-In general, the final expression, $F \left( \frac{\sqrt{s} - 1}{\tau} \right)$ is not necessarily proper and finite-dimensional (rational in $s$). For instance, with the integrator,
-$$F(s) = 1/s \quad \iff \quad F'(s) = \frac{\tau}{\sqrt{s} - 1}$$
+we can observe that:
+$$F^H \left( H(s)^{-1} \right) = F(s) \quad \iff \quad F^H(s) = F \left( \frac{\sqrt{s} - 1}{\tau} \right) \text{.}$$
+Hence this satisfies our requirement for $F^H$ mapping $F$ onto $H$.
+However, challenges arise when obtaining its state-space matrices via equation~\ref{eq:ss2tf}, as,
+in general, the expression $F \left( \frac{\sqrt{s} - 1}{\tau} \right)$ is not necessarily proper and finite-dimensional (rational in $s$). For instance, with the integrator,
+$$F(s) = 1/s \quad \iff \quad F^H(s) = \frac{\tau}{\sqrt{s} - 1}$$
 is infinite-dimensional (irrational in $s$).
-In the patent, we deal with this by taking the Taylor series approximation $(\sqrt{s} - 1) / \tau \approx \left( s - 1 \right) / (2 \tau)$, which yields the approximation: $$F'(s) \approx F \left( \frac{s-1}{2\tau} \right) = \frac{2 \tau}{s - 1} .$$
-We can then convert back to the world of $F(s)$ to see what dynamics we've actually implemented:
-$$F(s) = F' \left( H(s)^{-1} \right) \approx \frac{2\tau}{(\tau s + 1)^2 - 1} = \frac{2\tau}{\tau s (\tau s + 2)} = \frac{1}{s \left( \frac{\tau}{2} s + 1 \right) } .$$
-This reveals that, instead of the integrator, we've implemented an integrator convolved with a lowpass with time-constant $\tau / 2$.
+We cope with this by taking the Taylor series approximation $(\sqrt{s} - 1) / \tau \approx \left( s - 1 \right) / (2 \tau)$, which yields the approximation:
+\begin{equation} \label{eq:taylor-integral}
+F^H(s) \approx F \left( \frac{s-1}{2\tau} \right) = \frac{2 \tau}{s - 1} \text{.}
+\end{equation}
+This system \emph{does} have finite-dimensional state-space matrices that may be extracted via equation~\ref{eq:ss2tf} to implement an approximation of the dynamical system with respect to the alpha synapse.
+But what is the approximation error?
+The main insight is that we may convert back to the world of $F(s)$ to reveal the dynamics that we've actually implemented:
+$$F(s) = F^H \left( H(s)^{-1} \right) \approx \frac{2\tau}{(\tau s + 1)^2 - 1} = \frac{2\tau}{\tau s (\tau s + 2)} = \frac{1}{s \left( \frac{\tau}{2} s + 1 \right) } \text{.}$$
+This reveals that, instead of the integrator, we have implemented an integrator convolved with a lowpass with a time-constant of $\tau / 2$.
+More generally, one can apply a Taylor series or the Pad\'e approximants to any irrational solution to equation~\ref{eq:maps-onto}, and then work backwards through the mathematical machinery to see how the dynamics have been altered from their intended state. 
 
-\subsubsection{Lagrange--B\"urmann Approximation}
+\subsubsection{Lagrange--B\"urmann approximation}
 
-If the derivatives are not available, but we are okay with changing the state vector, then we may consider making a different approximation.
-For instance, in the alpha case, we approximated $F'(s) \approx F \left( \frac{s-1}{2\tau} \right)$ using a first-order Taylor series.
-But we could have expanded it out to any order -- this will alter the state and increase the dimensionality of the system.
-
-In general, we are trying to find an $F'(s)$ such that $F'(H(s)^{-1}) = F(s)$.
+Our last approach will build upon the previous approach more generally, and without needing to explicitly work out a solution to equation~\ref{eq:maps-onto}.
+%For instance, in the alpha case, we approximated $F^H(s) \approx F \left( \frac{s-1}{2\tau} \right)$ using a first-order Taylor series.
+%But we could have expanded it out to any order -- this will alter the state and increase the dimensionality of the system.
+In general, we are trying to find an $F^H(s)$ such that $F^H(H(s)^{-1}) = F(s)$.
 However, it may not be clear how to do this for general $H(s)^{-1} = \sum_{i=0}^k c_i s^i$, since the inverse of $H(s)^{-1}$ does not necessarily exist.
 Fortunately, we can use a powerful tool named the {\it Lagrange--B\"urmann inversion theorem} to approximate the inverse of $H(s)^{-1}$.
-Essentially it is a way to get the Taylor series of the inverse of some function around a point without explicitly constructing the inverse. Applying it here around the zero frequency, we have:
-\begin{align}
+Essentially it is a way to get the Taylor series of the inverse of some function around a point without explicitly constructing the inverse. Applying it here around the zero frequency:
+\begin{align} \label{eq:lagrange}
 f(s) &:= H(s)^{-1} = \sum_{i=0}^k c_i s^i \nonumber \\
 g_n &:= \lim_{s \rightarrow 0} \left[ \frac{\partial^{n-1}}{\partial s^{n-1}} \left( \frac{s}{f(s) - c_0} \right)^n \right] \nonumber \\
-F'(s) &\approx F \left( \sum_{n=1}^\infty g_n \frac{(s - c_0)^n}{n!} \right)
+F^H(s) &\approx F \left( \sum_{n=1}^\infty g_n \frac{(s - c_0)^n}{n!} \right)
 \end{align}
 in some neighbourhood of $s = 0$.
-For some finite truncation of the series $g_n$, this always yields a finite-dimensional and proper approximation of the required $F'(s)$ assuming the same of $F(s)$.
+Any finite truncation of the series $g_n$ yields a finite-dimensional and proper approximation of the required $F^H(s)$ assuming the same of $F(s)$.
 %The resulting dimensionality increases with the order of the approximation.
 
 For example, returning to the alpha example, we have:
 \begin{align*}
 f(s) &= (\tau s + 1)^2 \\
 g_1 &= \lim_{s \rightarrow 0} \left( \frac{s}{ s(\tau^2 s + 2 \tau)} \right) = \frac{1}{2 \tau} \\
-\implies F'(s) &\approx F \left( \frac{s - 1}{2\tau} \right)
+\implies F^H(s) &\approx F \left( \frac{s - 1}{2\tau} \right)
 \end{align*}
-which is identical to beforehand.
+which is identical to equation~\ref{eq:taylor-integral} in the case of the integrator.
 More generally, for $H(s)^{-1} = \sum_{i=0}^k c_i s^i$, we have $g_1 = \frac{1}{c_1}$,
 \begin{equation}
-\implies F'(s) \approx F \left( \frac{s - c_0}{c_1} \right) = C \left( sI - (c_1 A + c_0 I) \right)^{-1} (c_1 B) + D.
+\implies F^H(s) \approx F \left( \frac{s - c_0}{c_1} \right) = C \left( sI - (c_1 A + c_0 I) \right)^{-1} (c_1 B) + D.
 \end{equation}
-Note this is different from the corollary, because the approximations are of a different nature. Before we were approximating the input as a constant signal (and taking the system into account), while here we are approximating the [inverse of the reciprocal of the] synapse as linear around $s = 0$ (independently of the contents of $F(s)$).
-
-But for the integrator (and the alpha) we showed the two approximations were the same.
-In fact, one can easily verify that for $F(s) = s^{-1}$ and for {\it all} $H(s)^{-1} = \sum_{i=0}^k c_i s^i$ the two approximations are identical ($B' = c_1 B$, $A' = c_0 I$).
+Although here we have shown just a simple example, the advantage of this method is that, through the use of symbolic differentiation, one may extend equation~\ref{eq:lagrange} out to any finite order for any rational and finite $F(s)$ and $H(s)$.
+In other words, this math does not need to be figured out by hand; this procedure may be automated up to any desired order by Lemma~\ref{lemma:coord-transform} and equation~\ref{eq:lagrange}.
 
 \subsection{Time-Constant Mismatch}
 \label{sec:mismatch}
