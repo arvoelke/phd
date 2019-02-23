@@ -284,12 +284,11 @@ where $\kappa > 0$ is the learning rate,\footnote{$\kappa$ is automatically scal
 e(t) = \left((y - r) \ast h \right)(t) \text{,}
 \end{equation}
 where $r(t)$ is the reference (i.e.,~ideal) output, and $h(t)$ is some arbitrary linear filter modeling the post-synaptic current (PSC) induced by a spike arriving at the synaptic cleft.
-Typically, $h(t)$ is a first-order lowpass filter with time constant~$\tau > 0$ (i.e.,~modeling an exponentially decaying PSC): %, sometimes also referred to as a ``leaky integrator'':
+Typically, $h(t)$ is a first-order lowpass filter with time constant~$\tau > 0$ (i.e.,~equation~\ref{eq:lowpass-laplace}):
 \begin{equation}
 \label{eq:lowpass}
-h(t) = \frac{1}{\tau} e^{-\frac{t}{\tau}} \iff H(s) = \frac{1}{\tau s + 1} \text{.\footnotemark}
+h(t) = \frac{1}{\tau} e^{-\frac{t}{\tau}} \iff H(s) = \frac{1}{\tau s + 1} \text{.}
 \end{equation}
-\footnotetext{Capital-case variables denote the Laplace transforms of their corresponding lower-case (time-domain) variables.}%
 %Thus, the connection weights learn to represent $r$ when presented with $x$.
 The final network is summarized in Figure~\ref{fig:pes-filtered-network}.
 This also naturally extends to the case where $x$ and $y$ are vectors (using a population code), but we consider the scalar case for simplicity. 
@@ -327,7 +326,7 @@ The poles of $F(s)$ are:
 s = \frac{-1 \pm \sqrt{1 - 4 \phi}}{2\tau} \text{.}
 \end{equation}
 %with complex magnitude $|s| = \omega$.
-Since $\phi > 0$, this system is exponentially stable, and, moreover, the impulse response, $f(t)$, is a decaying oscillator if and only if $\phi > \frac{1}{4}$.
+Since $\phi > 0$, this system is exponentially stable, and, moreover, the impulse response, $f(t)$, is a decaying oscillator if and only if $\phi > 1/4$.
 \end{theorem}
 
 \begin{proof}
@@ -346,7 +345,7 @@ Substituting the first two equations into the last, yields:
 \iff && \left(1 + \kappa \|\V{a}\|^2 s^{-1} H(s) \right) E(s) &= - R(s) H(s) \\
 \iff && E(s) &= R(s) \left( \frac{-H(s)}{1 + \kappa \|\V{a}\|^2 s^{-1} H(s)} \right) \\
 && &= R(s) \left( \frac{- s}{s H(s)^{-1} + \kappa \|\V{a}\|^2} \right) \\
-&& &= R(s) F(s) \text{.} \tag*{\qed}
+&& &= R(s) F(s) \text{.} % \tag*{\qed}
 \end{align*}
 
 Equations~\ref{eq:time-domain} and~\ref{eq:s-domain} follow from the convolution theorem.
@@ -355,7 +354,7 @@ Equations~\ref{eq:lowpass-solution}--\ref{eq:bandpass-Q} are verified by substit
 The poles of the system (equation~\ref{eq:poles}) are obtained by applying the quadratic formula to the denominator polynomial from equation~\ref{eq:lowpass-solution} ($\tau s^2 + s + \kappa \|\V{a}\|^2$).
 %The magnitude of the poles ($\omega$) come from the polar coordinate solution to this quadratic.
 Exponential stability is implied by both poles being strictly in the left half-plane.
-Lastly, $f(t)$ oscillates if and only if the poles are complex, if and only if the discriminant ($1 - 4 \phi$) is negative, if and only if $\phi > \frac{1}{4}$.
+Lastly, $f(t)$ oscillates if and only if the poles are complex, if and only if the discriminant ($1 - 4 \phi$) is negative, if and only if $\phi > 1 / 4$.
 \end{proof}
 
 %As a corollary to equation~\ref{eq:lowpass-solution} and the Laplace transform of equations~\ref{eq:decoding} and~\ref{eq:pes},
@@ -371,8 +370,9 @@ Lastly, $f(t)$ oscillates if and only if the poles are complex, if and only if t
 
 \subsubsection{Validation}
 
-We construct the network from Figure~\ref{fig:pes-filtered-network} using Nengo~2.5.0~\citep{bekolay2013}, $n = 1$ spiking leaky integrate-and-fire neurons (mean firing rate of $262\,$Hz),\footnote{Spikes are used in place of $\V{a}$ in equations~\ref{eq:decoding} and~\ref{eq:pes}.} $\tau = 0.1\,$s (equation~\ref{eq:lowpass}), $x = 0$, and $\kappa$ such that $\phi > \frac{1}{4}$.
-We construct the transfer function from equation~\ref{eq:lowpass-solution} using nengolib~0.4.0~\citep{nengolib}:
+We construct the network from Figure~\ref{fig:pes-filtered-network} using Nengo, with only $n = 1$ spiking leaky integrate-and-fire neurons (mean firing rate of $262\,$Hz),\footnote{%
+Spikes are used in place of $\V{a}$ in equations~\ref{eq:decoding} and~\ref{eq:pes}.} $\tau = 0.1\,$s (equation~\ref{eq:lowpass}), $x = 0$, and $\kappa$ such that $\phi > 1/4$.
+We construct the transfer function from equation~\ref{eq:lowpass-solution} using NengoLib:
 \begin{python}
 import nengolib
 from nengolib.signal import s
@@ -384,8 +384,8 @@ We evaluate $(r \ast f)(t)$ using \texttt{F.filt(r, dt=dt)}, and compare this to
 The \texttt{filt} method automatically discretizes $F(s)$ according to the simulation time-step (\texttt{dt}~$= 1\,$ms) using zero-order hold (ZOH).\footnote{Technically, for a discrete-time simulation, the problem and results should have been formulated in the discrete-time domain using the $Z$-transform to begin with, as opposed to discretizing at the end, but the difference is quite subtle.}
 
 In Figure~\ref{fig:pes-error}, we confirm that $(r \ast f)(t)$ approximates the numerical $e(t)$ given white noise $r(t)$.
-In Figure~\ref{fig:pes-oscillator}-Top, we exploit our knowledge of the impulse response, $f(t)$, to engineer a number of decaying oscillators by controlling $r(t)$.
-In Figure~\ref{fig:pes-oscillator}-Bottom, we evaluate \texttt{np.abs(F.evaluate(freqs))} at a variety of frequencies (\texttt{freqs}) to visualize the bandpass behaviour of each filter.
+In Figure~\ref{fig:pes-oscillator}(Top), we exploit our knowledge of the impulse response, $f(t)$, to engineer a number of decaying oscillators by controlling $r(t)$.
+In Figure~\ref{fig:pes-oscillator}(Bottom), we evaluate \texttt{np.abs(F.evaluate(freqs))} at a variety of frequencies (\texttt{freqs}) to visualize the bandpass behaviour of each filter.
 
 \begin{figure}
 \centering
@@ -413,7 +413,7 @@ In Figure~\ref{fig:pes-oscillator}-Bottom, we evaluate \texttt{np.abs(F.evaluate
 
 \subsubsection{Discussion}
 
-Since $\phi = \tau \kappa \|\V{a}\|^2 > \frac{1}{4}$ if and only if the weights oscillate, this motivates a simple heuristic for setting the learning rate to prevent oscillatory weight changes: set $\kappa \le \frac{1}{4 \tau \|\V{a}\|^2}$, where $\|\V{a}\|^2$ is maximal over all possible activity vectors.
+Since $\phi = \tau \kappa \|\V{a}\|^2 > 1/4$ if and only if the weights oscillate, this motivates a simple heuristic for setting the learning rate to prevent oscillatory weight changes: set $\kappa \le \frac{1}{4 \tau \|\V{a}\|^2}$, where $\|\V{a}\|^2$ is maximal over all possible activity vectors.
 In this case, equation~\ref{eq:lowpass-solution} factors into a (differentiated) double-exponential:
 \begin{equation*}
 F(s) = \frac{-\tau_1 \tau_2 s}{\tau (\tau_1 s + 1)(\tau_2 s + 1)} = \left( - \tau_1 \tau_2 \tau^{-1} s \right) \left( \frac{1}{\tau_1 s + 1}\right) \left(\frac{1}{\tau_2 s + 1}\right) \text{,}
@@ -423,8 +423,8 @@ that is, two first-order lowpass filters chained together, where:
 \left( \tau_1, \tau_2 \right) = \frac{2 \tau}{1 \mp \sqrt{1 - 4 \phi}} \text{,}
 \end{equation*}
 by equation~\ref{eq:poles}.
-In other words, the non-oscillatory regime ($0 < \phi \le \frac{1}{4}$) of PES is characterized by the dynamics of a double-exponential.
-We remark that $\tau_1 = \tau_2 = 2 \tau$ (i.e.,~an alpha filter) directly on the point of bifurcation from double-exponential to oscillatory behaviour ($\phi = \frac{1}{4}$; see Figure~\ref{fig:pes-poles}).
+In other words, the non-oscillatory regime ($0 < \phi \le 1/4$) of PES is characterized by the dynamics of a double-exponential.
+We remark that $\tau_1 = \tau_2 = 2 \tau$ (i.e.,~an alpha filter) directly on the point of bifurcation from double-exponential to oscillatory behaviour ($\phi = 1/4$; see Figure~\ref{fig:pes-poles}).
 
 In all applications involving online learning (that we are aware of) oscillatory weight changes are viewed as problematic, and so the relevant constants ($\tau$, $\kappa$, and $\| \V{a} \|^2$) are tweaked until the issue disappears.
 In contrast, we have shown that not only can the relationship between these constants and the oscillations be fully understood, but they can be harnessed to engineer bandpass filters (with respect to the transformation $r(t) \mapsto e(t)$) with specific frequencies ($\omega$) and bandwidths ($Q$).
@@ -432,7 +432,7 @@ More generally, the PES learning rule can be used to construct dynamical systems
 As we used only a single spiking neuron, the accuracy of these systems rely solely on the accuracy of the PES implementation, the model of $H(s)$, and the constancy of $(\V{a} \ast h)(t)$ in practice (i.e.,~given spiking activity).
 
 Although we have analyzed the continuous-time setting, the same proof technique can be applied to the discrete-time domain by use of the $Z$-transform.
-Likewise, although we have assumed $x$ is a constant, we can apply a ``separation of timescales'' argument (i.e.,~assuming $x(t)$ changes on a slower timescale than $f(t)$) to carry this same analysis over to dynamic $x(t)$.
+Likewise, although we have assumed $x$ is a constant, we can apply a ``separation of time-scales'' argument (i.e.,~assuming $x(t)$ changes on a slower time-scale than $f(t)$) to carry this same analysis over to dynamic $x(t)$.
 %More precisely, bounding the real components of equation~\ref{eq:poles} above by $c$,
 %\footnote{Strictly, $c = -\frac{1}{2\tau}$ for the oscillatory case, and $c = \frac{-1 + \sqrt{1 - 4 \tau \kappa \|\V{a}\|^2}}{2 \tau}$ otherwise.}
 By equation~\ref{eq:poles}, this analysis holds approximately for $x(t)$ with frequencies $\ll \frac{1}{4 \pi \tau}\,$Hz, by applying a time-varying filter to $\V{d}(t)$ that depends on the current activity vector.
