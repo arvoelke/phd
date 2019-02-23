@@ -25,7 +25,8 @@ Despite this growing excitement, there exist many challenges when it comes to us
 neuromorphic hardware to perform some desired task.
 Generally speaking, neuromorphic programming forces us to rethink our traditional,
 \citet{von1958}, understanding of computation, and redesign our algorithms to leverage distributed networks of noisy, heterogeneous units, that locally process their inputs and communicate via spikes -- also known as Spiking Neural Networks~(SNNs).
-Biological nervous systems already do this quite successfully, and so we seek to borrow existing
+These networks serve as \emph{powerful} models of computation, capable in theory of everything that we can do, while consuming extraordinarily low amounts of power.
+In particular, biological nervous systems already leverage the computational power of SNNs quite successfully, and so we seek to borrow existing
 principles and models from neuroscience, exploit their properties using tools from mathematics and engineering,
 and use software methods to synthesize the resulting networks ``in silico''.
 Moreover, the frameworks and methods that we use to accomplish this should be extensible---willing and able to incorporate increasingly-sophisticated levels of biological detail---so long as such details are computationally useful at a functional level, or shown to benefit some resource-power-accuracy trade-off.
@@ -35,7 +36,7 @@ By virtue of emulating core principles of brain function, this realizes algorith
 But such algorithms must also be practically useful.
 To flip this on its head: we require frameworks to describe what some hardware is doing at the lowest level,
 and tools to systematically harness its capabilities to perform useful computations at the highest level.
-Analagous to how a single compiler can translate the same C++ code
+Analogous to how a single compiler can translate the same C++ code
 to dozens of physically distinct digital architectures, we strive to systematically describe
 how the same dynamical computations can be flexibly mapped onto distinct spiking neuromorphic architectures.
 
@@ -66,7 +67,7 @@ More generally, the ``no free lunch theorem'' informs us that a black-box learni
 % Currently this prior knowledge is incorporated into deep learning through a variety of architectures, and the ability to tweak hyperparameters, but we can do better.
 
 But even more fundamentally, the majority of ANNs in use today, including AlphaGo, are applied to \emph{static} inputs to produce \emph{static} outputs.
-For a board game such as Go, this is forgivable, as the entire state of the game is encapsulated by the current state of the board itself, and so there is technically no need to consider any history in order to optimize across future states.\footnote{
+For a board game such as Go, this is forgivable, as the entire state of the game is encapsulated by the current state of the board itself, and so there is technically no need to consider any history in order to optimize across future states.\footnote{%
 Practically speaking, there could still be a benefit, for a sub-optimal player, to knowing the history of the game in order to better predict the opponent's strategy.}
 Nevertheless, this points towards a thematic concern: time is not being treated as the dimension of computation in many of the most successful methods, which may limit their applicability to many real-world problems.
 For instance, convolutional ANNs are most often deployed in video processing tasks by classifying objects in single frames,  %, without internal knowledge of how these objects might move or behave.
@@ -102,8 +103,8 @@ Each neuron locally processes some signal by continuously encoding it into spike
 These action potentials evoke postsynaptic currents~(PSCs) that decay exponentially on the order of milliseconds.
 Memories emerge from these dynamics, as changes to activation patterns and synaptic weights reflect the histories of representations along a myriad of time-scales.
 The time-scales over which these mechanisms interface with the world, and interact with each other, determines, and constrains, all of our perceptions, thoughts, and actions.
-Remarkably, this is all accomplished by a collection of approximately one-hundred billion neurons, connected by over one-hundred trillion\footnote{
-It is difficult to comprehend the sheer magnitude of this number, but one-hundred trillion is more than available estimates on the number of galaxies in the observable universe, trees on the earth, fish in the ocean, and digits of $\pi$ that have been computed -- all combined (at the time of writing).
+Remarkably, this is all accomplished by a collection of approximately one-hundred billion neurons, connected by over one-hundred trillion\footnote{%
+It is difficult to comprehend the sheer magnitude of this number; one-hundred trillion is more than available estimates on: the number of galaxies in the observable universe, trees on the earth, fish in the ocean, and digits of $\pi$ that have been computed -- all combined (at the time of writing).
 }
 synapses, processing these signals sparsely across space and time, while consuming only twenty watts~\citep{koch2014} -- about the same energy as a typical household CFL bulb.
 

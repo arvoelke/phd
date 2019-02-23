@@ -29,7 +29,7 @@ Experiments that implement the methods of \citet{boerlin2013predictive} in Nengo
 NengoLib includes the core code for most of the extensions discussed in chapter~\ref{chapt:nef-extensions} and the networks discussed in chapter~\ref{chapt:delays}.
 It has been used by publications including
 \citet{knight2016}, \citet{voelker2016a}, \citet{voelker2017iscas}, \citet{voelker2017neuromorphic}, and \citet{voelker2018}.
-In addition, we use it to construct RC, FORCE, full-FORCE, and Nengo networks---each in spiking and non-spiking mode, and in an analagous manner to one another---in order to facilitate meaningful comparisons between these architectures.
+In addition, we use it to construct RC, FORCE, full-FORCE, and Nengo networks---each in spiking and non-spiking mode, and in an analogous manner to one another---in order to facilitate meaningful comparisons between these architectures.
 A core feature of this software is a toolkit for constructing and analyzing linear time-invariant systems, in a number of representations (state-space, transfer function, zero-pole-gain), while being compatible with the synapses of Nengo.
 This unifies the language used to build, describe, and analyze LTI networks, synapses, and sub-threshold neural dynamics.
 We now summarize some additional features of this software that are used throughout.
@@ -80,7 +80,7 @@ For efficient coding in higher dimensions, methods of randomly sampling points f
 
 As discussed in section~\ref{sec:nef-turing}, dynamical systems represent a complete (i.e.,~universal) model of computation.
 But how are useful high-level computations embedded into such systems?
-To this end, we are interested in leveraging the power of such systems via a ``language'' for describing algorithms within the framework of the NEF, focusing on models built using Nengo in particular.
+To this end, we are interested in developing a language for describing useful algorithms within the dynamical modelling framework of the NEF, and libraries for combining these models within Nengo.
 
 Early work by \citet{eliasmith2003a} has shown that many important neurobiological systems, such as the nuclei involved in horizontal eye control, may be modelled as an integrator.
 That is, some velocity signal, indicating a desired direction, is represented by one population and then integrated by another.
@@ -94,7 +94,8 @@ Likewise, a bank of oscillators can be used to facilitate motion processing in t
 Attractor networks describe a much broader class of nonlinear dynamical systems that capture many important phenomena observed in neurobiological systems~\citep{amit1989modeling, eliasmith2005b}.
 When oscillations, integrators, and point attractors, are all combined, networks may generate complex trajectories through space~\citep{ijspeert2013dynamical, dewolf2017}.
 By arranging all of these building blocks in an engineered fashion, together with feed-forward (i.e.,~synaptic) dynamics coupling various modules, complex systems such as Spaun may carry out end-to-end cognitive tasks and even learn to follow general sets of instructions~\citep{eliasmith2012, choo2018}.
-We now describe a few concrete examples to help illustrate the universality of dynamical descriptions of computation, in a number of separate contexts.
+The role of chapter~\ref{chapt:delays} is to unveil another class of dynamical systems for continuous nonlinear memory, that connects with ``time cell'' data from the neuroscience literature, and naturally fits into this framework.
+But first, we describe a few concrete examples to help illustrate the universality of dynamical descriptions of computation, in a number of distinct contexts.
 
 \subsection{Winner-take-all}
 
@@ -208,15 +209,17 @@ Reproduced from \citet{knight2016}.
 
 \subsection{Supervised learning}
 
-This section is adapted from preliminary work by \citet{voelker2015} and \citet{voelker2017c}.
+This section has been adapted from preliminary work by \citet{voelker2015} and \citet{voelker2017c}.
 This approach highlights the utility in shifting perspectives in learning to that of a dynamical system embedded within some larger function.
 In particular, online learning is nothing more than a dynamical system realized by localized computations within the network.
 We illustrate this by unifying Nengo's supervised learning and the NEF's dynamical systems framework at a theoretical level, and leverage the resulting relationship in a practical spiking example with online learning.
 
 The NEF typically learns its connection weights offline, but Nengo also supports a number of biologically-plausible supervised and unsupervised learning rules to learn these weights online~\citep{bekolay2011a}.
-Prescribed Error Sensitivity~\citep[PES;][]{bekolay2013} is a biologically-plausible supervised learning rule that is frequently used within Nengo models.
+Prescribed Error Sensitivity~\citep[PES;][]{bekolay2013} is a biologically-plausible Hebbian supervised learning rule that is frequently used within Nengo models.
 PES modifies the connection weights between populations of neurons to minimize an external (i.e.,~supervised) error signal.
+It is equivalent in function to a single-layer application of gradient descent, applied online (i.e.,~stochastically) to its current input and supervised output.
 This learning rule has been used to model episodic memory~\citep{trujillo2014}, hierarchical reinforcement learning~\citep{rasmussen2017}, adaptive motor control~\citep{komer2015, dewolf2016}, and many other tasks~\citep{aubin2018, choo2018}.
+We note that the PES learning rule is also supported by Loihi~[personal communication].
 
 We solve the discrete dynamical system for the case of constant inputs and no noise, to show that the decoding vectors given by the NEF have a simple closed-form expression in terms of the number of simulation timesteps. Moreover, with $\gamma = (1 - \kappa \|\V{a}\|^2) < 1$, where $\kappa$ is the learning rate and $\V{a}$ is the vector of firing rates, the error at timestep $k$ is the initial error times $\gamma^k$. Thus, $\gamma > - 1$ implies exponential convergence to a unique stable solution, $\gamma < 0 $ results in oscillatory weight changes, and $\gamma \le -1$ implies instability.
 \begin{theorem}
@@ -370,7 +373,7 @@ Lastly, $f(t)$ oscillates if and only if the poles are complex, if and only if t
 
 \subsubsection{Validation}
 
-We construct the network from Figure~\ref{fig:pes-filtered-network} using Nengo, with only $n = 1$ spiking leaky integrate-and-fire neurons (mean firing rate of $262\,$Hz),\footnote{%
+We construct the network from Figure~\ref{fig:pes-filtered-network} using Nengo, with only $n = 1$ spiking leaky integrate-and-fire neuron (mean firing rate of $262\,$Hz),\footnote{%
 Spikes are used in place of $\V{a}$ in equations~\ref{eq:decoding} and~\ref{eq:pes}.} $\tau = 0.1\,$s (equation~\ref{eq:lowpass}), $x = 0$, and $\kappa$ such that $\phi > 1/4$.
 We construct the transfer function from equation~\ref{eq:lowpass-solution} using NengoLib:
 \begin{python}
@@ -401,7 +404,7 @@ In Figure~\ref{fig:pes-oscillator}(Bottom), we evaluate \texttt{np.abs(F.evaluat
 \centering
 \includegraphics[width=1.0\textwidth]{pes-oscillator}
 \caption{ \label{fig:pes-oscillator}
-  Harnessing the dynamics of PES with various $\kappa$ to engineer decaying oscillators with predetermined frequencies ($\omega$) and bandwidths ($Q$).
+  Harnessing the dynamics of PES with various $\kappa$ to engineer decaying oscillators with predetermined frequencies ($\omega$) and bandwidths ($Q$), using only a single leaky integrate-and-fire neuron.
   The time constant of the first-order lowpass filter is fixed at $\tau = 0.1\,$s, while $\kappa$ is set to achieve the desired $\omega$ via equation~\ref{eq:bandpass-w}.
   (Top)~Once every second, $r(t)$ is set to a unit-area impulse.
   Consequently, $e(t)$ oscillates according to the impulse response, $f(t)$.
@@ -435,13 +438,19 @@ Although we have analyzed the continuous-time setting, the same proof technique 
 Likewise, although we have assumed $x$ is a constant, we can apply a ``separation of time-scales'' argument (i.e.,~assuming $x(t)$ changes on a slower time-scale than $f(t)$) to carry this same analysis over to dynamic $x(t)$.
 %More precisely, bounding the real components of equation~\ref{eq:poles} above by $c$,
 %\footnote{Strictly, $c = -\frac{1}{2\tau}$ for the oscillatory case, and $c = \frac{-1 + \sqrt{1 - 4 \tau \kappa \|\V{a}\|^2}}{2 \tau}$ otherwise.}
-By equation~\ref{eq:poles}, this analysis holds approximately for $x(t)$ with frequencies $\ll \frac{1}{4 \pi \tau}\,$Hz, by applying a time-varying filter to $\V{d}(t)$ that depends on the current activity vector.
+By equation~\ref{eq:poles}, this analysis holds approximately for $x(t)$ with frequencies $\ll \left(4 \pi \tau \right)^{-1}$\,Hz, by applying a time-varying filter to $\V{d}(t)$ that depends on the current activity vector.
+Incidentally, this bound is only half that of our definition of low-frequency representation from section~\ref{sec:energy-minimization}.
 
 In conclusion, we have extended our previous analysis of PES to include linearly filtered feedback and a dynamic reference signal.
 This fully characterizes the rule in the context of NEF networks representing a constant value, as a transfer function from the reference signal to the error signal.
-This transfer function may then be readily analyzed and exploited using linear systems theory.
+This transfer function may then be readily analyzed and exploited using linear systems theory, to instantiate oscillators using far fewer resources (i.e.,~a single neuron coupled with a local learning rule) than what would be needed to achieve the same level of precision with a recurrent SNN implementing the same dynamical system.
 This demonstrates a more general principle of recurrently coupling available dynamical primitives in biological models (here, a PSC that is integrated by an online learning rule) to improve network-level computations.
 % If we can find ways to exploit these things, then nature almost certainly can...
+
+Many other aspects of NEF networks may also be analyzed from a dynamical systems perspective.
+For instance, the dynamics of the representational error, the chaotic dynamics of voltage traces, or the undecidable attractor dynamics induced by neural saturation~(see section~\ref{sec:chaos}).
+We do not go into detail here.
+We mention this because, similar to our lessons learned in the above discussion, it may become important to have the ability to systematically characterize and subsequently leverage the dynamics that are already naturally present in the network's function.
 
 \begin{figure}
 \centering
@@ -457,22 +466,22 @@ This demonstrates a more general principle of recurrently coupling available dyn
 }
 \end{figure}
 
-\subsection{Dynamics of Saturation}
+\subsection{Optimization}
 
-Characterizing saturation as a dynamical system
+There is extensive literature on the general topic of implementing optimization algorithms in the form of dynamical systems, dating back at least to the work of \citet{brockett1991dynamical}.
+% But we are not aware of any reviews at this level where we are concerned with implementation details into consideration.
+\citet{voelkerimplementing} noticed that the ``hill climbing'' algorithm may be cast as a dynamical system, and leveraged this to construct an SNN that locally searches across an error landscape.
+This observation naturally extends to any gradient-based algorithm, since these algorithms are expressed as state-vectors that update continuously according to some (possibly nonlinear) function of the state of the system. 
+Instances of this include gradient descent, feedback alignment~\citep{stockel2019align}, Bayesian inference, and expectation-maximization~\citep{sharma2017}.
 
-\subsection{Dynamics of Error}
-
-Writing down the dynamical system arising from the error term. e.g., oscillator error.
-
-\subsection{Dynamics of Optimization Problems}
-
-``Dynamical systems that sort lists, diagonalize matrices, and solve linear programming problems''
-
-Mention nonlinear gradient-based algorithms 
- Compressed Sensing (LASSO and https://arxiv.org/abs/1805.08952)
- Expectation-Maximization
- PCA / SVD / ICA / NNMF
- Nonnegative similarity matching (https://arxiv.org/pdf/1902.01429.pd)
- PES as stochastic gradient descent
-Probably a good place to mention Paxon Frady and Sommers
+Apart from what has been done in the NEF, there exist many other dynamical systems that solve optimization problems, that could just as easily be realized using Principle 3, including:
+compressed sensing~\citep{kim2007interior},
+sparse coding~\citep[LASSO;][]{shapero2014optimal, tang2017sparse},
+dictionary learning~\citep{lin2018dictionary},
+Hopfield networks~\citep{hopfield1982, frady2019robust},
+non-negative similarity matching~\citep{pehlevan2019spiking},
+and various other algorithms related to eigenvalues,
+% principle component analysis,
+independent component analysis,
+and non-negative matrix factorization.
+But rather than focusing on any one of these algorithms in particular, we turn our efforts to developing a comprehensive understanding of how the NEF may be extended to implement all of them.
