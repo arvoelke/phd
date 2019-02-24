@@ -165,7 +165,7 @@ For this reason, and to keep quantities dimensionless, we often make the substit
   A = \begin{pmatrix} -v_0 & -v_0 & \cdots & -v_0 \\ v_1 & 0 & \cdots & 0 \\ 0 & \ddots & \ddots & \vdots \\ 0 & 0 & v_{d-1} & 0\end{pmatrix} \text{,} \quad 
   B = \transpose{\begin{pmatrix} v_0 & 0 & \cdots & 0\end{pmatrix}} \text{,} 
 \end{equation}
-where $v_i := (d+i)(d-i)(i+1)^{-1}$ no longer depends on $\theta$. %and $w_i := (-1)^{d - 1 - i} \left( \frac{i+1}{d} \right)$
+where $v_i := (q+i)(q-i)(i+1)^{-1}$ no longer depends on $\theta$. %and $w_i := (-1)^{d - 1 - i} \left( \frac{i+1}{d} \right)$
 As a side-effect, we may \emph{control} the length of the delay by adjusting the gain on the integration time-constant (i.e.,~by scaling the input and feedback signals).
 The NEF can be used to build such controlled dynamical systems, without introducing multiplicative dendritic interactions or implausible on-the-fly connection weight scaling~\citep{eliasmith2000b}.
 
@@ -193,8 +193,7 @@ This is achieved without appealing to the simulation time-step ($\dt{} = 1$\,ms)
 \subsection{Temporal representation}
 
 Although the delay network has its dynamics optimized for a single delay $\theta > 0$, we may still accurately decode any delay $0 \le \theta' \le \theta$ from the state of the same network, as intuitively it needs to be holding onto this memory.
-In other words, the network is representing a rolling window (i.e.,~history) of length $\theta$, or a temporal code of the input stimulus.
-
+In other words, the network is representing a rolling window (i.e.,~history) of length $\theta$.
 To compute these other delays, we must approximate $e^{-\theta' s}$ with a transfer function
 $$F_{\theta \rightarrow \theta'}(s) := \frac{\mathcal{C}(s; \, \theta, \theta')}{\mathcal{D}(s; \, \theta)}$$
 of order $[p / q]$, such that the denominator $\mathcal{D}(s; \, \theta)$ (which provides us with the recurrent transformation up to a change of basis) depends only on $\theta$, while the numerator $\mathcal{C}(s; \, \theta, \theta')$ (which provides us with the output transformation up to a change of basis) depends on some relationship between $\theta'$ and $\theta$.
@@ -301,7 +300,7 @@ This means that other delays will simply stretch or compress the impulse respons
   \caption{ \label{fig:pca}
     Impulse response of the delay network with various orders ($q$) of Pad\'e approximants.
     (Top)~The state-vector $\V{x}(t)$ projected onto its first three principal components.
-    (Bottom)~The length of the curve $\V{x}$ up to time $t$, computed using the integral $\int_0^t \|\dot{\V{x}}(t')\| \, dt'$ (normalized to $1$ at $t = \theta$).
+    (Bottom)~The length of the curve $\V{x}$ up to time $t$, computed using the integral $\smallint \|\dot{\V{x}}(t)\|$ (normalized to $1$ at $t = \theta$).
     This corresponds to the distance travelled by the state-vector over time.
     The dashed line marks the last inflection point, indicating when $\V{x}(t)$ begins to slow down.
     % The slope of $d(t)$ is correlated with the number of neurons encoding $\V{x}(t)$ at time $t$, when using a random encoding (not shown).
@@ -311,20 +310,16 @@ This means that other delays will simply stretch or compress the impulse respons
 
 \subsection{Nonlinear characterization}
 
-We present a dynamical system that optimally compresses a rolling time window of input into a low-dimensional state-space.
-The state of this system represents the history of its input by a linear combination of time-invariant polynomial basis functions.
-We use the Neural Engineering Framework~(NEF) to compile this system onto a recurrent spiking neural network.
-The activity of this ``delay network'' naturally approximates a Taylor series expansion, over time, centered about every point within the window.
-We show that this permits the computation of arbitrary nonlinear computations across the history of an input stimulus, while outperforming Echo State Networks in accuracy and training/testing time, without explicitly simulating any training examples.
-
-A continuous-time rolling window of length $\theta > 0$, denoted $[ u(t - \theta') \,:\, 0 \le \theta' \le \theta ]$, may be \emph{temporally compressed} into a low-dimensional state $\V{x}(t) \in \mathbb{R}^d$, by the following linear time-invariant dynamical system that approximately delays an input signal by $\theta$ seconds~\citep{voelker2018}:
-\begin{equation} \label{eq:delay-system}
-  \dot{\V{x}}(t) = A\V{x}(t) + Bu(t) \text{,} \quad
+A delay is a linear dynamical system.
+However, by virtue of encoding the delay network's state-vector into a heterogeneous population of neurons---as in the first two principles of the NEF---the network also affords the computation of arbitrary nonlinear functions across the rolling window.
+Recall that a continuous-time rolling window of length $\theta > 0$, which here we denote as $\left[ u(t - \theta') \,:\, 0 \le \theta' \le \theta \right]$, $u(\cdot) \in \mathbb{R}$, may be \emph{temporally compressed} into a low-dimensional state $\V{x}(t) \in \mathbb{R}^q$, by the following linear time-invariant dynamical system that approximately delays an input signal by $\theta$ seconds (repeating equation~\ref{eq:delay-system}, for clarity):
+\begin{equation*}
+  \theta \dot{\V{x}}(t) = A\V{x}(t) + Bu(t) \text{,} \quad
   A = \begin{pmatrix} -v_0 & -v_0 & \cdots & -v_0 \\ v_1 & 0 & \cdots & 0 \\ 0 & \ddots & \ddots & \vdots \\ 0 & 0 & v_{d-1} & 0\end{pmatrix} \text{,} \quad 
   B = \transpose{\begin{pmatrix} v_0 & 0 & \cdots & 0\end{pmatrix}} \text{,} 
-\end{equation}
-where $v_i := \frac{(d+i)(d-i)}{i+1} \theta^{-1}$, %and $w_i := (-1)^{d - 1 - i} \left( \frac{i+1}{d} \right)$
-for $i = 0 \ldots d-1$.
+\end{equation*}
+where $v_i := (q+i)(q-i)(i+1)^{-1}$, %and $w_i := (-1)^{d - 1 - i} \left( \frac{i+1}{d} \right)$
+for $i = 0 \ldots q-1$.
 %We may also solve this system to express $\V{x}(t)$ as a convolution of $u$ with the SIMO impulse response $\V{f}$: 
 %\begin{equation} \label{eq:lti-solved}
 %\V{f}(t) = e^{At} B \text{,} \quad \V{x}(t) = \left(u \ast \V{f}\right)(t) \text{.}
@@ -333,30 +328,60 @@ This compression is derived by applying Pad\'e approximants to $e^{-\theta s}$ a
 %\footnote{Note that a LTI system is equivalent up to any invertible linear transformation applied to the state-space.}
 The state $\V{x}(t)$ represents the rolling window via a linear combination of time-invariant polynomial basis functions:
 \begin{equation} \label{eq:basis-interpretation}
-\boxed{u(t - \theta') \approx \sum_{i=0}^{d-1} \mathcal{P}_{i,d} \left(\frac{\theta'}{\theta} \right) \, x_{d-1-i}(t) \text{,} \quad 0 \le \theta' \le \theta \text{,}}
+\boxed{u(t - \theta') \approx \sum_{i=0}^{q-1} \mathcal{P}_{i,q} \left(\frac{\theta'}{\theta} \right) \, x_{q-1-i}(t) \text{,} \quad 0 \le \theta' \le \theta \text{.} }
 \end{equation}
-which we have solved in closed-form~\citep[][eq.~14]{voelker2018}:
+Repeating the equation for these polynomials (equation~\ref{eq:delay-readouts}), for completeness:
 \begin{equation} \label{eq:basis-functions}
-\mathcal{P}_{i,d}(r) = \begin{pmatrix}d \\ i\end{pmatrix}^{-1} \sum_{j=0}^i \begin{pmatrix}d \\ j\end{pmatrix} \begin{pmatrix}2d - 1 - j \\ i - j\end{pmatrix} \left( -r \right)^{i - j} \text{.} %\text{,}\quad 0 \le r \le 1 \text{,}\quad i = 0 \ldots d - 1
+\mathcal{P}_{i,q}(r) = \begin{pmatrix}q \\ i\end{pmatrix}^{-1} \sum_{j=0}^i \begin{pmatrix}q \\ j\end{pmatrix} \begin{pmatrix}2q - 1 - j \\ i - j\end{pmatrix} \left( -r \right)^{i - j} \text{.} %\text{,}\quad 0 \le r \le 1 \text{,}\quad i = 0 \ldots d - 1
 \end{equation}
-A set of polynomials $\{ \mathcal{P}_{i, d} \}$ are shown in Figure~\ref{fig:basis-functions}.
-This defines a linear map from the $d$-dimensional state, $\V{x}(t)$, to the infinite-dimensional rolling window, $[ u(t - \theta') \,:\, 0 \le \theta' \le \theta ]$.
-In other words, (\ref{eq:basis-interpretation}) is the optimal pseudoinverse of the linear compression defined by (\ref{eq:delay-system}).
+A set of polynomials $\{ \mathcal{P}_{i, q} \}$ are shown in Figure~\ref{fig:basis-functions}.
+% These are again a linear transformation of the shifted Legendre polynomials.
+In essence, equation~\ref{eq:basis-interpretation} determines a linear map from the $q$-dimensional state, $\V{x}(t)$, to the infinite-dimensional rolling window, $[ u(t - \theta') \,:\, 0 \le \theta' \le \theta ]$.
+In other words, equation~\ref{eq:basis-interpretation} is the optimal pseudoinverse of the linear compression defined by equation~\ref{eq:delay-system}.
 %The frequencies in $u(t)$ that may be accurately encoded by this approach scale inversely with $\theta$.
 %Likewise, higher values of $q$ allowed for higher frequencies to be encoded at the same level of precision.
 %We remark that each basis function is expressed in terms of the unitless quantity $\frac{\theta'}{\theta}$, and is therefore scale-invariant.
 %We may also transform the state by any invertible matrix (e.g.,~ to orthogonalize the basis functions) without loss of generality.
 %Analysis of the approximation error, and some additional properties of this ``delay network'', may be found in \cite{voelker2018}.
-Moreover, each point along the window, along with its Taylor series expansion up to order $d-1$, as well as any other linear operation across the rolling window (e.g.,~Laplace transform), may be expressed using (\ref{eq:basis-interpretation}) and (\ref{eq:basis-functions}) as a known dot-product with $\V{x}(t)$.
+
+Moreover, every point along the window, along with its Taylor series expansion up to order $q-1$, as well as any other linear operations across the rolling window (e.g.,~Laplace transform), may be expressed using equation~\ref{eq:basis-interpretation} and equation~\ref{eq:basis-functions} as a fixed, known dot product with $\V{x}(t)$.
+To make this evident, let $k(\theta')$ ($0 \le \theta' \le \theta$) be any desired kernel, then:
+\begin{equation} \label{eq:delay-linear-transform}
+\begin{aligned}
+(u \ast k)(t) &= \int_{\theta'=0}^{\theta} u(t - \theta') k(\theta') \, d\theta' \\
+&\approx \sum_{i=0}^{q-1} \underbrace{\left( \int_{\theta'=0}^{\theta} k(\theta') \mathcal{P}_{i,q} \left(\frac{\theta'}{\theta} \right) d\theta' \right)}_{k_{q -1-i}} x_{q-1-i}(t) \\
+&= \left\langle \V{x}(t)\text{,}\, \V{k} \right\rangle \text{,}
+\end{aligned}
+\end{equation}
+where $\V{k} = \transpose{\left[ k_0\text{,}\, \ldots \text{,}\, k_{q-1} \right]} \in \mathbb{R}^q$ is defined above independently of time.
+Hence, any integral transform is simply a dot product with $\V{x}(t)$.
+Crucially, such dot products are precisely what the encoders $\V{e}_i$ compute in equation~\ref{eq:encoding}.
+This implies that the PSC of any neuron, by itself, necessarily represents a particular convolution across the window.\footnote{%
+There are infinitely many, since the system is overcomplete when working backwards from $\V{k} \mapsto k(\cdot)$, but we can enforce uniqueness by imposing L2-regularization, for instance.}
+The nonlinearity of each neuron thus provides a nonlinear function of some finite-width filter.
 %Yet, as shown below, this does not restrict our ability to also perform nonlinear computations across the window.
+Specifically, the state $\V{x}(t)$ is \emph{encoded} by a heterogeneous population of neurons, which allows for arbitrary nonlinear functions across the window,
+$$y(t) = f(\V{x}(t)) \approx f\left(\left[ u(t - \theta') \,:\, 0 \le \theta' \le \theta \right]\right)$$
+to be \emph{decoded} from its activity~\citep{eliasmith2003a}.
+For example, Figure~\ref{fig:delay-autocorrelation} visualizes $f$ within the space of $\V{x} \in \mathbb{R}^3$ for the autocorrelation function, $y(t) = u(t - \theta)\, u(t)$.
+
+\begin{figure}
+\centering
+  \includegraphics[width=0.5\linewidth]{delay-autocorrelation}
+  \caption{ \label{fig:delay-autocorrelation} 
+    Visualizing the autocorrelation function $y(t) = u(t - \theta)\, u(t)$ with $q=3$.
+    Each point along the surface of the unit-sphere is $\V{x}(t)$, and is coloured according to its corresponding value of $y(t)$ obtained from equation~\ref{eq:basis-interpretation}.
+    A slice of the shell is cut away for visualization.
+  } 
+\end{figure}
 
 \begin{figure}
 \centering
   \begin{tikzpicture}[auto, >=latex']
-    \node [input] (u) {$u(t)$};
+    \node [input, label=left:$u(t)$] (u) {};
     \node [block, right of=u, node distance=2cm] (h) {$h(t)$};
-    \node [ensemble, right of=h, node distance=1.5cm] (x) {$\V{x}(t)$};
-    \node [output, right of=x, node distance=1.5cm] (y) {$y(t)$};
+    \node [ensemble, right of=h, node distance=2cm] (x) {$\V{x}(t)$};
+    \node [output, label=right:$y(t)$, right of=x, node distance=1.5cm] (y) {};
     \draw [->] (u) -- node {$B^H$} (h);
     \draw [->] (h) -- (x);
     %\draw [->] (x.north) -- (y);
@@ -365,30 +390,18 @@ Moreover, each point along the window, along with its Taylor series expansion up
     \path[->] (x.south) edge [loop below, min distance=5em, out=-60, in=-120] node {$A^H$} (h.south);
   \end{tikzpicture}
   \caption{ \label{fig:delay-architecture}
-    Delay network~(DN) architecture.
-    The synapse model $h(t)$ is driven by $A^H \V{x}(t) + B^H u(t)$ to yield the state $\V{x}(t)$. 
+    Delay Network~(DN) model architecture.
+    The synapse $h(t)$ is driven by $A^H \V{x}(t) + B^H u(t)$ to yield the state $\V{x}(t)$ (see equation~\ref{eq:delay-system-p3}). 
     This state is nonlinearly encoded by a heterogeneous population of neurons and subsequently decoded to estimate the desired $y(t)$.
   } 
 \end{figure}
 
-\begin{figure}
-\centering
-  \includegraphics[width=0.5\linewidth]{delay-autocorrelation}
-  \caption{ \label{fig:delay-autocorrelation} 
-    Visualizing the autocorrelation function $y(t) = u(t - \theta)\, u(t)$ with $d=3$.
-    Each point along the surface of the unit-sphere is $\V{x}(t)$, and is colored according to its corresponding value of $y(t)$ obtained from (\ref{eq:basis-interpretation}).
-    A slice of the shell is cut away for visualization.
-  } 
-\end{figure}
-
-To implement this system as a recurrent neural network, we use the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a} to map (\ref{eq:delay-system}) onto the dynamics of a lowpass synapse with time-constant $\tau$:
-\begin{equation}
+To implement this system as a spiking (or non-spiking) recurrent neural network, we use Principle~3 of the NEF to map equation~\ref{eq:delay-system} onto the dynamics of the synapse.
+For example, repeating the standard form of Principle~3 for a continuous-time lowpass synapse with time-constant $\tau$ (although we are free to use the extensions of chapter~\ref{chapt:nef-extensions}):
+\begin{equation} \label{eq:delay-system-p3}
 A^H = \tau A + I \text{,} \quad B^H = \tau B \text{,} \quad H(s) = \left(\tau s + 1\right)^{-1} \text{.}
 \end{equation}
-The resulting ``delay network''~(DN) is depicted in Figure~\ref{fig:delay-architecture}.
-Generalizations to arbitrary linear synapses, including those modelling pure feedback delays, may be found in %\cite{voelker2017b}.
-\cite{voelker2018}.
-The state $\V{x}(t)$ is \emph{encoded} by a heterogeneous population of neurons, which allows arbitrary nonlinear functions across the window, $y(t) = f(\V{x}(t))$, to be \emph{decoded} from its activity~\citep{eliasmith2003a}.
+The model architecture of this delay network is depicted in Figure~\ref{fig:delay-architecture}, whose representation and transformations are realized using the first two principles of the NEF.
 
 \subsection{Scalability considerations}
 \label{sec:delay-scalability}
