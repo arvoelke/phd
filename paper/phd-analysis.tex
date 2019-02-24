@@ -36,9 +36,9 @@ Conversely, we do not lose any computational power by limiting our focus to a si
 However, the encoding matrix is extremely sparse with $(m - 1) / m$ percent of its coefficients set to zero.
 Likewise, the block-structure of the decoding matrix is isomorphic to the graph structure of the original network.
 
-This characterizes the functional role of network structure as: partitioning the global state-space into a union of state-vectors, sparsifying its encoders, and arranging the decoders into a block-structure that mirrors the interactions between sub-spaces.
-In terms of computation, this structure dramatically reduces the time and memory requirements that would otherwise be needed for a full-rank $nm \times nm$ matrix multiplication.
-In terms of training, the challenges involved in globally optimizing an RNN may be viewed under the lens of identifying relatively low-dimensional sub-spaces and their interactions with one another.
+This characterizes the functional role of network structure as: partitioning the global state-space into a union of state-vectors with a range of time-constants, sparsifying its encoders, and rearranging the decoders into a block-structure that mirrors the interactions between subspaces.
+In terms of computation, the network structure dramatically reduces the time and memory requirements that would otherwise be needed for a full-rank $nm \times nm$ matrix multiplication.
+In terms of training, the challenges involved in globally optimizing an RNN may be viewed under the lens of identifying relatively low-dimensional subspaces acting along various time-scales and their interactions with one another.
 
 \subsection{Heterogeneity of dynamical primitives}
 
@@ -58,7 +58,7 @@ A compelling example is provided in section~\ref{sec:delay-lstm} that applies BP
 As a corollary to the previous observation,
 once all primitive operations are expressed in the same language (i.e.,~differential equations), they become both \emph{composable} and \emph{interchangeable}.
 To the point of interchangeability, one can implement a lowpass filter by using a single synapse, or by training a population to emulate the same dynamical system via Principle~3.\footnote{%
-As simple as this point might sound, a potent example is when one student, who had been working with the Nengo for many years, used an entire network to implement the same computation as a single alpha synapse. This was due to not having them described in the same language, thus highlighting the utility of the point that we are attempting to make here.}
+As inconsequential as this point might sound, a potent example is when one student, who had been working with Nengo for many years, used a network containing hundreds of neurons to implement the same computation as a single alpha synapse. This was due to not having them described in the same language, thus highlighting the utility in the point that we make here.}
 To the point of composability, one can substitute the transfer function of a single synapse with that of an entire recurrent network.
 
 We illustrate this with a specific example by considering the following architecture:
@@ -116,7 +116,7 @@ Notably, this saturation effect is exploited to overload working memory with seq
     }
 \end{figure}
 
-Perhaps even more surprisingly, one does not need to invoke any saturation to observe chaos, at the level of individual neurons, in NEF networks implementing linear dynamics.
+Perhaps even more surprisingly, one does not need to invoke any saturation to observe chaos, at the level of individual spiking neurons, in NEF networks implementing linear dynamics.
 For example, consider the one-dimensional, autonomous (i.e.,~no input), integrator:
 $$\dot{x}(t) = 0 \text{,}$$
 implemented as an SNN using Principle~3 of the NEF ($A = B = D = 0$, $C = 1$).
@@ -201,10 +201,10 @@ In our example, neurons respond quickly to encode the rapidly-fluctuating oscill
 The postsynaptic filter that is applied is leveraged to participate in the required computation (see Principle~3; section~\ref{sec:principle3}).
 There is no unwanted phase-shift.
 }
-As will be explained in section~\ref{sec:scalability}, the precision of a feed-forward network scales as $\bigoh{\tau \sqrt{n}}$.
+As will be explained in section~\ref{sec:spike-coding}, the precision of a feed-forward network scales as $\bigoh{\tau \sqrt{n}}$.
 Thus, one is free to set the synaptic time-constant arbitrarily small, so long as the number of neurons are increased in proportion.
 We have verified this both theoretically and numerically.
-This enables arbitrarily fast transmission of information throughout the network assuming the criteria of section~\ref{sec:spike-coding} is met (see also Figure~\ref{fig:poisson-frequency-scaling}).
+This enables arbitrarily fast transmission of information throughout the network assuming the criteria of Theorem~\ref{thm:correctness} is met (see also Figure~\ref{fig:poisson-frequency-scaling}).
 Yet, even when constrained to longer time-constants, section~\ref{sec:deep-delay-networks} demonstrates a novel deep NEF network that is capable of \emph{instantaneously} propagating low-frequency stimuli through 8 layers of synaptic filters ($\tau = 0.1$\,s).
 
 \paragraph{3. The NEF examples that invoke Principle~3 all display rhythmic activity.}
@@ -584,7 +584,7 @@ Substituting all of these expectations into the initial formula yields:
 \begin{align*}
 \variance{\tilde{Y}_i(t)} = \, \Aboxed{ r_i \left( \frac{\left(1 - c_i^2 \right)\left(1 + c_i^{2r_i t}\right)}{2\tau \left(1 - c_i \right)^2} - \frac{\left( c_i^{k_i(t) + 1} + c_i^{2r_i t - k_i(t)} \right)}{\tau(1 - c_i)} - r_i \cdot \left(1 - c_i^{r_i t} \right)^2 \right) }
 \end{align*}
-Asymptotic analysis reveals that this scales as $\bigoh{\tau^{-2}}$.
+Asymptotic analysis reveals that this scales as $\bigoh{\tau^{-2}}$ as $t \rightarrow 0^+$.
 As well, we use the fact that regularized least-squares finds
 $\V{d}_i^\V{f}$ that are independently distributed according to $\mathcal{N}(0, \sigma^2)$ where $\sigma = \bigoh{n^{-1}}$ -- i.e., variance scales as $\bigoh{n^{-2}}$.
 Finally we use equation~\ref{eq:a_expectation} in the second step below, which lets us leverage the property that for any two uncorrelated \emph{zero-mean} variables, $A$ and $B$, we have $\variance{AB} = \variance{A}\variance{B}$.
@@ -670,10 +670,9 @@ Some application-specific trade-offs are discussed in section~\ref{sec:delay-app
     Static precision & $\bigoh{n}$ & Recurrent & section~\ref{sec:spike-coding} and \citet[][p.~47]{eliasmith2003a} \\
     Spiking precision & $\bigoh{\sqrt{n}}$ & Recurrent & section~\ref{sec:spike-coding} and \citet[][p.~47]{eliasmith2003a} \\
     Spiking precision & $\bigoh{\tau \sqrt{n}}$ & Feed-forward & section~\ref{sec:spike-coding} \\
-    Bandwidth & $\bigoh{\left(2\pi \tau \right)^{-1}}$ & Fixed energy & section~\ref{sec:energy-minimization} \\
+    Bandwidth (Hz) & $\bigoh{\left(2\pi \tau \right)^{-1}}$ & Fixed energy & section~\ref{sec:energy-minimization} \\
     Relative energy & $\bigoh{2\pi \tau f }$ & Fixed precision & section~\ref{sec:energy-minimization} \\
-    Neuron count & $\bigoh{2 \pi f}$ & Fixed precision & equation~\ref{eq:psc-code-power} and Figure~\ref{fig:poisson-frequency-scaling} \\
-    Synaptic time-constant & $\bigoh{\left(2 \pi f\right)^{-1}}$ & Fixed precision & equation~\ref{eq:psc-code-power} and Figure~\ref{fig:poisson-frequency-scaling} \\
+    Neuron count & $\bigoh{2 \pi f}$ & Fixed precision, $\tau = f^{-1}$ & equation~\ref{eq:psc-code-power} and Figure~\ref{fig:poisson-frequency-scaling} \\
     Dimensionality & $\bigoh{ n^{\frac{2}{3}} }$ & Fixed precision & \citet[][p.~60]{gosmann2018} \\ % this is actually big omega
     \bottomrule
   \end{tabular}
