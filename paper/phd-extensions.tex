@@ -946,41 +946,41 @@ Poisson-spiking models have numerous benefits:
 \item By solving the state discrepancy problem, the performance continues to scale with the number of neurons.
 \item Scaling holds even with arbitrarily low firing rates, thus promoting a reduction in total power by way of fewer spikes needed to achieve high levels of precision in certain cases.
 \end{enumerate}
-Integrate-and-fire (i.e.,~ReLU) spiking neurons also share benefits 3, 4, and 5 -- assuming its voltages are initialized to $v_i(0) \sim \mathcal{U}[0, 1]$ at the beginning of the simulation.
+Integrate-and-fire (i.e.,~non-leaky LIF, or ``ReLU'') spiking neurons also share benefits 3, 4, and 5 -- assuming its voltages are initialized to $v_i(0) \sim \mathcal{U}[0, 1]$ at the beginning of the simulation.
 Benefits 1 and 2 are lost, however, as the ReLU is a rectified linear (and unbounded) curve which may not provide the most efficient basis for some static nonlinearities, and it requires additional memory to maintain the state-variable (voltage) over time.
 
 \begin{figure}
 \centering
 \includegraphics[width=0.9\textwidth]{poisson-frequency-scaling}
-\caption{\label{fig:poisson-frequency-scaling} Performance of spiking rectified linear (ReLU), Poisson-spiking LIF, and regular-spiking LIF, as the frequency of the input signal is scaled.
+\caption{\label{fig:poisson-frequency-scaling} Scaling of LIF performance with frequency, for each type: Poisson-spiking, non-leaky (i.e.,~integrate-and-fire), adaptive, and regular-spiking.
 The input is a sinusoid with frequency $f$\,Hz.
 % Both the ideal sinusoid and the decoded spike trains are filtered by $\tau = 0.01 f^{-1}$\,s to compute the RMSE.
 %The number of neurons is set to $50 f$ in order to scale the total number of spikes with the input frequency, and the maximum firing rate of each neuron is uniformly distributed over $20-40$\,Hz.
 %We give the LIF neurons an advantage by washing out the initial transient induced by an initial voltage of $v(0) = 0$.
-Due to the memoryless property of the Poisson process, and the uniformity of the ReLU, both outperform LIF with constant precision as $f \rightarrow \infty$ (Theorem~\ref{thm:correctness}), assuming $n$ and $\tau$ are scaled appropriately with frequency (see text for details).
+Due to the memoryless property of the Poisson process, and the uniformity of ReLU, both outperform LIF with constant precision as $f \rightarrow \infty$ (Theorem~\ref{thm:correctness}), assuming $n$ and $\tau$ are scaled appropriately with frequency (see text for details).
 }
 
 \vspace{1em}
 
 \includegraphics[width=0.9\textwidth]{poisson-neuron-scaling}
-\caption{\label{fig:poisson-neuron-scaling} Performance of spiking rectified linear (ReLU), Poisson-spiking LIF, and regular-spiking LIF, as the number of neurons are scaled.
+\caption{\label{fig:poisson-neuron-scaling} Scaling of LIF performance with neuron count, for each type: Poisson-spiking, non-leaky (i.e.,~integrate-and-fire), adaptive, and regular-spiking.
 %The input signal is a sinusoid with frequency $10$\,Hz, and the maximum firing rates are uniformly distributed over $20-40$\,Hz.
 Regular-spiking LIF plateaus in performance for large numbers of neurons, due to the state discrepancy (definition~\ref{def:state-discrepancy}).
-Spiking ReLU and Poisson-spiking LIF performance scale towards $0$ error as $n \rightarrow \infty$ (Theorem~\ref{thm:correctness}), since each neuron is always ready to spike with the ideal probability. 
+The precision of integrate-and-fire and Poisson-spiking both scale as ${\sqrt{n}}$ as $n \rightarrow \infty$ (Theorem~\ref{thm:correctness}), since each neuron is always ready to spike with the ideal probability. 
 }
 \end{figure}
 
-We validate these claims in Figures~\ref{fig:poisson-frequency-scaling} and~\ref{fig:poisson-neuron-scaling} by using a Poisson-spiking version of the LIF model, evaluating the root-mean-squared error (RMSE) against the filtered ideal, and comparing to both the spiking ReLU and the regular-spiking LIF.
+We validate these claims in Figures~\ref{fig:poisson-frequency-scaling} and~\ref{fig:poisson-neuron-scaling} by using each type of LIF model---Poisson-spiking, non-leaky, adaptive, and regular-spiking---evaluating the root-mean-squared error (RMSE) against the filtered ideal.
 In all cases the maximum firing rates of the neurons are limited to $20$--$40$\,Hz, and the states of the neurons are initialized to be mixed (i.e.,~uniform ISIPs).
 In both figures we display 95\% confidence intervals bootstrapped from $10$ trials in each condition.
 
-In Figure~\ref{fig:poisson-frequency-scaling}, we demonstrate that precision remains constant for both Poisson and ReLU neurons, even at frequencies that more than double the maximum firing rates of any given neuron.
+In Figure~\ref{fig:poisson-frequency-scaling}, we demonstrate that precision remains constant for both Poisson-spiking and non-leaky neurons, even at frequencies greater than six times that of the maximum firing rates of any given neuron.
 For this, we set $n = 50 f$, $\tau = 10 f^{-1}$\,ms, and $\dt{} = 1 f^{-1}$\,ms, as we scale the frequency of the sinusoid, $f$\,Hz.
 This choice of scaling is informed by equation~\ref{eq:psc-code-power}, which tells us that we should balance $\tau = f^{-1}$ to keep $\bigoh{2 \pi \tau f }$ fixed, while increasing $n$ in proportion to $f$ to scale the total number of spikes with frequency.
 Due to the variability in a Poisson process, it is sub-optimal for constant inputs.
 However, performance remains constant at higher frequencies.
 
-In Figure~\ref{fig:poisson-neuron-scaling}, we demonstrate that the precision continues to scale as $\bigoh{\tau \sqrt{n}}$ for the Poisson LIF and spiking ReLU, but not for LIF.
+In Figure~\ref{fig:poisson-neuron-scaling}, we demonstrate that the precision continues to scale as $\bigoh{\tau \sqrt{n}}$ for both Poisson-spiking and non-leaky neurons, but not for the other two.
 For this, we fix $f = 10$\,Hz, $\tau = 1$\,ms, and $\dt{} = 0.1$\,ms, as we scale the neuron count.
 This demonstrates that Posson spiking models (and ReLU) solve the state discrepancy problem, and thus continue to scale in accuracy with neuron count at increasingly-greater signal frequencies relative to the individual firing rates.
 The properties of this neuron model make it particularly suitable for neuromorphic architectures such as SpiNNaker~2.

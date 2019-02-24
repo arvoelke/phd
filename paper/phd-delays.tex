@@ -66,7 +66,10 @@ Our solution leverages both methods of sparsification, but not in a way that one
 \section{Optimal solution}
 \label{sec:nef-delay}
 
-As it is impossible in practice (i.e.,~given finite-order continuous-time resources) to implement an arbitrary delay, we will instead approximate $u(t)$ as a low-frequency signal, or, equivalently, approximate equation~\ref{eq:time-delay} as a low-dimensional system expanded about the zeroth frequency in the \emph{Laplace domain}.
+It is impossible in practice (i.e.,~given finite-order continuous-time resources) to implement an arbitrary delay.
+For instance, a white-noise signal contains an uncountably-infinite amount of information within any finite window, that cannot be compressed any further~\citep{cover2012elements}.
+We instead approximate $u(t)$ as a low-frequency signal, or, equivalently, approximate equation~\ref{eq:time-delay} as a low-dimensional system expanded about the zeroth frequency in the \emph{Laplace domain}.
+The choice of a zero-frequency approximation is informed by our analysis from section~\ref{sec:energy-minimization} that suggest neural systems require energy that is linear in representational frequency.
 We begin by transforming equation~\ref{eq:time-delay} into the Laplace domain, $\mathcal{L} \left\{ y(t) \right\} = \mathcal{L} \left\{ u(t) \right\} \mathcal{L} \left\{ \delta_{-\theta}(t) \right\}$, and then using the fact that $\mathcal{L} \left\{ \delta_{-\theta}(t) \right\} = e^{-\theta s}$ to obtain:
 \begin{align} \label{eq:tf-delay}
 F(s) := \frac{\mathcal{L} \left\{ y(t) \right\}}{\mathcal{L} \left\{ u(t) \right\}} = e^{-\theta s} \text{,}

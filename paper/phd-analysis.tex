@@ -203,7 +203,7 @@ There is no unwanted phase-shift.
 }
 As will be explained in section~\ref{sec:spike-coding}, the precision of a feed-forward network scales as $\bigoh{\tau \sqrt{n}}$.
 Thus, one is free to set the synaptic time-constant arbitrarily small, so long as the number of neurons are increased in proportion.
-We have verified this both theoretically and numerically.
+We have verified this both theoretically and numerically in section~\ref{sec:poisson-spiking}.
 This enables arbitrarily fast transmission of information throughout the network assuming the criteria of Theorem~\ref{thm:correctness} is met (see also Figure~\ref{fig:poisson-frequency-scaling}).
 Yet, even when constrained to longer time-constants, section~\ref{sec:deep-delay-networks} demonstrates a novel deep NEF network that is capable of \emph{instantaneously} propagating low-frequency stimuli through 8 layers of synaptic filters ($\tau = 0.1$\,s).
 
