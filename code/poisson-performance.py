@@ -98,18 +98,19 @@ n_trials = 10
 
 def get_models(seed):
     return (
-        nengo.SpikingRectifiedLinear(),
-        PoissonLIF(seed=seed),
-        nengo.LIF(),
+        ('Poisson', PoissonLIF(seed=seed)),
+        ('Non-Leaky', nengo.SpikingRectifiedLinear()),
+        ('Adaptive', nengo.AdaptiveLIF()),
+        ('Regular', nengo.LIF()),
     )
 
 ########################
 
 data = defaultdict(list)
 for seed in range(n_trials):
-    for neuron_type in get_models(seed):
-        for freq in np.linspace(1, 101, 11):
-            data['Model'].append(type(neuron_type).__name__)
+    for name, neuron_type in get_models(seed):
+        for freq in np.geomspace(1, 251, 11):
+            data['Model'].append(name)
             data['Frequency (Hz)'].append(freq)
             data['Seed'].append(seed)
             data['RMSE'].append(go(freq, neuron_type, seed=seed))
@@ -117,16 +118,17 @@ for seed in range(n_trials):
 plt.figure(figsize=(14, 6))
 sns.lineplot(data=DataFrame(data), x="Frequency (Hz)", y="RMSE", hue="Model")
 sns.despine(offset=15)
+plt.xscale('log')
 savefig("poisson-frequency-scaling.pdf")
 
 ########################
 
 data = defaultdict(list)
 for seed in range(n_trials):
-    for neuron_type in get_models(seed):
+    for name, neuron_type in get_models(seed):
         for n_neurons_over_freq in np.linspace(10, 1001, 11):
             freq = 10
-            data['Model'].append(type(neuron_type).__name__)
+            data['Model'].append(name)
             data['# Neurons'].append(n_neurons_over_freq * freq)
             data['Seed'].append(seed)
             data['RMSE'].append(go(freq, neuron_type, n_neurons_over_freq=n_neurons_over_freq, seed=seed))
