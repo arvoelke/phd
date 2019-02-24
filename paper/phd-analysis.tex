@@ -258,7 +258,7 @@ But the fact of the matter is that this becomes unnecessary (and inefficient) fo
 \subsection{Energy-minimization via low-frequency representation}
 \label{sec:energy-minimization}
 
-We define a \emph{low-frequency representation} as one in which the represented vector, $\V{x}(t)$, carries its information within frequencies on the order of the cut-off frequency of the synaptic filter.
+We define a \emph{low-frequency representation} as one in which the represented vector, $\V{x}(t)$, carries its information within frequencies on the order of the cutoff frequency of the synaptic filter.
 That is, $\left( 2 \pi \tau \right)^{-1}$\,Hz, where $\tau$ is the synaptic time-constant of equation~\ref{eq:lowpass-laplace} in seconds.\footnote{%
 For example, a typical time-constant of $\tau = 5$\,ms would imply that most information is present within a frequency band of $< 32$\,Hz.
 }
@@ -288,7 +288,7 @@ Specifically, our dimensional analysis identifies the following asymptotic relat
 where the Big~$\mathcal{O}$ constants involve the length of the encoder (typically unit-length) and the gains and biases (unitless).
 
 From equation~\ref{eq:psc-code-power} it directly follows that, in order to represent $\V{x}(t)$ with an absolute power of one (unitless) at a frequency of $f$, via the postsynaptic current code (i.e.,~linear projection onto each PSC), the relative amount of energy needed to drive all of the synapses of the postsynaptic neuron scales as $\bigoh{2 \pi \tau f }$.
-Therefore, for a \emph{fixed} energy budget, the frequencies that can be successfully transmitted using this code scale by the inverse law (which just-so-happens to be the cut-off frequency of the filter):
+Therefore, for a \emph{fixed} energy budget, the frequencies that can be successfully transmitted using this code scale by the inverse law (which just-so-happens to be the cutoff frequency of the filter):
 \begin{equation} \label{eq:low-frequency-representation}
 \bigoh{\left( 2 \pi \tau \right)^{-1}} \text{.}
 \end{equation}
@@ -682,8 +682,6 @@ Some application-specific trade-offs are discussed in section~\ref{sec:delay-app
     % Many of these are abusing big-oh notation and should be big-theta or big-omega...
   }
 \end{sidewaystable}
-
-\TODO{Is the scaling of time-constant versus neuron for a fixed precision consistent between the two separate avenues?}
 
 Table~\ref{tab:scalability} provides a comprehensive list of all such trade-offs that we are aware of to date.
 This includes guarantees on training time, resources for simulation, precision (in spiking, non-spiking, feed-forward, and recurrent architectures), energy usage, dimensionality, and finally relationships between signal bandwidth, synaptic time-constants, and neuron counts.
