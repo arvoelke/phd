@@ -7,11 +7,12 @@ discretization (in time), quantization (truncation of both neural states and wei
 The NEF already solves many of these problems in theory with varying degrees of success in practice.
 The focus of this chapter is to expose our novel contributions to solving these problems in the context of extending the scope of Principle~3.
 
-\section{Synaptic extensions}
+\section{Synapses}
 \label{sec:synaptic-extensions}
 
 This section has been adapted from the works of \citet[][patent pending]{dynamicspatent}, \citet{voelker2017iscas}, \citet{voelker2017neuromorphic}, and \citet{voelker2018}.
-Here, we focus on the dynamical primitive of SNNs known as the synapse model, $h(t)$, and address many of the differences that emerge between the idealization made by the NEF and the realities imposed by neuromorphic hardware (and often too, the brain).
+Here, we focus on a dynamical primitive of SNNs known as the synapse model, $h(t)$, and address many of the differences that emerge between the idealization made by the NEF and the realities imposed by neuromorphic hardware (and often too, the brain).
+This leads to several high-level results that exploit their higher-order dynamics, account for time-constant mismatch, leverage their heterogeneity, and solve for optimal filters.
 
 \subsection{Linear transfer functions}
 \label{sec:linear-extensions}
@@ -744,6 +745,7 @@ This approach reclaims the advantages of using factorized connection weight matr
 Since Braindrop supports an efficient way of structuring the linear operations between pools~\citep[][Figure~5]{braindrop2019}, we use this technique to account for time-constant mismatch in our simulations in section~\ref{sec:integrator}.
 
 \subsection{Harnessing temporal heterogeneity}
+\label{sec:temporal-heterogeneity}
 
 The methods in the previous section esssentially ``tame away'' the heterogeneity in synaptic time-constants by correcting for the individual scaling factors, and in effect encoding the same state-vector across all synapses.
 However, we may also consider leveraging this temporal heterogeneity as a basis for dynamical computation.
@@ -865,7 +867,57 @@ This same method also applies to the discrete-time domain to solve for the optim
 In general, this provides a way of rolling an unknown set of synapse models, $H(s)$ or $H(z)$, into the NEF's least-squares optimization problem -- rather than assuming just a single synapse is fixed apriori.
 
 
-\section{Neural Extensions}
+\section{Neurons}
+
+Although the majority of this chapter has focused on extending the NEF to a variety of synapse models,
+we acknowledge the importance of embracing intrinsic neural dynamics as a useful computational resource as well.
+On the one hand, \citet[][appendix~F.1]{eliasmith2003a} argue that synaptic dynamics dominate that of LIF dynamics at the network level.
+But on the other hand, there is significant evidence that intracellular dynamics in more sophisticated neuron models play an important functional role in reducing signal-to-noise~\citep[][chapter~4]{eliasmith2003a} and in supporting network-level computations~\citep{izhikevich2007dynamical}.
+As stated in section~\ref{sec:relationships}, and demonstrated in section~\ref{sec:temporal-heterogeneity}, one can explicitly simulate the spike-generation and solve for the decoders over time, thus allowing the optimization to exploit any relevant correlation structures in spike-timing across neurons and any information carried by the individual spike-timing of each neuron.
+However, such black box approaches do not assist the modeller, apriori, in picking the optimal neuron model for some useful function, configuring its parameters, and so forth.
+Rather, it becomes something of an art; making intuitive judgements about which neurons are doing what, and sweeping over various combinations of models and parameter settings with evolutionary search algorithms or similar.
+Making progress within a mathematical framework proves to be challenging, due to the intractability of nonlinear dynamical systems in general.
+We discuss the work that we have carried out in this direction, and highlight some promising directions for future work.
+
+\subsection{Adaptive neurons}
+\label{sec:adaptive-neurons}
+
+In a report by \citet{hunsberger2016}, it was shown that adapting neurons can be successfully decomposed into a linear-nonlinear model.
+That is, a linear filter followed by a static nonlinearity.
+Likewise, \citet{lundstrom2008fractional} have shown that pyramidal neurons can be decomposed in the same way, where the linear filter is a fractional differentiator of the form $H(s) = s^\alpha$ for some $\alpha$.
+Such \emph{decompositions} are extremely beneficial to the NEF, since they enable the modeller to then conceptually absorb that filter into the higher-order dynamics of the synapse model, and then apply any of our results from section~\ref{sec:synaptic-extensions} with respect to the new filter and the static nonlinearity that remains.
+
+In general, the field of systems identification~\citep{nelles2013nonlinear} is concerned with learning the parameters of dynamical models, represented in various forms, that capture the essential underlying input-output response of some observed dynamical system, such as an adaptive neuron.
+Indeed, expressions such as the Volterra series, or its model form as a principal dynamic mode~(PDM) decomposition~\citep{eikenberry2015principal}, provide ways to characterize and then potentially leverage the principal dynamics of any given model.\footnote{%
+We remark that any nonlinear dynamical system can in theory be expressed arbitrarily well using the Volterra series -- analogous to the Taylor series approximation of any function.}
+Our proposed recipe is as follows: 
+\begin{enumerate}
+\item Identify the behaviour of the neuron model, $G\left[ \cdot \right]$, using some other model representation, such as a linear-nonlinear model or a PDM model. This model should capture the output response of the model, with respect to a typical input, and up to some degree of tolerance.
+\item Extend the NEF with respect to this new model specificiation.
+\end{enumerate}
+For the case of a linear-nonlinear model, this second step is accomplished by section~\ref{sec:synaptic-extensions}.
+For more complicated model representations, such as PDM, we are less certain about what can be done.
+Essentially, this is about meeting in the middle, between what we know how to describe, and what we know how to exploit.
+The question then becomes: how complicated may the models in the first step become, before the second step too becomes intractable?
+We conjecture that this problem---assuming it is well-defined---is generally undecidable.
+Still, we view this as the penultimate goal of the NEF, and find it hopeful to pursue in specific cases.
+
+Returning to the case of adaptive neurons, we can still say more.
+Consider the model used by Nengo~\citep{camera2004minimal}.
+This model describes an additional state-variable, $k_i(t)$, for each neuron, that is equal to a lowpass filtered version of its own spike-train with some time-constant, $\tau_\text{adapt}$.
+It then subtracts a scaled version, $\alpha_\text{adapt} k_i(t)$, from its own input current, which results in the effect where: the more it spikes, the more it inhibits itself in the future.
+This description suggests a natural decomposition of the adaptive LIF: express it as a LIF neuron, that is recurrently coupled to itself with weight $\omega_{i,i} = -\alpha_\text{adapt}$ and a synaptic filter described by a lowpass with a time-constant of $\tau_\text{adapt}$, also known as an \emph{autapse}.
+This provides an equivalent model description that the NEF can fully leverage.
+Specifically: include a recurrent diagonal weight matrix, where the $i^\text{th}$ diagonal is $\alpha_\text{adapt}$, and use a synapse model with time-constant $\tau_\text{adapt}$.
+This then cancels out the adaptive term, and reduces the architecture back to the case of a LIF neuron.
+Using this technique, we have verified that Principle~3 can be implemented for the case of an adaptive LIF population with equivalent accuracy to that of its dual LIF population (not shown).
+Although this may seem like a pointless exercise, as we have merely gone around in a circle and back to where we started, this reveals an important equivalence relation, namely:
+\emph{the adaptive LIF is equivalent to a LIF model with a diagonal inhibitory feedback loop}.
+A crucial observation here is that a diagonal matrix cannot be factored any further (it is full rank).
+In the context of the NEF, this implies that the network-effect of adaptive LIF models is to expand the dimensionality of the dynamical state-space from $q$ to $n$, where the additional dimensions emerge from a sparse $(1/n)$-encoding with itself.
+This provides an explanation for the computational power of adaptive LIF neurons in the context of Principle~3, but only gets us so far due to the difficulty in analyzing an $n$-dimensional nonlinear dynamical system for large values of $n$.
+We have found, however, that this diagonal matrix can in many cases be factored into the product of two low-rank matrix---analagous to encoders and decoders---whose state-space essentially represents a projection of the population's adaptive state, without influencing the network-level dynamics.
+This highlights a promising avenue for future research, namely the characterization of this additional state-vector and its subsequent harnessing for particular classes of dynamical systems.
 
 \subsection{Poisson Spiking}
 \label{sec:poisson-spiking}
@@ -928,19 +980,3 @@ The properties of this neuron model make it particularly suitable for neuromorph
 Specifically, SpiNNaker~2 has specialized hardware for computing exponentials~\citep{partzsch2017fixed} and uniform samples~\citep{liu2018memory}, and the architecture benefits enormously from the reduction of memory requirements and spike traffic~\citep{mundy2015, stromatias2013power}.
 Since the Poisson spike generator can be applied to any desired static response curve, this method can be applied to whatever is cheap to compute while still providing a suitable nonlinear basis for the desired transformation.
 
-\subsection{Adaptative Neurons}
-\label{sec:adaptive-neurons}
-
-Partial differentiation (Fairhall)
-Eric's system itendification
-Subtractive adaptation and perfect cancellation
-Divisive adaptation (adaptive threshold) and modelling it by the latter
-Interpretation in terms of PSC code / objective function, and dimensionality
-
-\subsection{Wilson Neurons}
-
-Peter's work
-
-\subsection{Baal Neurons}
-
-Peter's work

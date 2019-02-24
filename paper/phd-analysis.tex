@@ -640,7 +640,7 @@ However, this does not guarantee invariance over time for time-varying stimuli; 
 
 \item The neuron model is replaced by a spiking rectified linear (ReLU) unit, also known as a (non-leaky) integrate-and-fire neuron that rectifies its input current, such that its state can only evolve in one direction.
 This can also be achieved by setting the $\tau_\text{RC}$ to be sufficiently large, and preventing the neuron's voltage floor from being hit, as in \citet{boerlin2013predictive}.
-Incidentally, \citet[][pp.~238--239]{eliasmith2003a} discovered that performance was improved by increasing $\tau_\text{RC}$, but attributed this improvement to static distortion being minimized by linear tuning curves, instead of having reduced the overall state discrepancy~\citep[also see][Appendix~F.1]{eliasmith2003a}.
+Incidentally, \citet[][pp.~238--239]{eliasmith2003a} discovered that performance was improved by increasing $\tau_\text{RC}$, but attributed this improvement to static distortion being minimized by linear tuning curves, instead of having reduced the overall state discrepancy~\citep[also see][appendix~F.1]{eliasmith2003a}.
 
 \item Noise is introduced to the neuron model, to maintain a uniform subthreshold state~\citep[][pp.~132--133]{eliasmith2003a}.
 Indeed, this is the same assumption made by \citet[][p.~134]{eliasmith2003a} in their assessment of the quality of spiking neural representation.
