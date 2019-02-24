@@ -1,38 +1,28 @@
 \chapter{Delay Networks}
 \label{chapt:delays}
 
-\TODO{Mention the existence of delays in Loihi and support of analog hardware such as in
-``A programmable axonal propagation delay circuit for time-delay spiking neural networks''
-Also mention \citep{bai2018dfr} as an example of the power of delayed reservoirs.
-Autoencoder in time.}
+This chapter has been adapted from, and significantly extends, the work of \citet[][patent pending]{voelker2015computing, dynamicspatent, voelker2018}.
 
-This section is taken from \citet{voelker2018}.
-
-A particularly important dynamical system that has not been implemented using the NEF is the pure continuous-time delay line.
-This system must represent a rolling window of input history.
-We provide a novel derivation of an optimal low-dimensional linear approximation to a continuous-time delay, and prove that the resulting \emph{delay network} nonlinearly encodes its input across the delay interval.
+A particularly important dynamical system that has not been discussed before in the NEF literature is the pure \emph{continuous-time delay} line.
+In order to implement such a system, one must represent a \emph{rolling window} of input history, or, in other words, one must \emph{buffer} the input signal into a memory that continuously slides alongside the current input.
+In this chapter, we provide a novel derivation of an optimal low-dimensional linear approximation to a continuous-time delay, and then realize this \emph{delay network} using the NEF in a recurrent spiking network.
+We then investigate its computational properties, proving that the resulting network implements a well-defined nonlinear encoding of its input across the delay interval -- isomorphic to a high-dimensional projection of the Legendre polynomials.
 This network uses a scale-invariant representation, with a level of accuracy that depends on the input frequency, chosen dimensionality (i.e.,~the order of the approximation), and particular synapse model.
-Low-dimensional representations (e.g.,~$\le 27$) of low-frequency signals (e.g.,~$\le 50$\,Hz) are pervasive in biological systems~\citep{cunningham2014dimensionality, waernberg2017low, pulvermuller1997high, singer1999neuronal}.
 To our knowledge, this work is the first to demonstrate that such a temporal code may be accurately implemented using a spiking dynamical network.
 
 Reservoir Computing approaches, such as Liquid State Machines~\citep{maass2002real} and Echo State Networks~\citep{jaeger2001echo}, may be used to approximate a delay line.
-However, since these networks use randomly chosen feedback weights, it is likely that they do not {\it efficiently} produce the dynamics of a pure delay.
-Rather, these networks represent a random variety of nonlinear memory traces~\citep{lukovsevicius2012reservoir}.
+However, since these networks use randomly chosen feedback weights, we show in section~\ref{sec:delay-rc} that they do so with relatively poor accuracy despite extensive hyperoptimization.
+Such networks instead represent a random variety of nonlinear memory traces~\citep{lukovsevicius2012reservoir}.
 Discrete approaches to short-term memory, such as those taken by \citet{white2004short} and \citet{ganguli2008memory}, while optimal in an information-theoretic sense, rely fundamentally on single time-step delays between rate-based neurons.
 In contrast, the method that we propose here works independently of the simulation time-step, and is optimal assuming the population of spiking neurons---coupled with some model of the synapse---accurately represents a low-dimensional, low-frequency, vector space.
 Furthermore, our framework is extended to account for arbitrary linear synapses, which improves our understanding of the relationship between synapse models and network-level computation.
-A detailed comparison of our method to Reservoir Computing remains the subject of future work.
 
-A distinguishing feature of this work is that we begin the problem with a mathematical description of the ideal dynamics for the delay line, and then proceed by mapping this description onto a spiking neural network (using the NEF and its extensions).
-This is in contrast to methods that use online learning or backpropagation through time with rate-based neurons~\citep{de1992gamma, sussillo2009generating} or spiking neurons~\citep{nicola2016supervised, huh2017gradient, gilra2017predicting, alemi2017learning}.
-That is, we do not require any sophisticated training regimes involving online learning or backpropagation; our delay network is trained offline using convex optimization~(i.e.,~regularized least-squares), which yields a more complete understanding of its employed representation and dynamics.
+We also find that the delay-line is a difficult function for FORCE networks (section~\ref{sec:force-comparison}), as re-encoding the delayed output as a teaching signal ends up ``confusing'' the network.
+Furthermore, we find that our network, when expressed as an RNN cell (without spikes), outperforms equivalently-sized stacked LSTMs on computing long delays, and predicting the Mackey-Glass dataset---a difficult chaotic time-series benchmark---in training time, inference time, and test accuracy.
+Next, we reveal some connections between the neural responses within our delay network, and ``time cells'' in the neuroscience literature.
+Lastly, we discuss a number of theoretical applications that are directly supported by, and extend, the computations of the delay network.
 
-
-A fundamental dynamical system that has not yet been discussed within the NEF literature is the continuous-time delay line of $\theta$ seconds,\footnote{
-\citet{voelker2015computing} proposed a NEF model, but did not include detailed analysis or extensions.
-% Here, we elaborate on this network in considerable detail.
-}
-expressed as:
+Now consider a continuous-time delay line of $\theta$ seconds:
 \begin{align} \label{eq:time-delay}
 y(t) = (u \ast \delta_{-\theta})(t) = u(t - \theta)\text{,} \quad \theta > 0 \text{,}
 \end{align}
@@ -48,25 +38,33 @@ Since any finite interval of $\mathbb{R}$ contains an uncountably-infinite numbe
 Second, the delay provides us with a window of input history from which to compute arbitrary nonlinear functions across time.
 For instance, the spectrogram of a signal may be computed by a nonlinear combination of delays, as may any finite impulse response~(FIR) filter.
 Third, delays introduce a rich set of interesting dynamics into large-scale neural models, including: oscillatory bumps, traveling waves, lurching waves, standing waves, aperiodic regimes, and regimes of multistability~\citep{roxin2005role}.
-Fourth, a delay line can be coupled with a single nonlinearity to construct a network displaying many of the same benefits as Reservoir Computing~\citep{appeltant2011information}.
+Fourth, a delay line can be coupled with a single nonlinearity to construct a network displaying many of the same benefits as Reservoir Computing~\citep{appeltant2011information, bai2018dfr}.
 
 Many learning algorithms also tend to rely on sliding windows of input history.
 For instance, \citet{leng2013online} and \citet{izzeldin2011online} improved their neural networks' accuracy by incorporating sliding windows into their learning rules -- but they did not offer any neural implementation for the component that performs the required buffering.
 Similarly, \citet{ferreira2009online} found sliding windows to be beneficial for the online learning of process models, in which the parameters of a nonlinear time-varying system are identified.
 
-\TODO{Takens Theorem. Mental time-travel. INRC delay motivation slide. Class of dynamical-systems-based algorithms.}
+The computational power of delays is explained much more broadly by Takens' embedding theorem~\citep{takens1981detecting, noakes1991takens}.\footnote{%
+We thank Peter Suma for pointing out this connection.
+}
+This theorem provides a very deep connection between delays and dynamical systems, specifically: any chaotic attractor, with finite box counting dimension, $k$, can be reconstructed by a static nonlinear projection of $2k$ different delays of just \emph{one} of its internal state variables.
+In other words, a basis of delays, when applied to just a single observed variable, provides enough information to infer its entire unobserved state.
+These insights have practical applications to time-series forecasting in the natural sciences~\citep{sugihara2012detecting}.
+And in particular, this provides theoretical grounding for why delays might be computationally useful in biological systems; their dynamics support the inference of high-dimensional states from low-dimensional observations over time.
 
-\section{Conventional Approaches}
+Our delay network is also somewhat analogous to an autoencoder~\citep{gulli2017deep} from machine learning.
+However, rather than compressing the input into a low-dimensional space that allows for it to be reconstructed spatially, we do this \emph{temporally}.
+This leads to a number of applications that can, in effect, mentally travel back in time using just a handful of latent state-variables embedded within a spiking network.
+The resulting representations are fully interoperable with the semantic pointer architecture~\citep[SPA;][]{eliasmith2012}, and thus afford the same manipulations as semantic pointers in Spaun, namely: binding into working memory, compressing information from cortex, internally routing information, and driving motor actions~\citep{eliasmith2013build}.
 
-Reservoir computing / FORCE / LSTMs?
-\TODO{Discuss "Reservoir Computing Beyond Memory-Nonlinearty Trade-off Inubushi \& Yoshimura, and Information Processing Capacity of Dynamical Systems Massar et al.}
+At a higher level, any physical realization of a delay must necessarilly be modelling the statistics of its input in some way.
+This is because it is physically impossible to buffer arbitrary signals in continuous time (details in section~\ref{sec:nef-delay}), and thus some sacrifice must be made.
+In essence, this sacrifice amounts to a sparse coding mechanism, in which a low-dimensional representation is constructed that maps onto the infinite-dimensional time window~\citep{blumensath2009sampling}.
+Spikes in a neural network are akin to such a compression mechanism in time, as are decoders in space.
+Our solution leverages both methods of sparsification, but not in a way that one might come to expect from information theory or other approaches involving discrete samples; our NEF-based approach finds the optimal system for linearly mapping continuous-time windows onto a low-dimensional manifold.
 
-\section{Optimal NEF Solution}
+\section{Optimal solution}
 \label{sec:nef-delay}
-
-\TODO{\citep{blumensath2009sampling} and relationship to how spikes are like a way of sampling and then reconstructing as in compressed sensing over time; at the same time cite the sigma delta modulator papers}
-
-\TODO{cite patent}
 
 As it is impossible in practice (i.e.,~given finite-order continuous-time resources) to implement an arbitrary delay, we will instead approximate $u(t)$ as a low-frequency signal, or, equivalently, approximate equation~\ref{eq:time-delay} as a low-dimensional system expanded about the zeroth frequency in the \emph{Laplace domain}.
 We begin by transforming equation~\ref{eq:time-delay} into the Laplace domain, $\mathcal{L} \left\{ y(t) \right\} = \mathcal{L} \left\{ u(t) \right\} \mathcal{L} \left\{ \delta_{-\theta}(t) \right\}$, and then using the fact that $\mathcal{L} \left\{ \delta_{-\theta}(t) \right\} = e^{-\theta s}$ to obtain:
@@ -75,6 +73,7 @@ F(s) := \frac{\mathcal{L} \left\{ y(t) \right\}}{\mathcal{L} \left\{ u(t) \right
 \end{align}
 where $F(s)$ is known as the \emph{transfer function} of the system, defined as the ratio of the Laplace transform of the output to the Laplace transform of the input.
 Equation~\ref{eq:tf-delay} should be understood as an equivalent way of expressing equation~\ref{eq:time-delay} in the Laplace domain, where the variable $s$ denotes a complex frequency. 
+Notably, we have not made any sacrifices at this point, as the ideal system is a linear dynamical system.
 Thus far, we have only described the transfer function that we would like the network to implement. %while $t$ is non-negative in the time domain.
 % Unimportant reminder? The transfer function is the Laplace transform of system's impulse response.
 
@@ -448,6 +447,9 @@ INRC motivation slide.
 \subsection{Optimized Reservoir Computing}
 \label{sec:delay-rc}
 
+\TODO{Discuss "Reservoir Computing Beyond Memory-Nonlinearty Trade-off Inubushi \& Yoshimura, and Information Processing Capacity of Dynamical Systems Massar et al.}
+
+
 Here, we show that the Neural Engineering Framework~(NEF) provides a principled way to optimize a particular RNN architecture, by mapping the desired dynamical state onto a latent representation within a factorable connection weight matrix.
 This enables us to train networks that outperform RC, FORCE, and state-of-the-art ``full-FORCE'' methods---using either spiking or rate-based neurons---on a delay line task, while reducing the simulation time and memory by a factor of $\bigoh{n}$.
 Our approach can learn both online and offline, readily incorporates detailed synapse models, supports various spiking and rate-based neuron models, and may be compiled onto analog and digital neuromorphic hardware.
@@ -815,6 +817,10 @@ All of this should be systematically taken into account when choosing the state-
 
 \subsection{Harnessing Higher-order Synapses}
 \label{sec:pure_delay}
+
+\TODO{Mention the existence of delays in Loihi and support of analog hardware such as in
+``A programmable axonal propagation delay circuit for time-delay spiking neural networks''
+Autoencoder in time.}
 
 We begin by making the practical point that it is crucial to account for the effect of the simulation time-step in digital simulations, if the time-step is not sufficiently small relative to the time scale of the desired network-level dynamics.
 To demonstrate this, we simulate a $27$-dimensional delay network using $\num{1000}$ spiking LIF neurons, implementing a $0.1$\,s delay of $50$\,Hz band-limited white noise.

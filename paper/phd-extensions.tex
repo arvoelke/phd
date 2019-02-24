@@ -1,7 +1,7 @@
 \chapter{Extensions to the Neural Engineering Framework}
 \label{chapt:nef-extensions}
 
-Rapid growth in the field of neuromorphic engineering---over the past 30 years~\citep{mead1988silicon}---has accelerated the production of a large variety of neuormophic architectures, each with distinct constraints and trade-offs that impact the degree of programmability and performance as a function of energy-consumption (section~\ref{sec:neuromorphic}).
+Rapid growth in the field of neuromorphic engineering---over the past 30 years~\citep{mead1988silicon}---has accelerated the production of a large variety of neuromorphic architectures, each with distinct constraints and trade-offs that impact the degree of programmability and performance as a function of energy-consumption (section~\ref{sec:neuromorphic}).
 Among these considerations, are issues involving:
 discretization (in time), quantization (truncation of both neural states and weight matrices), connectivity constraints, memory constraints, volume of spike traffic, external input-output bandwidth and delays, thermal variability, transistor mismatch, conversion of analog signals to digital pulses, and the introduction of higher-order dynamics throughout.
 The NEF already solves many of these problems in theory with varying degrees of success in practice.
@@ -894,7 +894,7 @@ We remark that any nonlinear dynamical system can in theory be expressed arbitra
 Our proposed recipe is as follows: 
 \begin{enumerate}
 \item Identify the behaviour of the neuron model, $G\left[ \cdot \right]$, using some other model representation, such as a linear-nonlinear model or a PDM model. This model should capture the output response of the model, with respect to a typical input, and up to some degree of tolerance.
-\item Extend the NEF with respect to this new model specificiation.
+\item Extend the NEF with respect to this new model specification.
 \end{enumerate}
 For the case of a linear-nonlinear model, this second step is accomplished by section~\ref{sec:synaptic-extensions}.
 For more complicated model representations, such as PDM, we are less certain about what can be done.
