@@ -718,7 +718,7 @@ Recalling the intuition behind Principle~3, our approach is to separately drive 
 %For example, if each neuron has one of two possible lowpass filters (say, either $\tau_A$ or $\tau_B$), then we must decode the two functions $\tau_A f(\V{x}, \V{u}) + \V{x}$ and $\tau_B f(\V{x}, \V{u}) + \V{x}$ and apply each set of decoders ...
 Thus, the connection weights to the $i^\text{th}$ neuron should be determined by solving the decoder optimization problems for $f^{h_i}(\V{x}, \V{u})$ using the methods of section~\ref{sec:principle3} with respect to the synapse model $h_i$. 
 This can be repeated for each postsynaptic neuron, to obtain a full set of connection weights.
-While correct in theory, this approach displays two shortcomings in practice: (1)~we must solve $n$ optimization problems, where $n$ is the number of post-synaptic neurons, and (2)~there are $\bigoh{n^2}$ weights, which eliminates the space and time efficiency of using factorized weight matrices.
+While correct in theory, this approach displays two shortcomings in practice: (1)~we must solve $n$ optimization problems, where $n$ is the number of postsynaptic neurons, and (2)~there are $\bigoh{n^2}$ weights, which eliminates the space and time efficiency of using factorized weight matrices.
 
 Instead, we solve both issues simultaneously by taking advantage of the linear structure within $f^{h_i}$ that is common between all $h_i$.
 Considering Theorem~\ref{thm:p3cont-nonlinear}, we must drive the $i^\text{th}$ synapse with the function:\footnote{%
@@ -801,7 +801,7 @@ We find through cross-validation that the network performs best when it contains
 }
 \end{figure}
 
-\subsection{Decoding Filters}
+\subsection{Solving for optimal filters}
 
 \begin{figure}
 \centering
@@ -826,47 +826,43 @@ We find through cross-validation that the network performs best when it contains
   \draw [->] (integ) -- node [name=fanout] {${x}(t)$} (output);
   \draw [->] (decoded) -| node[pos=0.98] {$+$} node [near end] {} (sum);
 \end{tikzpicture}
-\caption{\label{fig:decoding-filter} Architecture used to formulate an optimization problem that combines the decoding vector with the decoding filter.}
+\caption{\label{fig:decoding-filter} Architecture used to formulate the optimization problem that simultaneously solves for the decoding weights and the optimal linear filter.}
 \end{figure}
 
-Here we consider the problem of solving for the optimal linear filter, together with the optimal linear decoders, in the same least-squares optimization problem.
-This is useful in the situation where we have freedom over the form of the synaptic filter (e.g., Loihi) and would like to find the best synapse for representing some particular target signal (either feed-forward or recurrently).
-We begin by considering the architecture from Fig.~\ref{fig:decoding-filter}.
-Beginning with the scalar case, ${x}(t)$ is the known target representation, which here we interpret as the PSC without loss of generality, by moving the filtering to occur before the encoding vector, gain, and bias, by linearity.
-$a_i(t)$ is the spike-train of the $i^\text{th}$ neuron encoding ${x}(t)$. ${b}$ is a free parameter scaling the input signal ${u}(t)$. ${d}_i$ are free parameters decoding the activities. Lastly, we'll suppose the synapse has the form:
+Now we consider the problem of analytically solving for the optimal linear filter, together with the optimal linear decoders, within the \emph{same} least-squares optimization problem.
+This is useful for situations when we have freedom over the form of the synaptic filter (e.g., Loihi) and would like to find the best synapse(s) to represent some particular target signal (either feed-forward or recurrently).
+We begin by considering the architecture from Figure~\ref{fig:decoding-filter}.
+In the scalar case, ${x}(t)$ is the known target representation, which as usual we may think of as the PSC without loss of generality, by moving the filtering to occur before the encoding vector, gain, and bias, by linearity.
+As usual, $a_i(t)$ is the spike-train of the $i^\text{th}$ neuron encoding ${x}(t)$. The scalar ${b}$ is a free parameter scaling the input signal ${u}(t)$. The decoders ${d}_i$ are free parameters decoding the activities. Lastly, we'll suppose the synapse has the form:
 \begin{equation}
 H(s) = \frac{1}{1 + \sum_{i=1}^k c_i s^i} \text{,}
 \end{equation}
 where $k \in \mathbb{N}_{\ge 1}$ is fixed and $c_i$ ($1 \le i \le k$) are free parameters for the chosen recurrent synapse.
 We fix $c_0 = 1$ so that $H(0) = 1 \iff$ its impulse response has an integral of $1$.
-\TODO{Reference results on coordinate transformation.}
+This means that the PSC is normalized (it is free to be scaled by $d_i$), and finite (i.e.,~not a perfect integrator).
+Lemma~\ref{lemma:coord-transform} may be used to put more general synapses into this form.
 
 We define ${w}(t)$ as the signal driving the synapse. Our goal is to satisfy:
 \begin{align*}
     && \frac{{X}(s)}{{W}(s)} &= H(s) \\
     \iff && {x}(t) + \sum_{i=1}^k c_i {x}^{(i)}(t) &= {b} \cdot {u}(t) + \sum_{i=1}^n a_i(t) {d}_i \\
-    \iff && {b} \cdot {u}(t) + \sum_{i=1}^k c_i \left(-{x}^{(i)}(t)\right) + \sum_{i=1}^n a_i(t) {d}_i &= {x}(t)
+    \iff && {b} \cdot {u}(t) + \sum_{i=1}^k c_i \left(-{x}^{(i)}(t)\right) + \sum_{i=1}^n a_i(t) {d}_i &= {x}(t) \text{.}
 \end{align*}
-
 We then rewrite this problem in matrix form $AD = Y$, where:
 $$A = \left[ \begin{matrix} {u}(t) & -{x}^{(1)}(t) & \ldots & -{x}^{(k)}(t) & a_1(t) & \ldots & a_n(t)  \end{matrix} \right] \text{,} \quad D = \left[ \begin{matrix} {b} \\ c_1 \\ \vdots \\ c_k \\ d_1 \\ \vdots \\ d_n \end{matrix} \right] \text{,} \quad Y = \left[ \begin{matrix} {x}(t) \end{matrix} \right]\text{,}$$
 and each row of $A$ and $Y$ correspond to an evaluation point $t$ from the dataset.
+This problem is now in the same form as the least-squares optimization problem of equation~\ref{eq:decoder_solution}, written in matrix form for a sampled set of evaluation points.
 
 For vector representations, $\V{x}(t)$, we can repeat this independently for each dimension, to solve for a decoding matrix and a vector of synapses. 
-Furthermore, if we substitute this target with the desired post-synaptic current, $\alpha_i \left \langle \V{x}(t)\text{,}\, \V{e}_i \right \rangle + \beta_i$---analogous to a core idea from the methods of \citet{stoeckel2018}---then we can repeat this optimization procedure for each neuron to obtain a full weight-matrix and an individual synaptic filter for each neuron, while maintaining the desired encoding.
-This can be used to fully leverage hardware where synapses are configurable at the post-synaptic neuron level, in order to improve overall accuracy.
+Furthermore, if we substitute this target with the desired postsynaptic current, $\alpha_i \left \langle \V{x}(t)\text{,}\, \V{e}_i \right \rangle + \beta_i$---analogous to a core idea from the methods of \citet{tripp2006neural, stoeckel2018}---then we can repeat this optimization procedure for each neuron to obtain a full weight matrix and an individual synaptic filter for each neuron, while maintaining the desired encoding.
+This can be used to fully leverage hardware where synapses are configurable at the postsynaptic neuron level, in order to improve overall accuracy.
 
 Since our $A$ matrix contains spikes, we should regularize the system by filtering the columns of both $A$ and $Y$ by some filter (e.g.,~lowpass).
-Improved accuracy for sparse datasets may be achieved via Generalized Tikhonov regularization, by mapping some Bayesian prior over the poles of $H(s)$\footnote{The time-constants of $h(t)$ are equal to $-p_i^{-1}$ where $p_i$ is the $i^\text{th}$ pole of $H(s)$.} to some corresponding distribution over $c_i$ ($1 \le i \le k$).
+Improved accuracy for sparse datasets may be achieved via generalized Tikhonov regularization, by mapping some Bayesian prior over the poles of $H(s)$\footnote{The time-constants of $h(t)$ are equal to $-p_i^{-1}$ where $p_i$ is the $i^\text{th}$ pole of $H(s)$.} to some corresponding distribution over $c_i$ ($1 \le i \le k$).
 This results in a regularization matrix with block-structure, with one block imposing the usual diagonal L2-regularization on the entries corresponding to the $d_i$ parameters, and the other imposing some correlation structure on the $c_i$ parameters given the chosen prior on the unknown time-constants of $h(t)$.
 
-\subsection{Dale's Principle}
-
-Compare my DalesSolver to Parisian Transform
-
-\subsection{Conductance-Based Synapses}
-
-Summarize Andreas' research
+This same method also applies to the discrete-time domain to solve for the optimal digital filter (not shown).
+In general, this provides a way of rolling an unknown set of synapse models, $H(s)$ or $H(z)$, into the NEF's least-squares optimization problem -- rather than assuming just a single synapse is fixed apriori.
 
 
 \section{Neural Extensions}
