@@ -208,7 +208,7 @@ Letting $d := \frac{\lambda}{\tau}e^{\frac{\lambda}{\tau}}$, and $W_0(\cdot)$ de
 \iff && W_0(dy) &= \lambda s + \frac{\lambda}{\tau} && \\
 \iff && \frac{1}{\lambda} W_0(dy) - \frac{1}{\tau} &= s \text{,} &&
 \end{align*}
-where the second-last line assumes that $|\eta| < \pi$ and $\lambda \text{Re}\left[ s \right] + \frac{\lambda}{\tau} > - \eta \cot \eta$, where $\eta := \lambda \text{Im}\left[ s \right]$, in order for $\lambda s + \frac{\lambda}{\tau}$ to be within the principal branch~\citep[][equation~4.4]{corless1996lambertw}.\footnote{
+where the second-last line assumes that $|\eta| < \pi$ and $\lambda \text{Re}\left[ s \right] + \frac{\lambda}{\tau} > - \eta \cot \eta$, where $\eta := \lambda \text{Im}\left[ s \right]$, in order for $\lambda s + \frac{\lambda}{\tau}$ to be within the principal branch~\citep[][equation~4.4]{corless1996lambertw}.\footnote{%
 A simpler (but only sufficient) condition is $\text{Re} \left[ s \right] \ge -\frac{1}{\tau}$ and $ | \text{Im} \left[ s \right] | < \frac{\pi}{2 \lambda}$.
 Thus, it suffices to consider input frequencies $< \frac{1}{4\lambda}$\,Hz.}
 Therefore,
@@ -331,7 +331,7 @@ As well, in the following section we demonstrate that equation~\ref{eq:synapse} 
 %Within the NEF, both the alpha and double-exponential have the advantage of filtering the neural activity twice, thus reducing the spike-noise relative to the first-order lowpass.  CE: just didn't fit well anymore.
 %Specifically, by the use of Pad\'e approximants, we may rewrite any transfer function with a Taylor series expansion (even those that are irrational or improper) in the form of equation~\ref{eq:synapse-rewritten}---albeit with some radius of convergence.
 This same technique permits us to model, for instance, synapses with pulse-extended responses~\citep{voelker2017iscas}.
-%\footnote{
+%\footnote{%
 %Pad\'e approximants are computed ``manually'' by \citet[][equations~9--11]{voelker2017iscas} to obtain a second-order approximation in the form of equation~\ref{eq:synapse}.
 Similarly, the delayed lowpass (equation~\ref{eq:delayed-lowpass}) may be expressed in the form of equation~\ref{eq:synapse}.
 % Therefore, equation~\ref{eq:synapse} captures a wide variety of linear postsynaptic responses to some desired degree of accuracy.
@@ -604,7 +604,7 @@ The poles of a system fully define the dynamics of its state (up to a change of 
 For instance,
 each pole $\lambda$ is related to a time-constant via $\tau = -\lambda^{-1}$.
 A system is exponentially stable if and only if $\text{Re} \left[ \lambda \right] < 0$ for all poles $\lambda \in \mathbb{C}$, since all time-constants will be positive.
-Furthermore, $\lambda \in \text{sp}(A)$ if and only if $\lambda$ is a pole, where $\text{sp}(A)$ denotes the eigenvalues of the state-space matrix $A$.\footnote{
+Furthermore, $\lambda \in \text{sp}(A)$ if and only if $\lambda$ is a pole, where $\text{sp}(A)$ denotes the eigenvalues of the state-space matrix $A$.\footnote{%
 Note that $\text{sp}(A) = \text{sp}(TAT^{-1})$ for any invertible matrix $T$ with the same shape as $A$.
 }
 % $\text{sp}(A) = det(sI - A)$
@@ -860,7 +860,8 @@ Furthermore, if we substitute this target with the desired postsynaptic current,
 This can be used to fully leverage hardware where synapses are configurable at the postsynaptic neuron level, in order to improve overall accuracy.
 
 Since our $A$ matrix contains spikes, we should regularize the system by filtering the columns of both $A$ and $Y$ by some filter (e.g.,~lowpass).
-Improved accuracy for sparse datasets may be achieved via generalized Tikhonov regularization, by mapping some Bayesian prior over the poles of $H(s)$\footnote{The time-constants of $h(t)$ are equal to $-p_i^{-1}$ where $p_i$ is the $i^\text{th}$ pole of $H(s)$.} to some corresponding distribution over $c_i$ ($1 \le i \le k$).
+Improved accuracy for sparse datasets may be achieved via generalized Tikhonov regularization, by mapping some Bayesian prior over the poles of $H(s)$\footnote{%
+The time-constants of $h(t)$ are equal to $-p_i^{-1}$ where $p_i$ is the $i^\text{th}$ pole of $H(s)$.} to some corresponding distribution over $c_i$ ($1 \le i \le k$).
 This results in a regularization matrix with block-structure, with one block imposing the usual diagonal L2-regularization on the entries corresponding to the $d_i$ parameters, and the other imposing some correlation structure on the $c_i$ parameters given the chosen prior on the unknown time-constants of $h(t)$.
 
 This same method also applies to the discrete-time domain to solve for the optimal digital filter (not shown).

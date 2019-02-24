@@ -1,7 +1,7 @@
 \chapter{Delay Networks}
 \label{chapt:delays}
 
-This chapter has been adapted from, and significantly extends, the work of \citet[][patent pending]{voelker2015computing, dynamicspatent, voelker2018}.
+This chapter has been adapted from, while significantly extending, the work of \citet[][patent pending]{voelker2015computing, dynamicspatent, voelker2018}.
 
 A particularly important dynamical system that has not been discussed before in the NEF literature is the pure \emph{continuous-time delay} line.
 In order to implement such a system, one must represent a \emph{rolling window} of input history, or, in other words, one must \emph{buffer} the input signal into a memory that continuously slides alongside the current input.
@@ -24,9 +24,9 @@ Lastly, we discuss a number of theoretical applications that are directly suppor
 
 Now consider a continuous-time delay line of $\theta$ seconds:
 \begin{align} \label{eq:time-delay}
-y(t) = (u \ast \delta_{-\theta})(t) = u(t - \theta)\text{,} \quad \theta > 0 \text{,}
+y(t) = (u \ast \delta_{\theta})(t) = u(t - \theta)\text{,} \quad \theta > 0 \text{,}
 \end{align}
-where $\delta_{-\theta}$ denotes a Dirac delta function shifted backwards in time by $\theta$.
+where $\delta_{\theta}$ denotes the Dirac delta shifted forwards in time by $\theta$.
 This system takes a time-varying scalar signal, $u(t)$, and outputs a purely delayed version, $u(t - \theta)$.
 The task of computing this function both accurately and efficiently in a biologically plausible, spiking, dynamical network, is a significant theoretical challenge, that, to our knowledge, has previously remained unsolved.
 
@@ -103,7 +103,7 @@ We do so using its \emph{Pad\'e approximants}---the coefficients of a Taylor ser
 \end{equation}
 This provides the transfer function of order $p$ in the numerator and order $q$ in the denominator that optimally approximates equation~\ref{eq:tf-delay} for low-frequency inputs (i.e.,~up to order $p + q$).
 
-After choosing $0 \le p \le q$, we may numerically find a state-space model $(A\text{,}\, B\text{,}\, C\text{,}\, D)$ that satisfies equation~\ref{eq:ss2tf} using standard methods,\footnote{
+After choosing $0 \le p \le q$, we may numerically find a state-space model $(A\text{,}\, B\text{,}\, C\text{,}\, D)$ that satisfies equation~\ref{eq:ss2tf} using standard methods,\footnote{%
 For instance, the function \texttt{tf2ss} in MATLAB or SciPy.}
 and then map this system onto the synapse using Principle~3.
 %This works independently of the chosen simulation time-step using equation~\ref{eq:p3discrete}.
@@ -169,7 +169,7 @@ where $v_i := (q+i)(q-i)(i+1)^{-1}$ no longer depends on $\theta$. %and $w_i := 
 As a side-effect, we may \emph{control} the length of the delay by adjusting the gain on the integration time-constant (i.e.,~by scaling the input and feedback signals).
 The NEF can be used to build such controlled dynamical systems, without introducing multiplicative dendritic interactions or implausible on-the-fly connection weight scaling~\citep{eliasmith2000b}.
 
-This model is now equivalent to equation~\ref{eq:pade}, but without any factorials, and in the form of equation~\ref{eq:lti}.\footnote{
+This model is now equivalent to equation~\ref{eq:pade}, but without any factorials, and in the form of equation~\ref{eq:lti}.\footnote{%
 In section~\ref{sec:software}, we mention NengoLib's features for several other state-space realizations.}
 The choice of $q$ corresponds to the dimensionality of the latent state-vector $\V{x}(t)$ that is to be represented by Principle~1 and transformed by Principle~2.
 Principle~3 may then be used to map equation~\ref{eq:ss-delay} onto a spiking dynamical network to accurately implement an optimal low-frequency approximation of the delay.
@@ -239,7 +239,7 @@ That is, a single delay network with some fixed $\theta > 0$ may be used to accu
 % c) projecting the window function onto state-space
 % d) characterizing the possible functions using Principles 1+2 and the inverse basis functions
 
-In Figure~\ref{fig:delay-full}, we take different linear transformations of the same state-vector, by evaluating equation~\ref{eq:delay-readouts} at various delays between $0$ and $\theta$, to decode the rolling window of input from the state of the system.\footnote{
+In Figure~\ref{fig:delay-full}, we take different linear transformations of the same state-vector, by evaluating equation~\ref{eq:delay-readouts} at various delays between $0$ and $\theta$, to decode the rolling window of input from the state of the system.\footnote{%
 The optimization problem from equation~\ref{eq:decoder_solution} need only be solved once to decode $\V{x}(t)$ from the neural activity.
 The same decoders may then be transformed by each $C$ without loss in optimality (by linearity).
 }
@@ -286,7 +286,7 @@ We discuss this in more detail in the following section.
 
 To more thoroughly characterize the delay dynamics, we analyze the behavior of the delay network as the dimensionality is increased (see Figure~\ref{fig:pca}).
 Specifically, we perform a standard principal component analysis~(PCA) on the state-vector for the impulse response, and vary the order from $q=3$ to $q=27$.
-This allows us to visualize a subset of the state-vector trajectories, via projection onto their first three principal components (see Figure~\ref{fig:pca}(Top)). %\footnote{
+This allows us to visualize a subset of the state-vector trajectories, via projection onto their first three principal components (see Figure~\ref{fig:pca}(Top)). %\footnote{%
 %These same trajectories are obtained by a PCA on the %filtered neural activities, by linearity of decoding.
 %}
 The length of this trajectory over time distinguishes different values of $q$ (see Figure~\ref{fig:pca}(Bottom)).
@@ -307,6 +307,10 @@ This means that other delays will simply stretch or compress the impulse respons
     Reproduced from \citet[][Figure~6]{voelker2018}.
   }
 \end{figure}
+
+We remark that the delay network is scale-invariant with the delay length over input frequency, that is, the accuracy for a chosen order is a function of $f \times \theta$ (see units in Figure~\ref{fig:delay-full} for instance), where $f$ is the input frequency. % and the synaptic time-constants are scaled by $\theta$.
+More specifically, for a fixed approximation error, the delay length scales as $\bigoh{ qf^{-1} }$.
+We elaborate on these properties in section~\ref{sec:delay-scalability}, and demonstrate our extensions to harnessing arbitrary linear synapse models to improve accuracy in section~\ref{sec:pure_delay}.
 
 \subsection{Nonlinear characterization}
 
@@ -414,35 +418,33 @@ The model architecture of this delay network is depicted in Figure~\ref{fig:dela
   } 
 \end{figure}
 
-We remark that the delay network is scale-invariant with the delay length over input frequency, that is, the accuracy for a chosen order is a function of $s \times \theta$ (see units in Figure~\ref{fig:delay-full} for instance). % and the synaptic time-constants are scaled by $\theta$.
-More specifically, for a fixed approximation error, the delay length scales as $\bigoh{ \frac{q}{f} }$, where $f$ is the input frequency.
-We elaborate on these properties in section~\ref{sec:delay-scalability}, and demonstrate our extensions to harnessing arbitrary linear synapse models to improve accuracy in section~\ref{sec:pure_delay}.
-
-In this section we address several fundamental questions regarding the scalability of the Delay Network with respect to $q$, $\theta$, and the complex frequency of the input signal, $s = 2 \pi i f$, for some real frequency, $f$.
-For the time being, we disregard the error arising from neural representation (see sections~\ref{sec:principle2}, \ref{sec:nengolib}, and~\ref{sec:neural-extensions}), and focus on the last remaining source of error: the use of Pad\'e approximants to render equation~\ref{eq:tf-delay} finite-dimensional.
-This error can be expressed in the Laplace domain as follows:
+In this section we address several fundamental questions regarding the scalability of the Delay Network~(DN) with respect to $q$, $\theta$, and the complex frequency of the input signal, $s = 2 \pi i f$, for some real frequency, $f$.
+For the time being, we disregard the error arising from neural representation by assuming we can make $n$ sufficiently large (see section~\ref{sec:scalability}).
+This means we match the model description precisely, even when considering more elaborate models of the synapse (see chapter~\ref{sec:synaptic-extensions}).
+The only source of error remaining is our use of Pad\'e approximants to render equation~\ref{eq:tf-delay} finite-dimensional.
+This error term may be expressed in the Laplace domain as follows:
 \begin{equation} \label{eq:pade-delay-error}
 E_q(\theta s) = [q-1/q]e^{-\theta s} - e^{-\theta s} \text{,}
 \end{equation}
-where $[q-1/q]e^{-\theta s}$ is defined by equation~\ref{eq:pade} (see Fig.~\ref{fig:pade-delay-error}).
-For instance, $|E_{21}(2 \pi i \cdot 5)| \approx 0.003$ implies that a $21$-dimensional DN can delay a $1$\,Hz signal for $5$\,s with $0.3\%$ error.
+where $[q-1/q]e^{-\theta s}$ is defined by equation~\ref{eq:pade} (see Figure~\ref{fig:pade-delay-error}).\footnote{%
+For example, $|E_{21}(2 \pi i \cdot 5)| \approx 0.003$ implies that a $21$-dimensional DN delays a $1$\,Hz signal for $5$\,s with $0.3\%$ error.}
 By linearity of the Laplace transform, it suffices to consider the error at individual frequencies $s$ in order to fully characterize the error of the entire system for any given input.
-More precisely, by the convolution theorem, we can interpret equation~\ref{eq:pade-delay-error} as a linear filter in the $s$-plane, to reveal how each input frequency is amplified, attentuated, or phase-shifted, to contribute to the spectrum of the overall error.\footnote{
+More precisely, by the convolution theorem, we can interpret equation~\ref{eq:pade-delay-error} as a linear filter in the $s$-plane, to reveal how each input frequency is amplified, attentuated, or phase-shifted, to contribute to the spectrum of the overall error.\footnote{%
 Only frequencies that are present within the input can become present in the error.}
 
 Dimensional analysis quickly reveals an important property of this error: the dimensionless quantity, $\theta s$ (i.e., the product of time and frequency), fully determines the error (for fixed $q$).
 In other words, the ``difficulty'' of computing a delay is a function of the length of the delay multiplied by the frequency of the input signal being delayed.
 For instance, delaying a $10$\,Hz signal for $0.1$\,s has the same approximation error as delaying a $0.1$\,Hz signal for $10$\,s.
 This is seen by simply rescaling the time-axis by a factor of $100$.
-This is also consistent with the results from Fig.~\ref{fig:delay-full}.
+This is also consistent with the results from Figure~\ref{fig:delay-full}.
 
 This is deeply connected to the observation that in equation~\ref{eq:ss-delay}, the delay length $\theta$ scales inversely with the gain on $A$ and $B$.
 The identification of this control factor can be derived from a more general property of the Laplace transform, $F \left( \theta s \right) = \theta^{-1} \mathcal{L} \left\{ f \left( t / \theta \right) \right\} (s)$ for all $\theta > 0$, meaning that the time-scale of any linear filter is rescaled by a gain on the integration.
 We can exploit this fact more generally to modulate the time-scale of any linear filter on-the-fly (in this case affecting the length of delay; results not shown).
 
-Next, as shown in Fig.~\ref{fig:pade-delay-error}, the radius of convergence for the Pad\'e approximants increases linearly with $q$.\footnote{
+Next, as shown in Figure~\ref{fig:pade-delay-error}, the radius of convergence for the Pad\'e approximants increases linearly with $q$.\footnote{%
 We have increased $q$ as large as $80$ before running into numerical issues related to catastrophic cancellation and discretizing the system via zero-order hold.
-We are confident that these issues can be resolved by more careful use of numerical methods.}
+We are confident that these issues can be resolved by more careful use of numerical methods, due to the isomorphism between our delay polynomials and the shifted Legendre polynomials.}
 Thus, scaling $q$ by some factor means that either the frequency of the input signal or the length of the delay can be scaled by the same factor, while achieving the same error.
 When $\theta s$ is outside the radius of convergence, the absolute error is bounded between $0$ and $2$.
 This fact simply comes from the observations that $e^{-\theta s}$ is a unit-length complex number, and $[q-1/q]e^{-\theta s}$ is complex with magnitude less than $1$.
@@ -454,26 +456,26 @@ When $\theta s$ is small (within the radius of convergence, which scales linearl
 Outside the radius of convergence, the error contains frequencies that are phase-shifted and multiplied (with magnitude bounded above by $2$) versions of the input frequencies in that range.
 As $\theta s$ increase further, the error contains input frequencies that are simply phase-shifted, without any change in magnitude.
 
-Lastly, as revealed by equation~\ref{eq:basis-functions}, and as shown in Fig.~\ref{fig:basis-functions}, the basis functions are also dimensionless, in the sense that they are defined over the range $r \in [0, 1]$ which maps onto the time-interval $(t - \theta') \in [t - \theta, t]$, where $\theta' = r \theta$, for any $\theta > 0$.
-This has numerous implications that are all linked together: (1) the relationship between the input signal and its state-vector is scale-invariant; scaling the input length by some factor, and the delay length by the same factor, results in the exact same state-vector corresponding to a rescaled input history, (2) we can perform computations on the representation of the DN, independently of scale; see section~\ref{sec:periodicity} for an example, and (3) we can reinterpret the same state-vector on arbitrary time-scales.
+Lastly, as revealed by equation~\ref{eq:basis-functions}, and as shown in Figure~\ref{fig:basis-functions}, the basis functions are also dimensionless, in the sense that they are defined over the range $r \in [0, 1]$ which maps onto the time-interval $(t - \theta') \in [t - \theta, t]$, where $\theta' = r \theta$, for any $\theta > 0$.
+This has numerous consequences that are intertwined: (1) the relationship between the input signal and its state-vector is scale-invariant; scaling the input length by some factor, and the delay length by the same factor, results in the exact same state-vector corresponding to a rescaled input history, (2) we can perform computations on the representation of the DN, independently of scale; see section~\ref{sec:periodicity} for an example, and (3) we can reinterpret the same state-vector with respect to any time-scale without changing the state-vector.
 
 Taking neural constraints into consideration, we do need to separate out $\theta s$ into its dimensional quantities.
 As shown in section~\ref{sec:poisson-spiking}, the frequency of the state-vector being represented can matter.
-This concern may be alleviated by the use of Poisson spiking, or through the use of some other solution to the ``state discrepancy'' error.
-Likewise, longer values of $\theta$ are more suspeciptible to the integration of spiking noise, in the form of ``drift'', along a fixed time-scale determined by the firing rates.
-Lastly, when using a balanced realization, larger values of $q$ require denser interconnectivity ($q \times q$ transform matrices) between all $q$ dimensions, leading to $\bigoh{q^2}$ increase in time and memory requirements -- a constraint we address in section~\ref{sec:deep-delay-networks} when stacking multiple DNs together to form a Deep Delay Network~(DDN).
+This concern is resolved by the use of Poisson spiking, integrate-and-fire neurons, or any other solution to state discrepancy (section~\ref{sec:spike-coding}).
+On the other hand, longer values of $\theta$ are more suspeciptible to the integration of spiking noise, in the form of ``drift''.
+Lastly, when using a balanced realization, larger values of $q$ require denser interconnectivity ($q \times q$ transform matrices) between all $q$ dimensions, leading to $\bigoh{q^2}$ increase in time and memory requirements.
+Such considerations are addressed in section~\ref{sec:deep-delay-networks} by stacking multiple DNs together to form a Deep Delay Network~(DDN).
 
-To summarize, the consideration of scaling $\theta$ is intrinisically coupled to the consideration of which input frequencies need to be delayed, and with what accuracy.
+To summarize, the properties of scaling $\theta$ are physically coupled to considerations of which input frequencies need to be delayed, and to what degree of precision.
 The accuracy is a function of $\theta s$.
-For a fixed level of precision, $\theta s$ scales linearly with $q$.
-And in all cases, the representation employed by the DN (i.e., the linear relationship between the input history and the state-vector) is scale-invariant in $\theta$.
+And, for a fixed level of precision, $\theta s$ scales linearly with $q$.
+In all cases, the representation employed by the DN (i.e., the linear relationship between the input history and the state-vector) is scale-invariant in $\theta$.
 
 \section{Applications}
 \label{sec:delay-applications}
 
-\TODO{write} Linear and nonlinear window computation. Computational neural modelling.
-Memory. Play-back. Communication.
-INRC motivation slide.
+We have developed rigorous theory to understand the Delay Network~(DN) in terms of its linear dynamics, and its nonlinear encoding of time, and used the NEF to present a spiking example in Figure~\ref{fig:delay-example}.
+Now, we turn to several concrete applications, that are of relevance to those studying reservoir computing, FORCE learning, deep RNNs and stacked LSTMs, as well as the computational neuroscience and cognitive modelling communities at large.
 
 \subsection{Optimized Reservoir Computing}
 \label{sec:delay-rc}
@@ -637,7 +639,7 @@ Implicit to this model are the simplifying assumptions that encoders are uniform
 Nevertheless, this model produces a qualitatively similar curve when $q = 6$ to both peak response-times from Figure~\ref{fig:time-cells}(Right) (see overlay).
 
 More quantitatively, we performed the same analysis on our simulated neural activity as \citet{tiganj2016sequential} performed on the biological data to capture the relationship between the peak and width of each time cell.
-Specifically, we fit the spiking activity of each neuron with a Gaussian to model the peak time~($\mu_t$) and the standard deviation~($\sigma_t$) of each cell's ``time field''.\footnote{
+Specifically, we fit the spiking activity of each neuron with a Gaussian to model the peak time~($\mu_t$) and the standard deviation~($\sigma_t$) of each cell's ``time field''.\footnote{%
 We set $a_1 = P = S = 0$ in equation~1 from \citet{tiganj2016sequential}, since we have no external variables to control.
 }
 This fit was repeated for each of the $250$ simulated spiking LIF neurons that remained after selecting only those that had at least $90\%$ of their spikes occur within the delay interval.
@@ -659,7 +661,7 @@ Furthermore, our explanation accounts for the nonlinear distribution of peak fir
 The observation of time cells across many cortical and subcortical areas suggests that the same neural mechanisms may be used in many circuits throughout the brain.
 As a result, the neural activity implicated in a variety of delay tasks may be the result of many networks optimizing a similar problem to that of delaying low-frequency signals recurrently along a low-dimensional manifold.
 Such networks would thus be participating in the temporal coding of a stimulus, by representing its history across a delay interval.
-%\footnote{
+%\footnote{%
 %In appendix~\ref{app:ss-delay}, we briefly mention that this delay length may also be modulated on-the-fly.
 % Some food for thought: since multiplication is so inaccurate, this might suggest that biological systems have a way to induce effective changes in the time-constants with some sort of adaptive normalization or gating or etc.
 %In apendix~\ref{app:window}, we derive the output transformations required to decode a rolling window.
@@ -717,7 +719,7 @@ We claim that we may compute $p_k(t)$ by taking the L2-norm of the state-vector 
 p_k(t) &\appropto \| P_k \V{x}(t) \| \\
 P_k &= \frac{Z_k}{k} \sum_{i=0}^{k-1} e^{A i \gamma} \text{,} \label{eq:periodicity-matrix}
 \end{align}
-where $A$ is the recurrent state-space matrix from the balanced realization of equation~\ref{eq:ss-delay},\footnote{
+where $A$ is the recurrent state-space matrix from the balanced realization of equation~\ref{eq:ss-delay},\footnote{%
 The proportionality $\propto$ in equation~\ref{eq:approx-periodicity} refers to a constant scaling in the balanced realization, while the approximation $\sim$ comes from the use of Pad\'e approximants to render the system finite-dimensional, and from assuming the DN mapping is unitary.
 See text for details.
 }
@@ -734,7 +736,7 @@ B(a, b) = \begin{pmatrix}
 \end{pmatrix} T \text{.}
 \end{equation}
 and $T$ is the similarity transform for the balanced realization.
-A visualization of $Z_5$ is provided in Fig.~\ref{fig:zoom-matrix}, using a diagonal $T$ to reveal its checkerboard structure.
+A visualization of $Z_5$ is provided in Figure~\ref{fig:zoom-matrix}, using a diagonal $T$ to reveal its checkerboard structure.
 
 \begin{figure}
   \centering
@@ -758,7 +760,7 @@ This zooming operation can be done by yet another linear transformation.
 In particular, $Z_k$ is a linear transformation that takes us from a state-vector representing the entire interval of length $\theta$ to a state-vector representing the oldest sub-interval of length $\gamma$.
 This is derived by observing that $B(1 - 1/k, 1)$ maps $\V{x}(t)$ onto the window of input history across the sub-interval $[t - \theta, t - \theta + \gamma]$---sampled along $m$ points---by construction.
 Then $B(0, 1)^+$ reinterprets this sampled signal as a state-vector in the context of the full interval $[t - \theta, t]$.
-To determine these matrices numerically, $m$ should be sufficiently large so as to approximate the limit as $m \rightarrow \infty$ within some tolerance.\footnote{
+To determine these matrices numerically, $m$ should be sufficiently large so as to approximate the limit as $m \rightarrow \infty$ within some tolerance.\footnote{%
 We found $m = \numprint{1000}$ to be sufficient for our experiments.}
 
 This same technique works without loss of generality to zoom in on any slice of the window, and reinterpret that segment of input as a new state-vector. This is a specific instantiation of the more general observation that the relationship between the state-vector and the input history is linear, and so any linear operation across the window (e.g., slicing, shifting, convolution, integral transforms, etc.) must also be linear with respect to the state-vector.
@@ -786,7 +788,7 @@ We validate the above derivation by fixing $\theta=0.24$\,s, $q=20$, and then sa
 The periodic signals are generated by repeating a segment of length $\gamma$, $k$ times, while the aperiodic signals are random across the interval of length $\theta$.
 In each case, the system of equations~\ref{eq:ss-delay} are balanced and simulated using zero-order hold~(ZOH) with a time-step of $\dt{} = 1$\,ms, to obtain the value of $\V{x}(t)$ at $t = \theta$.
 The simulated value of $\| P_k(t) \|$ (equation~\ref{eq:periodicity-matrix}) is then compared to the ideal value of $p_k(t)$ (equation~\ref{eq:periodicity}).
-The results in Fig.~\ref{fig:periodicity} empirically validate the claim of equation~\ref{eq:approx-periodicity} for $k \in \{2, 3, 4, 5\}$, by demonstrating that $\|P_k \V{x}(t) \|$ proportionally-approximates the true $k$-periodicity.
+The results in Figure~\ref{fig:periodicity} empirically validate the claim of equation~\ref{eq:approx-periodicity} for $k \in \{2, 3, 4, 5\}$, by demonstrating that $\|P_k \V{x}(t) \|$ proportionally-approximates the true $k$-periodicity.
 
 Crucially, nothing has changed about the DN in order to support this brand of temporal pattern recognition.
 The computation is merely a fixed linear transformation of the state, which is already being computed by the DN, followed by a nonlinear L2-norm operation.
@@ -829,15 +831,15 @@ When $k = 1$, this reduces to equation~\ref{eq:pade-delay-error}.
 To gain insights into potential trade-offs between $k$ and $q$, we require additional constraints to keep the comparison meaningful.
 If our main constraint is the number of neurons, then resource usage scales as $\bigoh{k q}$ given a constant level of accuracy per dimension.
 However, if our main constraint is the number of multiply-adds and memory usage (i.e.,~connection density), then these scale as $\bigoh{k q^2}$ assuming the use of factored connection-weight matrices (as in the standard NEF formulation, and as realized on both SpiNNaker and Braindrop) and assuming the use of balanced state-space realizations.
-In either case, we evaluate $E_{q,k}(\theta s)$ while varying $(q, k)$ to keep the resource-cost fixed (see Fig.~\ref{fig:deep-delay-network-error}).
+In either case, we evaluate $E_{q,k}(\theta s)$ while varying $(q, k)$ to keep the resource-cost fixed (see Figure~\ref{fig:deep-delay-network-error}).
 
-Depending on which resource-cost function is considered, we obtain very different trade-offs for the amount of error at some desired operating point $\theta s$ (see Fig.~\ref{fig:pade-delay-error}).
+Depending on which resource-cost function is considered, we obtain very different trade-offs for the amount of error at some desired operating point $\theta s$ (see Figure~\ref{fig:pade-delay-error}).
 In the former case of minimizing neural resources, we should set $k = 1$ and minimize $q$ such that $\theta s$ falls within the radius of convergence.
 This should come as no surprise, as the DN has been derived to optimally approximate the delay line, and so there is no benefit to adding additional layers if we are free to scale $q$.
 However, for the latter case of minimizing connectivity, we should primarily minimize $q$.
 In other words, deeper structures provide an improvement in accuracy when paying $\bigoh{kq^2}$ for resources.
 
-Furthermore, note that in Fig.~\ref{fig:deep-delay-network-error}, the error oscillates with dampened amplitude beyond the radius of convergence for larger $k$.
+Furthermore, note that in Figure~\ref{fig:deep-delay-network-error}, the error oscillates with dampened amplitude beyond the radius of convergence for larger $k$.
 This can be seen from equation~\ref{eq:deep-delay-network-error} by noticing that $[q-1/q]e^{-\gamma s}$ is a complex number with magnitude less than $1$, that is then exponentiated to the power of $k$.
 By the same triangle-inequality argument in section~\ref{sec:delay-scalability}, this effectively regularizes the error $k$ times towards $1$ outside the radius of convergence.
 
@@ -861,7 +863,7 @@ When $\dt{}=1$\,ms (the default in Nengo), the standard Principle~3 mapping (equ
 As $\dt{}$ approaches $0$ the two methods become equivalent.
 
 More to the point, we can analyze the delay network's frequency response
-%\footnote{
+%\footnote{%
 %The frequency response is the transfer function evaluated at various input frequencies.
 %}
 when using a delayed continuous lowpass synapse (equation~\ref{eq:delayed-lowpass}) instead of the canonical lowpass (equation~\ref{eq:lowpass}) as the dynamical primitive.
