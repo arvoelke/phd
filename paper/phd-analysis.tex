@@ -287,7 +287,7 @@ Specifically, our dimensional analysis identifies the following asymptotic relat
 \end{equation}
 where the Big~$\mathcal{O}$ constants involve the length of the encoder (typically unit-length) and the gains and biases (unitless).
 
-From equation~\ref{eq:psc-code-power} it directly follows that, in order to represent $\V{x}(t)$ with an absolute power of one (unitless) at a frequency of $f$, via the postsynaptic current code (i.e.,~linear projection onto each PSC), the relative amount of energy needed to drive all of the synapses scales as $\bigoh{2 \pi \tau f }$.
+From equation~\ref{eq:psc-code-power} it directly follows that, in order to represent $\V{x}(t)$ with an absolute power of one (unitless) at a frequency of $f$, via the postsynaptic current code (i.e.,~linear projection onto each PSC), the relative amount of energy needed to drive all of the synapses of the postsynaptic neuron scales as $\bigoh{2 \pi \tau f }$.
 Therefore, for a \emph{fixed} energy budget, the frequencies that can be successfully transmitted using this code scale by the inverse law (which just-so-happens to be the cut-off frequency of the filter):
 \begin{equation} \label{eq:low-frequency-representation}
 \bigoh{\left( 2 \pi \tau \right)^{-1}} \text{.}
@@ -414,8 +414,8 @@ The error is overall the smallest towards the end of the simulation, at which po
 We formalize these ideas by appealing to the inter-spike interval~(ISI) in a manner that will turn out to be quite important.
 
 We define a neuron's relative ``ISI position''~(ISIP), $g_i$, to be its normalized position within the inter-spike interval that corresponds to the instantaneous firing rate of the ideal rate model.
-For this, we fix our analysis at \emph{any given moment in time}.
-Specifically, we consider the LIF neuron's current state (although this same approach extends more generally to other neuron models) to have a voltage of $v_i$, remaining refractory period of $0 \le \rho_i \le \tau_\text{ref}$, input current of $s_i$, and a corresponding instantaneous target rate of $r_i$.
+For this, we fix our analysis at \emph{any given moment in time} and determine the next spike time.
+To give an example, consider the LIF neuron's current state (although this same approach extends more generally to other neuron models) to have a voltage of $v_i$, remaining refractory period of $0 \le \rho_i \le \tau_\text{ref}$, input current of $s_i$, and a corresponding instantaneous target rate of $r_i$.
 In the same way that we derived the rate model of the LIF neuron~(see derivation leading to equation~\ref{eq:lif-rate}), we may derive the neuron's ISIP according to how far along it is within the ideal ISI normalized by its length, $r_i^{-1}$:\footnote{%
 If $r_i = 0$ then the neuron will not be active (and does not need to be), and so we can simply ignore it; the discussion, analysis, and results do not change.}
 \begin{equation} \label{eq:lif-isip}
