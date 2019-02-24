@@ -359,8 +359,8 @@ We now describe each source of error in greater detail.
     Visualizing the three sources of error in a standard NEF network.
     (a)~A single simulation with arrows pointing to each type (b, c, d).
     (b)~Static distortion describes the difference between the linear combination of rate models and the desired static function.
-    (b)~Spiking noise describes the difference between the spiking model and rate model.
-    (c)~State discrepancy provides an instantaneous statistic for the difference between the spiking noise and a true Gaussian distribution ($p$-values~$< \numprint{e-6}$).
+    (c)~Spiking noise describes the difference between the spiking model and rate model.
+    (d)~State discrepancy provides an instantaneous statistic capturing the difference between the spiking noise and a true Gaussian distribution ($p$-values~$< \numprint{e-6}$).
     See text for details.
   }
 \end{figure}
@@ -399,9 +399,9 @@ Figure~\ref{fig:nef-error-types}(c) visualizes a kernel density estimate~\citep[
 A Kolmogorov-Smirnov~(KS) test of $\transpose{\V{d}}a - \hat{x}$, versus a zero-mean Gaussian distribution with equal variance, produces a KS-statistic of $\approx 0.034$ ($p$-value~$< \numprint{e-6}$).
 The KS-statistic is defined as the maximal discrepancy between the empirical cumulative density function~(CDF) and the model CDF (i.e.,~the supremum of their absolute difference)~\citep{massey1951kolmogorov}.
 In this case, the distribution of spike noise is at most $3.4$\% different from a true Gaussian distribution.
-This justifies the usage of the white noise term $\eta$ in equation~\ref{eq:trans-decode} and~\ref{eq:rate-approximation}, since it captures $\approx 96.6$\% of the statistical variance between the filtered and decoded spiking and non-spiking models.
+This justifies the usage of the white noise term $\eta$ in equation~\ref{eq:decoder_solution}, since it captures $\approx 96.6$\% of the statistical variance between the filtered and decoded spiking and non-spiking models.
 But why is there a difference?
-In theory it should approach $0$ for sufficiently many samples, due to the CLT, but it unfortunately does not; there is a remaining systematic bias that never scales away.
+In theory it should approach $0$ for sufficiently many samples, due to the CLT, but unfortunately it does not; there is a remaining systematic bias that never scales away (also see Figure~\ref{fig:poisson-neuron-scaling}).
 It turns out that our assumption of independent Gaussian noise was not entirely correct -- a mistake that we will rectify at the end of this section.
 But first, this motivates the discovery of a third and final source of error, that we now describe and analyze in significant detail.
 
@@ -435,6 +435,7 @@ The \emph{state discrepancy}, at some chosen moment in time, is the KS-statistic
 In Figure~\ref{fig:nef-error-types}(d), we measure this value empirically across all of neurons, and at each time-step in the simulation, using a centered window of width $25$\,ms to smooth the estimate.
 We see that the magnitude of the KS-statistic corresponds very closely to the error between the ideal and the spiking solution.
 Although here we are looking at just a constant input for ease of visualization, we find that this statistic correlates highly (Pearson correlation coefficient $R = 0.90$, $p$-value~$< \numprint{e-6}$) with the spiking noise across a wide range of input frequencies (see Figure~\ref{fig:frequency-ks-test}).
+This is surprising since the definition of state discrepancy does not invoke any usage of decoders, spikes, or filters in its construction; it merely describes how different the distribution of relative ISI positions are from that of a uniform distribution.
 
 We now prove that our definition of state discrepancy is indeed the correct one, and in doing so provide a sufficient criteria for scaling away this source of error.
 Specifically, this remaining source of error---state discrepancy---is tamed by minimizing the difference (KS-statistic) between a uniform distribution and the actual neuron's ``readiness to spike'', as characterized by its ISIP~(e.g.,~equation~\ref{eq:lif-isip} for the case of a LIF model).
@@ -461,7 +462,7 @@ We then forecast the system out into the future, assuming the representation is 
 But this does not make any assertions about the causal dynamics of the representation.
 This is because the statements in this theorem are only interested in the distribution of a statistic at arbitrarily small values of $t \rightarrow 0^+$ with respect to the shifted time frame.
 % $t = \epsilon$ in the one-sided limit of $\lim_{\epsilon \rightarrow 0^+} \eta(t)$.
-Hence, our work provides a more general result than what is needed, specifically a forecast of how the variance continues to evolve along its strange attractor assuming a fixed-point in state-space.
+Hence, our work provides a more general result than what is needed.
 In order to give a concrete result, we suppose the synapse model is equation~\ref{eq:lowpass-impulse}, but this is not a hard requirement.
 Likewise, we initialize the synapses to $0$, without loss of generality by linearity.
 To remove boilerplate in the notation we substitute $r_i \leftarrow r_i(\V{x}(t))$.
@@ -540,7 +541,7 @@ Therefore, by linearity of expectation, the expected error at time $t$ is:
 &= 0 \text{.}
 \end{aligned}
 \end{equation}
-This completes our proof of the first statement.
+This completes our proof of the first statement. $\hfill \qed$
 
 Note that we have not needed to use our assumption about the independence of samples.
 However, to obtain a closed-form solution for the variance, we will need to assume that $g_i$, and thus $t_i$, are independently sampled (i.e.,~the voltage vectors and refractory periods are not coupled with one another across time), as is the case for typical NEF networks.
@@ -568,7 +569,7 @@ Applying LOTUS to each of these random variables gives:
 \expect{\left(c_i^{r_i \cdot (t - T_i) + 1}\right)^2} &= \int_{c_i^{r_i t + 1}}^{c_i^{r_i t}} \frac{r_i \tau}{x} x^2 \,dx = \frac{r_i \tau x^2}{2} \bigg|_{x = c_i^{r_i t + 1}}^{c_i^{r_i t}} = \frac{r_i \tau \left(1 - c_i^2 \right) c_i^{2 r_i t}}{2} .
 \end{align*}
 To compute the remaining expectation, we require further insight into $e_i(t; T_i) = r_i \cdot (t - t_i) - \floor{r_i \cdot (t - t_i)}$.
-Define $k_i(t) = \floor{r_i t}$ as the spike index of $t$. of $t_i$. %Then the $i^{th}$ neuron has spiked $k_i(t - t_i) + 1 = \floor{r_i \cdot (t - t_i) + 1}$ times at time $t$. More importantly, 
+Define $k_i(t) = \floor{r_i t}$ as the spike index of $t$.  %Then the $i^{th}$ neuron has spiked $k_i(t - t_i) + 1 = \floor{r_i \cdot (t - t_i) + 1}$ times at time $t$. More importantly, 
 Recall that $t$ is fixed in this discussion.
 The congruence relation \mbox{$t_i = t - k_i(t)/r_i \equiv t \ (\text{mod}\ 1/r_i)$} is also a discontinuity in $e_i(t; t_i)$ with respect to $t_i$; that is when the spike becomes aligned with $t$ in the current interval.
 Namely, if $0 \le t_i \le t - k_i(t)/r_i$, then $\floor{r_i \cdot (t - t_i) + 1} = \floor{k_i(t) + 1} = k_i(t) + 1$. Likewise, if $t - k_i(t)/r_i < t_i \le 1/r_i$, then $\floor{r_i \cdot (t - t_i) + 1} = k_i(t)$.

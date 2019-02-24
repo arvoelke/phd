@@ -462,7 +462,7 @@ This has numerous consequences that are intertwined: (1) the relationship betwee
 Taking neural constraints into consideration, we do need to separate out $\theta s$ into its dimensional quantities.
 As shown in section~\ref{sec:poisson-spiking}, the frequency of the state-vector being represented can matter.
 This concern is resolved by the use of Poisson spiking, integrate-and-fire neurons, or any other solution to state discrepancy (section~\ref{sec:spike-coding}).
-On the other hand, longer values of $\theta$ are more suspeciptible to the integration of spiking noise, in the form of ``drift''.
+On the other hand, longer values of $\theta$ are more susceptible to the integration of spiking noise, in the form of ``drift''.
 Lastly, when using a balanced realization, larger values of $q$ require denser interconnectivity ($q \times q$ transform matrices) between all $q$ dimensions, leading to $\bigoh{q^2}$ increase in time and memory requirements.
 Such considerations are addressed in section~\ref{sec:deep-delay-networks} by stacking multiple DNs together to form a Deep Delay Network~(DDN).
 
