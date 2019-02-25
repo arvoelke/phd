@@ -66,7 +66,7 @@ Our solution leverages both methods of sparsification, but not in a way that one
 \section{Derivations}
 
 It is impossible in practice (i.e.,~given finite-order continuous-time resources) to implement an arbitrary delay.
-For instance, a white-noise signal contains an uncountably-infinite amount of information within any finite window, that cannot be compressed any further~\citep{cover2012elements}.
+For instance, a white noise signal contains an uncountably-infinite amount of information within any finite window, that cannot be compressed any further~\citep{cover2012elements}.
 We instead approximate $u(t)$ as a low-frequency signal, or, equivalently, approximate equation~\ref{eq:time-delay} as a low-dimensional system expanded about the zeroth frequency in the \emph{Laplace domain}.
 Our choice of a zero-frequency approximation is informed by our analysis from section~\ref{sec:energy-minimization}, which suggests that neural systems require energy that grows linearly in the representational frequency.
 
@@ -130,7 +130,6 @@ This transfer function is readily converted into a state-space model in controll
         \end{alignedat}
     \end{alignedat}
 \end{equation*}
-
 To eliminate the factorials in $d_i$ and $c_i$, we scale the $i^{\text{th}}$ dimension of the state-vector by $d_{q-1-i}$, for all $i = 0 \ldots q - 1$.
 This is achieved without changing the transfer function by scaling each $(B)_j$ by $d_{q-1-j}$, each $(C)_i$ by $1 / d_{q-1-i}$, and each $(A)_{ij}$ by $d_{q-1-i} / d_{q-1-j}$, which yields the equivalent state-space model:
 \begin{equation}
@@ -454,7 +453,7 @@ Now, we turn to several concrete applications that are of relevance to those stu
 \subsection{Reservoir Computing}
 \label{sec:delay-rc}
 
-Here we show that the NEF provides a principled way to optimize a particular RNN architecture, by mapping the desired dynamical state onto a latent representation within a factorable connection weight matrix (also see section~\ref{sec:engineered-approaches} and section~\ref{sec:relationships}).
+Here we show that the NEF provides a principled way to optimize a particular RNN architecture, by mapping the desired dynamical state onto a latent representation within a factorable connection weight matrix (also see sections~\ref{sec:engineered-approaches} and~\ref{sec:relationships}).
 This enables us to train networks that outperform Reservoir Computing~(RC) methods---using either spiking~\citep[LSM;][]{maass2002real} or rate-based~\citep[ESN;][]{jaeger2001echo} neurons---in memory capacity and nonlinear computation, while reducing the simulation time and space requirements by a factor of $\bigoh{n}$.
 %These same results carry over to FORCE, state-of-the-art ``full-FORCE'' methods, and even stacked LSTMs, in the following section.
 Our approach can learn both online and offline, readily incorporates detailed synapse models, supports various spiking and rate-based neuron models, and may be compiled onto analog and digital neuromorphic hardware.
@@ -470,7 +469,7 @@ This is consistent with our findings below.
 Moreover, the DN poses a natural way out of this predicament, by using nonlinearities to approximate the required linear feedback, without sacrificing the ability to nonlinearly transform the window (section~\ref{sec:delay-nonlinear} and below).
 
 For our benchmark task, weights were trained and validated using randomly sampled $25$\,Hz band-limited white noise inputs.
-In addition, full-spectrum white-noise was added to the network during both training and testing.
+In addition, full-spectrum white noise was added to the network during both training and testing.
 Accuracy was measured by normalizing the root-mean squared error against the root-mean squared target~\citep[NRMSE;][]{lukovsevicius2012reservoir}.
 As well, $95\%$ confidence intervals were bootstrapped and plotted using Seaborn~\citep{michael_waskom_2015_19108}.
 We ported a Python implementation of the ESN from \cite{lukovsevivcius2009reservoir} to Nengo, and implemented it analogously to the DN.
@@ -503,7 +502,7 @@ HyperOpt was used to the benefit of LSMs and ESNs. All hyperparameters (apart fr
 \end{figure}
 
 In all cases, we construct a reservoir of $\numprint{1500}$ neurons, and then train separate linear readouts to approximate various delays ranging from $100$--$200$\,ms ($\dt{} = 1$\,ms).
-For the NEF case, the prescribed dynamical system is a $\theta = 200$\,ms delay, implemented by mapping equation~\ref{eq:ss-delay} onto a discretized lowpass (see equation~\ref{eq:discrete-maps-onto}).
+For the NEF case, the prescribed dynamical system is a $\theta = 200$\,ms delay, implemented by mapping equation~\ref{eq:ss-delay} onto a discretized lowpass (see equation~\ref{eq:discrete-p3}).
 In section~\ref{sec:delay-lstm} we show that the delay length can be trained from raw data.
 Importantly, the same networks are used to compute all of the different delays reported.
 We thus conceptualize the DN as an optimized ``low-dimensional reservoir''.
@@ -556,7 +555,7 @@ We again note that traditional RC suffers from scaling issues since the recurren
 Consequently, the NEF is more resource efficient than these RC methods by a factor of $\bigoh{ n }$.
 RC networks often include a sparsity constraint of $20\%$ connectivity, which is still $\bigoh{n^2}$, in order to improve performance~\citep{lukovsevivcius2012practical, lukovsevicius2012reservoir}.
 We also considered ESNs with constant sparsity that balance resource constraints with NEF networks, but found that they did not perform comparably (not shown).
-Furthermore, we found that the ESN breaks down for numbers of neurons as few as $q$ neurons, while in fact $q$ linear rate neurons (with linearly independent encoders) will suffice to perfectly implement equation~\ref{eq:ss-delay}, as $q$ linear state-variables are in exact correspondence with the ideal linear system (after the appropriate discretization of equation~\ref{eq:discrete-maps-onto}).
+Furthermore, we found that the ESN breaks down for numbers of neurons as few as $q$ neurons, while in fact $q$ linear rate neurons (with linearly independent encoders) will suffice to perfectly implement equation~\ref{eq:ss-delay}, as $q$ linear state-variables are in exact correspondence with the ideal linear system (after the appropriate discretization of equation~\ref{eq:discrete-p3}) (see section~\ref{sec:force-comparison}).
 
 \begin{table}\centering
   %\ra{1.2}
@@ -600,7 +599,7 @@ We fix $\theta = 0.1$\,s across all experiments.
 To compute this function accurately, we sample a proportion of the encoders from the diagonal combinations of $\mathcal{P}_{i, d}(0)$ and $\mathcal{P}_{i, d}(1)$~\citep{jgosmann2015}.
 However, the particular choice of function is not of importance, as the training can be data-driven, or analyzed using theory from sections~\ref{sec:temporal-representation} and~\ref{sec:delay-nonlinear}.
 
-Each input $u(t)$ is sampled white-noise, band-limited with a cutoff frequency of $30$\,Hz.
+Each input $u(t)$ is sampled white noise, band-limited with a cutoff frequency of $30$\,Hz.
 To optimize for the decoders, we map $q$-dimensional evaluation points onto desired target outputs using equation~\ref{eq:basis-interpretation}, and apply Nengo's regularized least-squares solver, which bypasses the need to explicitly simulate the network on any input signals.
 
 To implement this system as a spiking (or non-spiking) recurrent neural network, we use the same set of transformations from equation~\ref{eq:delay-compiled}. % Principle~3 of the NEF to map equation~\ref{eq:delay-system} onto the dynamics of the synapse.
@@ -621,16 +620,37 @@ Reducing the input frequency from $30$\,Hz to $15$\,Hz improves the ESN's accura
 In addition, trials took on average $5.10$\,s for the sigmoid DN, $6.44$\,s for the spiking DN, and $17.7$\,s for the ESN.
 This difference is a consequence of not simulating the DN for training, and from using factorized weight matrices (i.e.,~encoders and decoders) to simulate the DN.
 These results are consistent with that of the linear benchmark, except for the additional observation that here the spiking DN outperforms the rate ESN.
-This is because, as explained previously, the ESN's memory capacity requires linear tuning, which is at odds with the nonlinearities required for functions such as autocorrelation.
+This is because, as explained previously, the ESN's memory capacity requires linear tuning, which is at odds with the nonlinearities required by functions such as autocorrelation.
 LSMs were again unable to perform.
 
 
-\subsection{Optimized FORCE Learning}
+\subsection{FORCE learning}
 \label{sec:force-comparison}
 
-\TODO{Include FORCE in the benchmark comparison}
+We also compared our NEF solution to both FORCE~\citep{sussillo2009generating} and full-FORCE~\citep{depasquale2018full} networks (also see sections~\ref{sec:engineered-approaches} and~\ref{sec:relationships}).
+FORCE networks take the same essential ingredient of RC networks, namely the inclusion of high-dimensional random feedback, except they make an important addition to the model: the target output is learned---online via RLS---to be simultaneously re-encoded back into the network (see Figure~\ref{fig:architectures}).
+Full-FORCE takes this a step further, by using the postsynaptic currents from the previous FORCE network as a training signal for a separate ``full-FORCE'' network. 
+In the first step, the FORCE network does not do any online learning, but instead receives the exact ideal teaching signal.
+The second step then allows for additional degrees of freedom to be optimized, to find the \emph{full weights} that reconstruct the ideal PSCs from the first network -- again, online using RLS.
+This is similar in many ways to \citet{tripp2006neural}, but maintains the same idea as in FORCE, in particular the re-encoding of the target state.
+The main difference from FORCE is that instead of learning a low-rank (one-dimensional) decode-encode of the target, full-FORCE learns a full-rank approximation to an encoding of that same target.
 
-\TODO{restate the intuitive story of why given the difference between linear and nonlinear results}
+For this experiment, we first ported the same implementation described in \citet{depasquale2018full} to Nengo, and verified that it is works as intended (using the same models and parameters) by teaching the network to produce decaying oscillations in response to unit impulses.
+We compared this to the standard FORCE approach---which we refer to as ``classic-FORCE''---and verified that it performed slightly worse than the full-FORCE network, but still better than an equivalent reservoir computer.
+Since Nengo allows for the substitution of various spiking and non-spiking neuron models, we further validated both implementations with spiking neurons as well, and obtained reasonable levels of accuracy, similar to \citet{depasquale2016using, thalmeier2016learning, nicola2016supervised}.
+
+However, we found that simply modifying the target signal to be a delayed version of a low-frequency signal, posed an incredible challenge for these networks.
+Thus, the learning rate was lowered from $1$ to $\numprint{e-3}$, and the time-step set to $\dt{} = 5$\,ms, which we found to help regularize the solution.
+We thus also considered a baseline approach:
+we took the original FORCE network, but removed the feedback loop that re-encodes the learned output.
+This makes it equivalent to an ESN with a slightly different method of distributing the weights, while learning the decoders online.
+We refer to this last method as ``no-FORCE''.
+
+Finally, we compared all three of these to an idealized NEF implementation of the DN~(equation~\ref{eq:ss-delay}), consisting of just $n = 6$ linear units, coupled to one another by the discretized mapping of equation~\ref{eq:discrete-p3}, as summarized by equation~\ref{eq:delay-compiled} ($q = 6$).
+In this scenario, the only error that remains is that of equation~\ref{eq:pade-delay-error} arising from the use of Pad\'e approximants to render the delay line finite-dimensional.
+In all cases, the training and test signals were randomly sampled $1$\,Hz band-limited white noise signals.
+We compared all four networks by sweeping $\theta$ across $0.01$--$1$\,s, with $10$ trials at each condition (boostrapped 95\% confidence intervals).
+Figure...\TODO{Figure}
 
 \subsection{Optimized Long Short-Term Memory}
 \label{sec:delay-lstm}
@@ -714,7 +734,7 @@ Such networks would thus be participating in the temporal coding of a stimulus, 
      
     \caption{\label{fig:comm-channels} 
       Demonstrating the ability of the Delay Network~(DN) to approximate a synaptic deconvolution operation, realizing a pure communication channel.
-      The test input $u(t)$ is a white-noise signal band-limited at $10$\,Hz.
+      The test input $u(t)$ is a white noise signal band-limited at $10$\,Hz.
       (Top)~A standard feed-forward communication channel, implemented by decoding the identity function at each layer.
       (Bottom)~A recurrent communication channel, implemented by a Deep Delay Network~(DDN; section~\ref{sec:deep-delay-networks}) approximating $u(t)$ at each layer. Each layer is a NEF with $\theta = 50$\,ms and $q = 6$.
       In either case, there are $8$ layers of \numprint{2500} spiking LIF neurons, with each layer communicating spikes to the next through a lowpass synapse with time-constant $\tau = 100$\,ms.
@@ -820,7 +840,7 @@ And since the L2-norm of a balanced state reflects the RMS of its corresponding 
   }
 \end{figure}
 
-We validate the above derivation by fixing $\theta=0.24$\,s, $q=20$, and then sampling white-noise signals band-limited at $22$\,Hz (such that the error in the Pad\'e approximants, equation~\ref{eq:pade-delay-error}, is bounded above by 5\%) with RMS=$1$ from the two possible classes: periodic and aperiodic.
+We validate the above derivation by fixing $\theta=0.24$\,s, $q=20$, and then sampling white noise signals band-limited at $22$\,Hz (such that the error in the Pad\'e approximants, equation~\ref{eq:pade-delay-error}, is bounded above by 5\%) with RMS=$1$ from the two possible classes: periodic and aperiodic.
 The periodic signals are generated by repeating a segment of length $\gamma$, $k$ times, while the aperiodic signals are random across the interval of length $\theta$.
 In each case, the system of equations~\ref{eq:ss-delay} are balanced and simulated using zero-order hold~(ZOH) with a time-step of $\dt{} = 1$\,ms, to obtain the value of $\V{x}(t)$ at $t = \theta$.
 The simulated value of $\| P_k(t) \|$ (equation~\ref{eq:periodicity-matrix}) is then compared to the ideal value of $p_k(t)$ (equation~\ref{eq:periodicity}).
