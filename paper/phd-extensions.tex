@@ -102,7 +102,7 @@ will implement the desired dynamics when using $H(s)$ as the dynamical primitive
 
 Therefore, supposing $F^{H}(s)$ satisfies definition~\ref{def:maps-onto}, and that it is convertible to a state-space model (equation~\ref{eq:lti}), then Figure~\ref{fig:lti-system-mapped-general} is just another form of Figure~\ref{fig:lti-system}, but with the integrator replaced by the synapse.
 Note that this construction, on its own, does not specify how to find a satisfying $F^{H}(s)$, nor whether such a function exists, nor whether it can be converted to a state-space model.
-We provide several examples leading to such a specification in section~\ref{sec:general-linear-synapse}.
+We provide several examples leading to such a specification at the end of this section.
 %This will be made clear through a number of examples, culminating with an approach that recovers an important result from linear systems theory (see appendix~\ref{app:discrete-connection}).
 %In appendix~\ref{app:state-space} we discuss our freedom to choose state-space models, and the connection to choice of encoders in the NEF.
 
@@ -228,7 +228,7 @@ This may be numerically converted into a state-space model, of arbitrary dimensi
 F^H(s) = c r \sum_{i=0}^\infty \frac{(i+r)^{i-1}}{i!} (-ds)^i \text{.}
 \end{align}
 To our knowledge, there is no closed-form expression for the Pad\'e approximants of equation~\ref{eq:lambert-delay}, but there are methods to compute them accurately and in $\bigoh{q^2}$ time~\citep{sidi2003practical}.
-Given these approximants, we may follow the same procedure that we use in section~\ref{sec:nef-delay} to obtain an LTI system in the form of equation~\ref{eq:lti}.
+Given these approximants, we may follow the same procedure that we use in section~\ref{sec:nef-delay} (see equation~\ref{eq:pade}) to obtain an LTI system in the form of equation~\ref{eq:lti}.
 In section~\ref{sec:pure_delay}, we use this approach to improve the accuracy of the delay network demonstrated in section~\ref{sec:nef-delay}. %(see~Figure~\ref{fig:lambert}).
 We remark that each of $d$, $c$, and $r$ are dimensionless (i.e.,~unitless) constants that can be used to relate measurable properties of a biological system that may be governed by this description to the necessary network-level computations.
 
@@ -308,7 +308,6 @@ Furthermore, $$\lim_{q \rightarrow \infty} H^q_{c \rightarrow b}(z) H^q_{b \righ
 Lastly, we note that the above Lemma and Corollary also apply to the case where differentials are replaced by discrete time-shifts and the Laplace transform is replaced by the $\mathcal{Z}$-transform.
 
 \subsubsection{General linear synapse}
-\label{sec:general-linear-synapse}
 
 Finally, we consider the general class of all linear synapse models of the form:
 \begin{equation} \label{eq:synapse}
