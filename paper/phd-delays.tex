@@ -64,17 +64,17 @@ Spikes in a neural network are akin to such a compression mechanism in time, as 
 Our solution leverages both methods of sparsification, but not in a way that one might come to expect from information theory or other approaches involving discrete samples; our NEF-based approach finds the optimal system for linearly mapping continuous-time windows onto a low-dimensional manifold.
 
 \section{Derivations}
-\label{sec:nef-delay}
 
 It is impossible in practice (i.e.,~given finite-order continuous-time resources) to implement an arbitrary delay.
 For instance, a white-noise signal contains an uncountably-infinite amount of information within any finite window, that cannot be compressed any further~\citep{cover2012elements}.
 We instead approximate $u(t)$ as a low-frequency signal, or, equivalently, approximate equation~\ref{eq:time-delay} as a low-dimensional system expanded about the zeroth frequency in the \emph{Laplace domain}.
-Our choice of a zero-frequency approximation is informed by our analysis from section~\ref{sec:energy-minimization}, which suggested neural systems require energy that grows linearly in the representational frequency.
+Our choice of a zero-frequency approximation is informed by our analysis from section~\ref{sec:energy-minimization}, which suggests that neural systems require energy that grows linearly in the representational frequency.
 
 \subsection{Optimal approximation}
+\label{sec:nef-delay}
 
 % However, different approximations at this stage would allow for more efficient coding of particular statistics.
-We begin by transforming equation~\ref{eq:time-delay} into the Laplace domain, $\mathcal{L} \left\{ y(t) \right\} = \mathcal{L} \left\{ u(t) \right\} \mathcal{L} \left\{ \delta_{-\theta}(t) \right\}$, and then using the fact that $\mathcal{L} \left\{ \delta_{-\theta}(t) \right\} = e^{-\theta s}$ to obtain:
+We begin by transforming equation~\ref{eq:time-delay} into the Laplace domain, $\mathcal{L} \left\{ y(t) \right\} = \mathcal{L} \left\{ u(t) \right\} \mathcal{L} \left\{ \delta_{\theta}(t) \right\}$, and then using the fact that $\mathcal{L} \left\{ \delta_{\theta}(t) \right\} = e^{-\theta s}$ to obtain:
 \begin{align} \label{eq:tf-delay}
 F(s) := \frac{\mathcal{L} \left\{ y(t) \right\}}{\mathcal{L} \left\{ u(t) \right\}} = e^{-\theta s} \text{,}
 \end{align}
@@ -313,6 +313,7 @@ More specifically, for a fixed approximation error, the delay length scales as $
 We elaborate on these properties in section~\ref{sec:delay-scalability}, and demonstrate our extensions to harnessing arbitrary linear synapse models to improve accuracy in section~\ref{sec:pure_delay}.
 
 \subsection{Nonlinear characterization}
+\label{sec:delay-nonlinear}
 
 A delay is a linear dynamical system.
 However, by virtue of encoding the delay network's state-vector into a heterogeneous population of neurons---as in the first two principles of the NEF---the network also affords the computation of arbitrary nonlinear functions across the rolling window.
@@ -400,13 +401,6 @@ For example, Figure~\ref{fig:delay-autocorrelation} visualizes $f$ within the sp
   } 
 \end{figure}
 
-To implement this system as a spiking (or non-spiking) recurrent neural network, we use Principle~3 of the NEF to map equation~\ref{eq:delay-system} onto the dynamics of the synapse.
-For example, repeating the standard form of Principle~3 for a continuous-time lowpass synapse with time-constant $\tau$ (although we are free to use the extensions of chapter~\ref{chapt:nef-extensions}):
-\begin{equation} \label{eq:delay-system-p3}
-A^H = \tau A + I \text{,} \quad B^H = \tau B \text{,} \quad H(s) = \left(\tau s + 1\right)^{-1} \text{.}
-\end{equation}
-The model architecture of this delay network is depicted in Figure~\ref{fig:delay-architecture}, whose representation and transformations are realized using the first two principles of the NEF.
-
 \subsection{Scalability considerations}
 \label{sec:delay-scalability}
 
@@ -418,7 +412,7 @@ The model architecture of this delay network is depicted in Figure~\ref{fig:dela
   } 
 \end{figure}
 
-In this section we address several fundamental questions regarding the scalability of the Delay Network~(DN) with respect to $q$, $\theta$, and the complex frequency of the input signal, $s = 2 \pi i f$, for some real frequency, $f$.
+In this section we address several fundamental questions regarding the scalability, or memory ``capacity'', of the Delay Network~(DN) with respect to $q$, $\theta$, and the complex frequency of the input signal, $s = 2 \pi i f$, for some real frequency, $f$.
 For the time being, we disregard the error arising from neural representation by assuming we can make $n$ sufficiently large (see section~\ref{sec:scalability}).
 This means we match the model description precisely, even when considering more elaborate models of the synapse (see chapter~\ref{sec:synaptic-extensions}).
 The only source of error remaining is our use of Pad\'e approximants to render equation~\ref{eq:tf-delay} finite-dimensional.
@@ -475,39 +469,88 @@ In all cases, the representation employed by the DN (i.e., the linear relationsh
 \label{sec:delay-applications}
 
 We have developed rigorous theory to understand the Delay Network~(DN) in terms of its linear dynamics, and its nonlinear encoding of time, and used the NEF to present a spiking example in Figure~\ref{fig:delay-example}.
-Now, we turn to several concrete applications, that are of relevance to those studying reservoir computing, FORCE learning, deep RNNs and stacked LSTMs, as well as the computational neuroscience and cognitive modelling communities at large.
+Now, we turn to several concrete applications that are of relevance to those studying reservoir computing, FORCE learning, deep RNNs and stacked LSTMs, as well as the computational neuroscience and cognitive modelling communities at large.
 
-\subsection{Optimized Reservoir Computing}
+\subsection{Reservoir Computing}
 \label{sec:delay-rc}
 
-\TODO{Discuss "Reservoir Computing Beyond Memory-Nonlinearty Trade-off Inubushi \& Yoshimura, and Information Processing Capacity of Dynamical Systems Massar et al.}
-
-
-Here, we show that the Neural Engineering Framework~(NEF) provides a principled way to optimize a particular RNN architecture, by mapping the desired dynamical state onto a latent representation within a factorable connection weight matrix.
-This enables us to train networks that outperform RC, FORCE, and state-of-the-art ``full-FORCE'' methods---using either spiking or rate-based neurons---on a delay line task, while reducing the simulation time and memory by a factor of $\bigoh{n}$.
+Here we show that the NEF provides a principled way to optimize a particular RNN architecture, by mapping the desired dynamical state onto a latent representation within a factorable connection weight matrix (also see section~\ref{sec:engineered-approaches} and section~\ref{sec:relationships}).
+This enables us to train networks that outperform Reservoir Computing~(RC) methods---using either spiking~\citep[LSM;][]{maass2002real} or rate-based~\citep[ESN;][]{jaeger2001echo} neurons---in memory capacity and nonlinear computation, while reducing the simulation time and space requirements by a factor of $\bigoh{n}$.
+%These same results carry over to FORCE, state-of-the-art ``full-FORCE'' methods, and even stacked LSTMs, in the following section.
 Our approach can learn both online and offline, readily incorporates detailed synapse models, supports various spiking and rate-based neuron models, and may be compiled onto analog and digital neuromorphic hardware.
 
-RC networks often include a sparsity constraint of $20\%$ connectivity, which is still $\bigoh{n^2}$, in order to improve accuracy~\citep{lukovsevicius2012reservoir}.
-We also considered ESNs with constant sparsity~\citep{lukovsevivcius2012practical}, similar to our NEF networks, but found that they did not perform comparably to our results in section~\ref{sec:delay_benchmark}.
+\subsubsection{Linear benchmark}
 
-Constructing a network to implement a delay is a natural way to measure the network's ability to maintain a history of its input signal, which is needed to compute any function over past inputs.
-Indeed, this task was considered by ESNs in one of the earliest demonstrations of the RC paradigm~\citep{jaeger2002short}.  In its purest form, the delay network (DN) is attempting to encode an infinite amount of information, which is why it is a challenging and useful benchmark to consider.
+Training a network to implement a delay is a natural way to measure the dynamical system's memory capacity---its ability to maintain a history of its input signal---which is needed to compute any function over past inputs.
+Indeed, this task was considered by ESNs in one of the earliest demonstrations of the RC paradigm~\citep{jaeger2002short}.  In its purest analog form, a delay line is attempting to encode an infinite amount of information, which is why it is a challenging and useful benchmark to consider.
+Theoretical and experimental results in the past have pointed to the limited capability of random feedback to maintain memory~\citep{joshi2005movement, mayor2005signal, dambre2012information, wallace2013randomly, inubushi2017reservoir, schuecker2018optimal}, in particular finding that linear feedback \emph{maximizes} memory capacity~\citep{mitra2001nonlinear}---as derived in section~\ref{sec:nef-delay}, and considering the linearity of a delay line---while being at odds with the nonlinearities that are required to support useful computations across the memory.\footnote{%
+We thank Kwabena Boahen for pointing out this connection and a few of these references.
+}
+This is consistent with our findings below.
+Moreover, the DN poses a natural way out of this predicament, by using nonlinearities to approximate the required linear feedback, without sacrificing the ability to nonlinearly transform the window (section~\ref{sec:delay-nonlinear} and below).
 
-For the benchmark tasks, weights were trained and validated using randomly sampled band-limited white noise.
+For our benchmark task, weights were trained and validated using randomly sampled $25$\,Hz band-limited white noise inputs.
 In addition, full-spectrum white-noise was added to the network during both training and testing.
 Accuracy was measured by normalizing the root-mean squared error against the root-mean squared target~\citep[NRMSE;][]{lukovsevicius2012reservoir}.
 As well, $95\%$ confidence intervals were bootstrapped and plotted using Seaborn~\citep{michael_waskom_2015_19108}.
-The free parameters for each method were optimized using $200$ iterations of Hyperopt~\citep{bergstra2013making} with $3$ trials per iteration, to maximize the validation error for $200$\,ms delays (see Table~\ref{tab:hyperopt}).
-LSMs were implemented by replacing the $\tanh$ units with LIF spiking neurons, making them comparable to our NEF networks but with full-rank weight matrices.
-All data and figures may be reproduced by following the instructions at the following URL: \path{https://github.com/arvoelke/rc2017}.
+We ported a Python implementation of the ESN from \cite{lukovsevivcius2009reservoir} to Nengo, and implemented it analogously to the DN.
+Nengo allows us to consider populations of either spiking LIF neurons or non-spiking neurons with various rate curves, without any additional changes to the model specification.
+In particular, LSMs were implemented by replacing the $\tanh$ units with LIF spiking neurons, making them comparable to our NEF networks but with full-rank weight matrices.
+The hyperparameters of each method were optimized using $200$ iterations of HyperOpt~\citep{bergstra2013making} with $3$ trials per iteration, to maximize the validation error for $200$\,ms delays (see Table~\ref{tab:hyperopt}).
+Hyperparameters include an overall gain on the recurrent feedback matrix (gain), a normalization factor for the input (radius), time-constants on both the readout and recurrent filters ($\tau_\text{readout}$, $\tau_\text{recurrent}$), and L2-regularization parameters for applicable least-squares problems ($\sigma^2_\text{readout}$, $\sigma^2_\text{recurrent}$).\footnote{%
+HyperOpt was used to the benefit of LSMs and ESNs. All hyperparameters (apart from $q$) had minimal effect on the DN's performance compared to the usual defaults in Nengo.}
+%All data and figures may be reproduced by following the instructions at the following URL: \path{https://github.com/arvoelke/rc2017}.
+
+\TODO{Repeat state-space equations for discrete lowpass mapping for clarity?}
+
+In all cases, we construct a reservoir of $\numprint{1500}$ neurons, and then train separate linear readouts to approximate various delays ranging from $100$--$200$\,ms.
+For the NEF case, the prescribed dynamical system is a $200$\,ms delay, implemented by mapping equation~\ref{eq:ss-delay} onto a discretized lowpass (see section~\ref{sec:linear-extensions}).
+In section~\ref{sec:delay-lstm} we show that the delay length can be trained from raw data.
+Importantly, the same networks are used to compute all of the different delays reported.
+We thus conceptualize the DN as an optimized ``low-dimensional reservoir''.
+%The input to each network is randomly sampled $25$\,Hz band-limited white noise.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\textwidth]{rc-accuracy}
+  \caption{ \label{fig:rc-accuracy}
+  Performance from training various linear readouts to compute delays of $25$\,Hz band-limited white noise (bootstrapped across 10 trials).
+  Each line corresponds to a single reservoir of $\numprint{1500}$ neurons, either randomly connected (in the case of ESNs and LSMs), or specifically engineered (in the case of the NEF).
+  }
+
+  \vspace{1em}
+
+  \centering
+  \includegraphics[width=0.8\textwidth]{rc-speed}
+  \caption{ \label{fig:rc-speed}
+  Cost of simulating each RC network as the reservoir size is increased (bootstrapped across 10 trials).
+  Conventional RC approaches require $\bigoh{ n^2 }$ space and time, while the NEF improves this to $\bigoh{ n }$ for constant dimensionality.
+  }
+\end{figure}
+
+As shown in Figure~\ref{fig:rc-accuracy}, the NEF's performance is slightly better than ESNs for both LIF rate neurons and $\tanh$ rate neurons, and significantly better than LSMs for spiking LIF neurons.
+This demonstrates that, in terms of memory capacity, the DN as a low-dimensional reservoir not only outperforms RC in the rate-based case, but even performs comparably to ESNs when using spikes.
+The task is shown to be completely outside the grasp of LSMs (exceeding $90$\% error), due to the difficulty of the computation and the unreliability of randomized spiking feedback; HyperOpt minimizes both the gain and regularization hyperparameters of the LSM to keep its output close to zero, as this minimizes validation error.\footnote{%
+As additional validation, lower input frequencies or shorter delay lengths were possible with the LSM.}
+The success of the DN should not be surprising given that we have mapped the ideal delay's dynamics onto the reservoir.
+Nevertheless, as we will show below, the readouts are capable of computing nonlinear functions across the delay interval, from the same reservoir.
+%This demonstrates that our derived state-vector (see Figure~\ref{fig:pca}) is robust to changes in the target function.
+Informally, assigning some particular dynamics to the reservoir does not disable the network from computing other similar functions (thereby permitting nonlinear combinations of such functions to be trained from data).
+
+These networks were also simulated while varying the number of neurons from $100$ to $\numprint{2500}$, in order to measure the real-time cost of simulation (see~Figure~\ref{fig:rc-speed}).
+We again note that traditional RC suffers from scaling issues since the recurrent weight matrices have $\bigoh{ n^2 }$ coefficients.
+Consequently, the NEF is more resource efficient than these RC methods by a factor of $\bigoh{ n }$.
+RC networks often include a sparsity constraint of $20\%$ connectivity, which is still $\bigoh{n^2}$, in order to improve performance~\citep{lukovsevivcius2012practical, lukovsevicius2012reservoir}.
+We also considered ESNs with constant sparsity that balance resource constraints with NEF networks, but found that they did not perform comparably (not shown).
+Furthermore, we found that the ESN breaks down for numbers of neurons as few as $q$ neurons, while in fact $q$ linear rate neurons (with linearly independent encoders) will suffice to perfectly implement equation~\ref{eq:ss-delay}, as $q$ linear state-variables are in exact correspondence with the ideal linear system (after the appropriate discretization from section~\ref{sec:linear-extensions}).
 
 \begin{table}\centering
   %\ra{1.2}
   \noindent\begin{tabularx}{\textwidth}{YYYYYY}
     \toprule
-     & ESN & LSM & NEF with Rate LIF & NEF with Rate Tan & NEF with Spike LIF \\
+     & ESN & LSM & NEF with Rate LIF & NEF with Rate Tan & NEF with Spiking LIF \\
     \midrule
-Gain & \num[round-precision=3,round-mode=figures,scientific-notation=true]{1.3251896701} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.00315170551016} &  &  &  \\
+Gain & \num[round-precision=3,round-mode=figures,scientific-notation=true]{1.3251896701} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.00315170551016} & - & - & - \\
 
 Radius & \num[round-precision=3,round-mode=figures,scientific-notation=true]{24.3145093319} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{1.36259213791} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{4.63655157006} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{12.8794579757} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.577484080063} \\
 
@@ -517,82 +560,57 @@ $\tau_\mathrm{recurrent}$ & \num[round-precision=3,round-mode=figures,scientific
 
 $\sigma^2_\mathrm{readout}$ & \num[round-precision=3,round-mode=figures,scientific-notation=true]{2.95578336256e-06} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0329425610169} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.00206289719197} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.00479755699712} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0450158827701} \\
 
-$\sigma^2_\mathrm{recurrent}$ &  &  & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.000200121787175} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.000397747221121} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0375517001869} \\
+$\sigma^2_\mathrm{recurrent}$ & - & - & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.000200121787175} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.000397747221121} & \num[round-precision=3,round-mode=figures,scientific-notation=true]{0.0375517001869} \\
 
-$q$ &  &  & 20 & 26 & 23 \\
+$q$ & - & - & 20 & 26 & 23 \\
 
     \bottomrule
   \end{tabularx}
   
   \caption{ \label{tab:hyperopt}
-    Optimal parameters found by Hyperopt for section~\ref{sec:delay_benchmark}.
+    HyperOpt parameters for the linear benchmark in section~\ref{sec:delay-rc}.
   }
 \end{table}
 
-In all cases, we construct a reservoir of $\numprint{1500}$ neurons, and then train separate linear readouts (see section~\ref{sec:rc}) to approximate various delays ranging from $100$--$200$\,ms.
-For the NEF case, the prescribed dynamical system is a $200$\,ms delay, implemented by mapping equation~\ref{eq:ss-delay} onto a discretized lowpass (see section~\ref{sec:discrete-lowpass}).
-Importantly, the same reservoir is used to compute all of the different delays reported.
-The input to each network is randomly sampled $25$\,Hz band-limited white noise.
-Additional benchmarking details are described in section~\ref{sec:methods}.
+Another key finding is that, as shown in Table~\ref{tab:hyperopt}, 
+HyperOpt discovers that a radius of $\approx 24.3$ performs the best with the ESN.
+This has the effect of scaling the domain of the tanh curve from $[-1, 1]$ to $\approx [-0.04, 0.04]$, which importantly is well-approximated by a straight line, that is, $\tanh x \approx x$ across this domain.
+Thus, HyperOpt is indirectly leveraging the fact that the ESN's memory capacity is maximized when its neurons \emph{are linear}, consistent with \citet{dambre2012information}.
+Crucially, this limits the ability of the ESN to perform nonlinear computations across the delay interval, as we now show.
 
-As shown in Figure~\ref{fig:rc-accuracy}, the NEF's performance is slightly better than ESNs for both LIF rate neurons and $\tanh$ rate neurons, and significantly better than LSMs for spiking LIF neurons.
-This demonstrates that, at least for this particular task, a low-dimensional reservoir is not only sufficient in the non-spiking case, but advantageous versus a random reservoir in the spiking case.
-This is unsurprising given that we have mapped the delay's dynamics onto the reservoir.
-Nevertheless, by applying the RC training method to the NEF, the readouts are capable of computing many different delays---not only $200$\,ms---from the same reservoir, without loss in accuracy.
-This demonstrates that our derived state-vector (see Figure~\ref{fig:pca}) is robust to changes in the target function.
-More generally, assigning some particular dynamics to the reservoir does not disable the network from computing other similar functions (thereby permitting nonlinear combinations of such functions to be trained from data).
+\subsubsection{Nonlinear benchmark}
 
-% $\tanh$ performs the best, since this function is approximately linear near $0$, and the desired dynamics are linear. the optimal hyperparameters select a huge radius to linearize the neurons. 
+To demonstrate our ability to compute nonlinear window functions, we consider the function from section~\ref{sec:delay-nonlinear}, $y(t) = u(t - \theta)\, u(t)$, visualized in the context of a DN's state-vector in Figure~\ref{fig:delay-autocorrelation}.
+When integrated over time, this is the autocorrelation of $u$ with lag $\theta$, which has numerous applications in signal processing (e.g.,~detecting repeating events).
+We fix $\theta = 0.1$\,s across all experiments.
+To compute this function accurately, we sample a proportion of the encoders from the diagonal combinations of $\mathcal{P}_{i, d}(0)$ and $\mathcal{P}_{i, d}(1)$~\citep{jgosmann2015}.
+The inputs $u(t)$ are drawn from white-noise, band-limited with a cutoff frequency of $30$\,Hz.
+To optimize for the decoders, we map $d$-dimensional evaluation points onto desired target outputs using equation~\ref{eq:basis-interpretation}, and apply Nengo's regularized least squares solver, which avoids the need to explicitly simulate the network on any input signals.
 
-These networks were also simulated while varying the number of neurons from $100$ to $\numprint{2500}$, in order to measure the real-time cost of simulation (see~Figure~\ref{fig:rc-speed}).
-We again note that traditional RC suffers from scaling issues since the recurrent weight matrices have $\bigoh{ n^2 }$ coefficients.
-Consequently, the NEF is more resource efficient than these RC methods by a factor of $\bigoh{ n }$.
-We also tried matching the sparsity of ESNs to the NEF, in order to balance resource constraints, but found that they no longer performed as accurately (not shown).
-Furthermore, we found that the ESN breaks down for numbers of neurons as few as $q$ neurons, while in fact $q$ linear rate neurons (with linearly independent encoders) will suffice to perfectly implement equation~\ref{eq:ss-delay}, as demonstrated by our next example.
+To implement this system as a spiking (or non-spiking) recurrent neural network, we use Principle~3 of the NEF to map equation~\ref{eq:delay-system} onto the dynamics of the synapse (also see Figure~\ref{fig:delay-architecture}).
+%For example, repeating the standard form of Principle~3 for a continuous-time lowpass synapse with time-constant $\tau$ (although we are free to use the extensions of chapter~\ref{chapt:nef-extensions}):
+%\begin{equation} \label{eq:delay-system-p3}
+%A^H = \tau A + I \text{,} \quad B^H = \tau B \text{,} \quad H(s) = \left(\tau s + 1\right)^{-1} \text{.}
+%\end{equation}
+The model architecture of this delay network is depicted in Figure~\ref{fig:delay-architecture}, whose representation and transformations are realized using the first two principles of the NEF.
+For this experiment, we considered the use of both sigmoidal tuning curves (non-spiking), and spiking LIF neurons.
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=0.8\textwidth]{rc-accuracy}
-  \caption{ \label{fig:rc-accuracy}
-  Performance from training various linear readouts to compute delays of $25$\,Hz band-limited white noise (averaged across 10 trials).
-  Each line corresponds to a single reservoir of $\numprint{1500}$ neurons, either randomly connected (in the case of ESNs and LSMs), or specifically engineered (in the case of the NEF).
-  }
-\end{figure}
+We again used Hyperopt~\citep{bergstra2015hyperopt} to explore the space of model hyperparameters (e.g.,~$q$, $\tau$, input gain, recurrent gain, L2-regularization) across $100$ iterations containing $10$ trials each.
+Each network consisted of $\numprint{10000}$ neurons, simulated with a time-step of $\dt{} = 1$\,ms.
+Each trial used a training signal of length $\numprint{10200}$, a testing signal of length $\numprint{2200}$, and the first $200$ outputs were discarded.
+We then cross-validated the best set of hyperparameters (in terms of mean NRMSE across all test signals) using another $25$ trials.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=0.8\textwidth]{rc-speed}
-  \caption{ \label{fig:rc-speed}
-  Cost of simulating each RC network as the reservoir size is increased (averaged across 10 trials).
-  Conventional RC approaches require $\bigoh{ n^2 }$ space and time, while the NEF improves this to $\bigoh{ n }$ for constant dimensionality.
-  }
-\end{figure}
+We obtained a mean NRMSE of $0.059$ for the sigmoid DN, and $0.518$ for the spiking DN, compared to $0.843$ for the ESN.
+Reducing the input frequency to $15$\,Hz improves the ESN's accuracy to be on par with the non-spiking DN, and thus we attribute this difference to the inherent difficulty of autocorrelating a high-frequency signal (relative to $\theta$) using random feedback weights, as opposed to using optimally derived weights as in the DN.
+In addition, trials took on average $5.10$\,s for the sigmoid DN, $6.44$\,s for the spiking DN, and $17.7$\,s for the ESN.
+This difference is a consequence of not simulating the DN for training, and from using factorized weight matrices (i.e.,~encoders and decoders) to simulate the DN.
 
-\TODO{Discuss ESN radius which linearlizes the tanh unit, and what this means: necessary for capacity but limits nonlinear decode. DN solves both problems simultaneously.}
+
 
 \subsection{Optimized FORCE Learning}
 \label{sec:force-comparison}
 
 \TODO{Include FORCE in the benchmark comparison}
-
-To demonstrate our ability to compute nonlinear window functions, we consider the function $y(t) = u(t - \theta)\, u(t)$, visualized in Figure~\ref{fig:delay-autocorrelation}.
-When integrated over time, this is the autocorrelation of $u$ with lag $\theta$, which has numerous applications in signal processing (e.g.,~detecting repeating events).
-We fix $\theta = 0.1$\,s across all experiments.
-To compute this function accurately, we sample a proportion of the encoders from the diagonal combinations of $\mathcal{P}_{i, d}(0)$ and $\mathcal{P}_{i, d}(1)$.
-The inputs $u(t)$ are drawn from white-noise, band-limited with a cutoff frequency of $30$\,Hz.
-Nengo allows us to consider populations of either spiking LIF neurons or non-spiking sigmoid neurons, without any additional changes to the model specification.
-To optimize for the decoders, we map $d$-dimensional evaluation points onto desired target outputs using (\ref{eq:basis-interpretation}), and apply Nengo's regularized least squares solver, which avoids the need to explicitly simulate the network on any input signals.
-
-To compare with Reservoir Computing, we ported a Python implementation of the Echo State Network~(ESN), from \cite{lukovsevivcius2009reservoir}, to Nengo, and implemented it analogously to the DN.
-We used Hyperopt~\citep{bergstra2015hyperopt} to explore the space of model hyperparameters (e.g.,~$d$, $\tau$, input gain, recurrent gain, L2-regularization) across $100$ iterations containing $10$ trials each.
-Each network consisted of $1\text{,}000$ neurons, simulated with a time-step of $1$\,ms.
-Each trial used a training signal of length $10\text{,}200$, a testing signal of length $2\text{,}200$, and the first $200$ outputs were discarded.
-We then cross-validated the best set of hyperparameters (in terms of mean normalized RMSE across all test signals) using another $25$ trials.
-
-We obtained a mean normalized RMSE of $0.059$ for the sigmoid DN, and $0.518$ for the spiking DN, compared to $0.843$ for the ESN.
-Reducing the input frequency to $15$\,Hz improves the ESN's accuracy to be on par with the non-spiking DN, and thus we attribute this difference to the inherent difficulty of autocorrelating a high-frequency signal (relative to $\theta$) using random feedback weights, as opposed to using optimally derived weights as in the DN.
-In addition, trials took on average $5.10$\,s for the sigmoid DN, $6.44$\,s for the spiking DN, and $17.7$\,s for the ESN.
-This difference is a consequence of not simulating the DN for training, and from using factorized weight matrices (i.e.,~encoders and decoders) to simulate the DN.
 
 \TODO{restate the intuitive story of why given the difference between linear and nonlinear results}
 
@@ -680,7 +698,7 @@ Such networks would thus be participating in the temporal coding of a stimulus, 
       Demonstrating the ability of the Delay Network~(DN) to approximate a synaptic deconvolution operation, realizing a pure communication channel.
       The test input $u(t)$ is a white-noise signal band-limited at $10$\,Hz.
       (Top)~A standard feed-forward communication channel, implemented by decoding the identity function at each layer.
-      (Bottom)~A recurrent communication channel, implemented by a Deep Delay Network~(DDN; section~\ref{sec:deep-delay-networks}) approximating $u(t)$ at each layer. Each layer is a DN with $\theta = 50$\,ms and $q = 6$.
+      (Bottom)~A recurrent communication channel, implemented by a Deep Delay Network~(DDN; section~\ref{sec:deep-delay-networks}) approximating $u(t)$ at each layer. Each layer is a NEF with $\theta = 50$\,ms and $q = 6$.
       In either case, there are $8$ layers of \numprint{2500} spiking LIF neurons, with each layer communicating spikes to the next through a lowpass synapse with time-constant $\tau = 100$\,ms.
     }
 \end{figure}
