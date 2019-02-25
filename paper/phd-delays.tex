@@ -191,6 +191,7 @@ This is achieved without appealing to the simulation time-step ($\dt{} = 1$\,ms)
 \end{figure}
 
 \subsection{Temporal representation}
+\label{sec:temporal-representation}
 
 Although the delay network has its dynamics optimized for a single delay $\theta > 0$, we may still accurately decode any delay $0 \le \theta' \le \theta$ from the state of the same network, as intuitively it needs to be holding onto this memory.
 In other words, the network is representing a rolling window (i.e.,~history) of length $\theta$.
@@ -380,27 +381,6 @@ For example, Figure~\ref{fig:delay-autocorrelation} visualizes $f$ within the sp
   } 
 \end{figure}
 
-\begin{figure}
-\centering
-  \begin{tikzpicture}[auto, >=latex']
-    \node [input, label=left:$u(t)$] (u) {};
-    \node [block, right of=u, node distance=2cm] (h) {$h(t)$};
-    \node [ensemble, right of=h, node distance=2cm] (x) {$\V{x}(t)$};
-    \node [output, label=right:$y(t)$, right of=x, node distance=1.5cm] (y) {};
-    \draw [->] (u) -- node {$B^H$} (h);
-    \draw [->] (h) -- (x);
-    %\draw [->] (x.north) -- (y);
-    \draw [->] (x) -- (y);
-    %\draw [->] (x.south) -- (y);
-    \path[->] (x.south) edge [loop below, min distance=5em, out=-60, in=-120] node {$A^H$} (h.south);
-  \end{tikzpicture}
-  \caption{ \label{fig:delay-architecture}
-    Delay Network~(DN) model architecture.
-    The synapse $h(t)$ is driven by $A^H \V{x}(t) + B^H u(t)$ to yield the state $\V{x}(t)$ (see equation~\ref{eq:delay-system-p3}). 
-    This state is nonlinearly encoded by a heterogeneous population of neurons and subsequently decoded to estimate the desired $y(t)$.
-  } 
-\end{figure}
-
 \subsection{Scalability considerations}
 \label{sec:delay-scalability}
 
@@ -497,18 +477,52 @@ We ported a Python implementation of the ESN from \cite{lukovsevivcius2009reserv
 Nengo allows us to consider populations of either spiking LIF neurons or non-spiking neurons with various rate curves, without any additional changes to the model specification.
 In particular, LSMs were implemented by replacing the $\tanh$ units with LIF spiking neurons, making them comparable to our NEF networks but with full-rank weight matrices.
 The hyperparameters of each method were optimized using $200$ iterations of HyperOpt~\citep{bergstra2013making} with $3$ trials per iteration, to maximize the validation error for $200$\,ms delays (see Table~\ref{tab:hyperopt}).
-Hyperparameters include an overall gain on the recurrent feedback matrix (gain), a normalization factor for the input (radius), time-constants on both the readout and recurrent filters ($\tau_\text{readout}$, $\tau_\text{recurrent}$), and L2-regularization parameters for applicable least-squares problems ($\sigma^2_\text{readout}$, $\sigma^2_\text{recurrent}$).\footnote{%
+Hyperparameters include an overall gain on the recurrent feedback matrix (gain), a normalization factor for the input (radius), time-constants on both the readout and recurrent filters ($\tau_\text{readout}$, $\tau_\text{recurrent}$), L2-regularization parameters for applicable least-squares problems ($\sigma^2_\text{readout}$, $\sigma^2_\text{recurrent}$), and the dimensionality of the delay network ($q$).\footnote{%
 HyperOpt was used to the benefit of LSMs and ESNs. All hyperparameters (apart from $q$) had minimal effect on the DN's performance compared to the usual defaults in Nengo.}
 %All data and figures may be reproduced by following the instructions at the following URL: \path{https://github.com/arvoelke/rc2017}.
 
-\TODO{Repeat state-space equations for discrete lowpass mapping for clarity?}
+\begin{figure}
+\centering
+  \begin{tikzpicture}[auto, >=latex']
+    \node [input, label=left:{$u[t]$}] (u) {};
+    \node [block, right of=u, node distance=2cm] (h) {$h[t]$};
+    \node [ensemble, right of=h, node distance=2cm] (x) {$\V{x}[t]$};
+    \node [output, label=right:{$y[t]$}, right of=x, node distance=1.5cm] (y) {};
+    \draw [->] (u) -- node {$\bar{B}^H$} (h);
+    \draw [->] (h) -- (x);
+    %\draw [->] (x.north) -- (y);
+    \draw [->] (x) -- (y);
+    %\draw [->] (x.south) -- (y);
+    \path[->] (x.south) edge [loop below, min distance=5em, out=-60, in=-120] node {$\bar{A}^H$} (h.south);
+  \end{tikzpicture}
+  \caption{ \label{fig:delay-architecture}
+    Delay Network~(DN) model for a digital architecture.
+    The synapse $h[t]$ is driven by $\bar{A}^H \V{x}[t] + \bar{B}^H u[t]$ to yield the state $\V{x}[t]$.
+    This state is nonlinearly encoded by a heterogeneous population of neurons and subsequently decoded to estimate the desired $y[t]$.
+  } 
+\end{figure}
 
-In all cases, we construct a reservoir of $\numprint{1500}$ neurons, and then train separate linear readouts to approximate various delays ranging from $100$--$200$\,ms.
-For the NEF case, the prescribed dynamical system is a $200$\,ms delay, implemented by mapping equation~\ref{eq:ss-delay} onto a discretized lowpass (see section~\ref{sec:linear-extensions}).
+In all cases, we construct a reservoir of $\numprint{1500}$ neurons, and then train separate linear readouts to approximate various delays ranging from $100$--$200$\,ms ($\dt{} = 1$\,ms).
+For the NEF case, the prescribed dynamical system is a $\theta = 200$\,ms delay, implemented by mapping equation~\ref{eq:ss-delay} onto a discretized lowpass (see equation~\ref{eq:discrete-maps-onto}).
 In section~\ref{sec:delay-lstm} we show that the delay length can be trained from raw data.
 Importantly, the same networks are used to compute all of the different delays reported.
 We thus conceptualize the DN as an optimized ``low-dimensional reservoir''.
 %The input to each network is randomly sampled $25$\,Hz band-limited white noise.
+Compiling all of the equations of this network, for clarity (see Figure~\ref{fig:delay-architecture}):
+\begin{equation} \label{eq:delay-compiled}
+\begin{aligned}
+v_i &= \frac{(q+i)(q-i)}{i+1} \theta^{-1} \text{,} \quad i = 0 \ldots q-1 \\
+A &= \begin{pmatrix} -v_0 & -v_0 & \cdots & -v_0 \\ v_1 & 0 & \cdots & 0 \\ 0 & \ddots & \ddots & \vdots \\ 0 & 0 & v_{q-1} & 0\end{pmatrix} \in \mathbb{R}^{q \times q} \\
+B &= \transpose{\begin{pmatrix} v_0 & 0 & \cdots & 0\end{pmatrix}} \in \mathbb{R}^{q} \\
+\bar{A} &= \sum_{i=0}^k c_i A^i = \sum_{i=0}^k \frac{\left(A\dt{}\right)^i}{i!} = e^{A\dt{}}  \\
+\bar{B} &= \left( \sum_{i=1}^k c_i A^{i-1} \right) B = A^{-1} \left(\bar{A} - I\right) B  \\
+a &= e^{-\frac{\dt{}}{\tau}} \\
+\bar{A}^H &= \frac{1}{1 - a} \left(\bar{A} - aI\right) \\
+\bar{B}^H &= \frac{1}{1-a}\bar{B} \text{.}
+\end{aligned}
+\end{equation}
+We remind the reader that $A$ and $B$ may be transformed by any of the state-space realizations from section~\ref{sec:software} before proceeding with the remaining numerical machinery.
+The final matrices $(\bar{A}^H\text{,}\, \bar{B}^H)$ determine the transformations to be implemented using Principles~1 and~2 of the NEF, which in turn will nonlinearly encode $\V{x}[t]$ by our extensions to Principle~3.
 
 \begin{figure}
   \centering
@@ -542,7 +556,7 @@ We again note that traditional RC suffers from scaling issues since the recurren
 Consequently, the NEF is more resource efficient than these RC methods by a factor of $\bigoh{ n }$.
 RC networks often include a sparsity constraint of $20\%$ connectivity, which is still $\bigoh{n^2}$, in order to improve performance~\citep{lukovsevivcius2012practical, lukovsevicius2012reservoir}.
 We also considered ESNs with constant sparsity that balance resource constraints with NEF networks, but found that they did not perform comparably (not shown).
-Furthermore, we found that the ESN breaks down for numbers of neurons as few as $q$ neurons, while in fact $q$ linear rate neurons (with linearly independent encoders) will suffice to perfectly implement equation~\ref{eq:ss-delay}, as $q$ linear state-variables are in exact correspondence with the ideal linear system (after the appropriate discretization from section~\ref{sec:linear-extensions}).
+Furthermore, we found that the ESN breaks down for numbers of neurons as few as $q$ neurons, while in fact $q$ linear rate neurons (with linearly independent encoders) will suffice to perfectly implement equation~\ref{eq:ss-delay}, as $q$ linear state-variables are in exact correspondence with the ideal linear system (after the appropriate discretization of equation~\ref{eq:discrete-maps-onto}).
 
 \begin{table}\centering
   %\ra{1.2}
@@ -584,27 +598,31 @@ To demonstrate our ability to compute nonlinear window functions, we consider th
 When integrated over time, this is the autocorrelation of $u$ with lag $\theta$, which has numerous applications in signal processing (e.g.,~detecting repeating events).
 We fix $\theta = 0.1$\,s across all experiments.
 To compute this function accurately, we sample a proportion of the encoders from the diagonal combinations of $\mathcal{P}_{i, d}(0)$ and $\mathcal{P}_{i, d}(1)$~\citep{jgosmann2015}.
-The inputs $u(t)$ are drawn from white-noise, band-limited with a cutoff frequency of $30$\,Hz.
-To optimize for the decoders, we map $d$-dimensional evaluation points onto desired target outputs using equation~\ref{eq:basis-interpretation}, and apply Nengo's regularized least squares solver, which avoids the need to explicitly simulate the network on any input signals.
+However, the particular choice of function is not of importance, as the training can be data-driven, or analyzed using theory from sections~\ref{sec:temporal-representation} and~\ref{sec:delay-nonlinear}.
 
-To implement this system as a spiking (or non-spiking) recurrent neural network, we use Principle~3 of the NEF to map equation~\ref{eq:delay-system} onto the dynamics of the synapse (also see Figure~\ref{fig:delay-architecture}).
+Each input $u(t)$ is sampled white-noise, band-limited with a cutoff frequency of $30$\,Hz.
+To optimize for the decoders, we map $q$-dimensional evaluation points onto desired target outputs using equation~\ref{eq:basis-interpretation}, and apply Nengo's regularized least-squares solver, which bypasses the need to explicitly simulate the network on any input signals.
+
+To implement this system as a spiking (or non-spiking) recurrent neural network, we use the same set of transformations from equation~\ref{eq:delay-compiled}. % Principle~3 of the NEF to map equation~\ref{eq:delay-system} onto the dynamics of the synapse.
 %For example, repeating the standard form of Principle~3 for a continuous-time lowpass synapse with time-constant $\tau$ (although we are free to use the extensions of chapter~\ref{chapt:nef-extensions}):
 %\begin{equation} \label{eq:delay-system-p3}
 %A^H = \tau A + I \text{,} \quad B^H = \tau B \text{,} \quad H(s) = \left(\tau s + 1\right)^{-1} \text{.}
 %\end{equation}
-The model architecture of this delay network is depicted in Figure~\ref{fig:delay-architecture}, whose representation and transformations are realized using the first two principles of the NEF.
-For this experiment, we considered the use of both sigmoidal tuning curves (non-spiking), and spiking LIF neurons.
+The model architecture of this delay network is, again, depicted in Figure~\ref{fig:delay-architecture}, whose representation and transformations are realized using the NEF.
+For this experiment, we considered the use of both sigmoidal (non-spiking) neurons, and spiking LIF neurons.
 
-We again used Hyperopt~\citep{bergstra2015hyperopt} to explore the space of model hyperparameters (e.g.,~$q$, $\tau$, input gain, recurrent gain, L2-regularization) across $100$ iterations containing $10$ trials each.
-Each network consisted of $\numprint{10000}$ neurons, simulated with a time-step of $\dt{} = 1$\,ms.
+We again used HyperOpt~\citep{bergstra2015hyperopt} to explore the space of model hyperparameters (e.g.,~$q$, $\tau$, input gain, recurrent gain, L2-regularization) across $100$ iterations containing $10$ trials each.
+Each network consisted of $\numprint{1000}$ neurons, simulated with a time-step of $\dt{} = 1$\,ms.
 Each trial used a training signal of length $\numprint{10200}$, a testing signal of length $\numprint{2200}$, and the first $200$ outputs were discarded.
 We then cross-validated the best set of hyperparameters (in terms of mean NRMSE across all test signals) using another $25$ trials.
 
-We obtained a mean NRMSE of $0.059$ for the sigmoid DN, and $0.518$ for the spiking DN, compared to $0.843$ for the ESN.
-Reducing the input frequency to $15$\,Hz improves the ESN's accuracy to be on par with the non-spiking DN, and thus we attribute this difference to the inherent difficulty of autocorrelating a high-frequency signal (relative to $\theta$) using random feedback weights, as opposed to using optimally derived weights as in the DN.
+We obtain a mean NRMSE of $5.9$\% for the sigmoid DN, $51.8$\% for the spiking DN, and $84.3$\% for the $\tanh$ ESN.
+Reducing the input frequency from $30$\,Hz to $15$\,Hz improves the ESN's accuracy to be on par with the non-spiking DN, and thus we attribute this difference to the inherent difficulty of autocorrelating a high-frequency signal (relative to $\theta$) using random feedback weights, as opposed to using optimally derived weights as in the DN.
 In addition, trials took on average $5.10$\,s for the sigmoid DN, $6.44$\,s for the spiking DN, and $17.7$\,s for the ESN.
 This difference is a consequence of not simulating the DN for training, and from using factorized weight matrices (i.e.,~encoders and decoders) to simulate the DN.
-
+These results are consistent with that of the linear benchmark, except for the additional observation that here the spiking DN outperforms the rate ESN.
+This is because, as explained previously, the ESN's memory capacity requires linear tuning, which is at odds with the nonlinearities required for functions such as autocorrelation.
+LSMs were again unable to perform.
 
 
 \subsection{Optimized FORCE Learning}
