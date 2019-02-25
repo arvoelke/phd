@@ -451,7 +451,7 @@ In all cases, the representation employed by the DN (i.e., the linear relationsh
 We have developed rigorous theory to understand the Delay Network~(DN) in terms of its linear dynamics, and its nonlinear encoding of time, and used the NEF to present a spiking example in Figure~\ref{fig:delay-example}.
 Now, we turn to several concrete applications that are of relevance to those studying reservoir computing, FORCE learning, deep RNNs and stacked LSTMs, as well as the computational neuroscience and cognitive modelling communities at large.
 
-\subsection{Reservoir Computing}
+\subsection{Reservoir computing}
 \label{sec:delay-rc}
 
 Here we show that the NEF provides a principled way to optimize a particular RNN architecture, by mapping the desired dynamical state onto a latent representation within a factorable connection weight matrix (also see sections~\ref{sec:engineered-approaches} and~\ref{sec:relationships}).
@@ -624,8 +624,9 @@ These results are consistent with that of the linear benchmark, except for the a
 This is because, as explained previously, the ESN's memory capacity requires linear tuning, which is at odds with the nonlinearities required by functions such as autocorrelation.
 LSMs were again unable to perform.
 
+\TODO{We should be able to dramatically improve this spiking result...}
 
-\subsection{FORCE learning}
+\subsection{Force learning}
 \label{sec:force-comparison}
 
 We also compared our NEF solution to both FORCE~\citep{sussillo2009generating} and full-FORCE~\citep{depasquale2018full} networks (also see sections~\ref{sec:engineered-approaches} and~\ref{sec:relationships}).
@@ -691,6 +692,7 @@ The simulation is started at $t = -1$\,s and stopped at $t = 5$\,s.
     (B)~Neural activity sorted by the time to peak activation.
     Each row is normalized between $0$ (cold) and $1$ (warm).
     We overlay the curve from Figure~\ref{fig:pca}(Bottom) ($q = 6$) to model the peak-response times.
+    Reproduced from \citet[][Figure~10]{voelker2018}.
   }
 \end{figure}
 
@@ -732,12 +734,12 @@ Such networks would thus be participating in the temporal coding of a stimulus, 
 % Possible predictions regarding time-constants / dimensionality?
 % our network generalizes to predict the responses of time-cells to stimuli that are not simply discrete impulse events.
 
-\TODO{Fourier Transform another special case of linear transformation}
-
-\subsection{Detecting Repeating Patterns}
+\subsection{Detecting patterns}
 \label{sec:periodicity}
 
-Given an arbitrary scalar signal, $u(t)$, we define a measure of \emph{$k$-periodicity} for natural $k \in \mathbb{N}_{\ge 1}$, with respect to some finite interval length $\theta > 0$, and sub-interval length $\gamma = \frac{\theta}{k}$, as follows:
+We now demonstrate an application of our theory of temporal representation in the delay network (section~\ref{sec:temporal-representation}).
+Specifically, we show that the delay network can mathematically detect the existence of repeating patterns in its stimulus.
+Given an arbitrary scalar signal, $u(t)$, we define a measure of \emph{$k$-periodicity} for natural $k \in \mathbb{N}_{\ge 1}$, with respect to some finite interval length $\theta > 0$, and sub-interval length $\gamma = \theta k^{-1}$, as follows:
 \begin{equation} \label{eq:periodicity}
 p_k(t) = \sqrt{ \frac{1}{\gamma} \int_{\tau=0}^{\gamma} \left( \frac{1}{k} \sum_{i=0}^{k-1} u \left( t - \theta + i \gamma + \tau \right) \right)^2 d\tau } \text{.}
 \end{equation}
@@ -746,7 +748,7 @@ When $p_k(t)$ is large relative to the overall RMS, this means that the $k$ segm
 When $p_k(t)$ is maximal (i.e.,~equal to the RMS of the input signal), we refer to the signal  as being \emph{periodic}, since each of the $k$ segments must be exact copies of one another.
 Lower values of $p_k(t)$ imply some amount of deconstructive interference within the superposition, and thus we refer to such signals as being \emph{aperiodic}.
 
-We now present a method that can efficiently compute $p_k(t)$ with a SNN, by leveraging the computational properties of the Delay Network (DN).
+We now present a method that can efficiently compute $p_k(t)$ with a SNN, by leveraging the computational properties of the DN.
 This has applications as a general low-power signal processing tool, and for modelling how nontrivially-repeating patterns could be detected by neural mechanisms in a robust and flexible manner.
 
 Our goal is to recast equation~\ref{eq:periodicity} to be in terms of the DN's state-vector, $\V{x}(t) \in \mathbb{R}^q$.
@@ -772,20 +774,21 @@ B(a, b) = \begin{pmatrix}
 \end{pmatrix} T \text{.}
 \end{equation}
 and $T$ is the similarity transform for the balanced realization.
-A visualization of $Z_5$ is provided in Figure~\ref{fig:zoom-matrix}, using a diagonal $T$ to reveal its checkerboard structure.
+A visualization of $Z_k$ is provided in Figure~\ref{fig:zoom-matrix}, using a diagonal transformation to reveal its checkerboard structure.
+Specifically, setting $k=5$, $q=20$, and with $T$ taken by a diagonal realization that normalizes the system's Hankel singular values, and the Moore-Penrose pseudoinverse taken while truncating the singular values below a cutoff ratio of 10\%.
 
 \begin{figure}
   \centering
   \includegraphics[width=0.4\textwidth]{zoom-matrix}
   \caption{\label{fig:zoom-matrix}
-    Visualizing the ``zooming matrix'', $Z_k$ (see equation~\ref{eq:zoom-matrix}), for the case of $k=5$, $q=20$, $T$ taken by a digonal realization that normalizes the system's Hankel singular values, and the Moore-Penrose pseudoinverse taken while truncating the singular values below a cutoff ratio of 10\%.
+    Visualizing the ``zooming matrix'', $Z_5 \in \mathbb{R}^{20 \times 20}$ (see equation~\ref{eq:zoom-matrix}).
    This matrix linearly transforms the state-space of the Delay Network to ``zoom in'' on the oldest segment of input history partitioned into $k$ segments.
   }
 \end{figure}
 
 We sketch a constructive proof of this claim.
 Since the buffered window of input history is a linear transformation of the DN's state vector, we start by constructing a linear transformation of $\V{x}(t)$ that contains the average of all segments. 
-The matrix $e^{A i \gamma}$ provides a linear transformation that emulates the effect of holding the input signal at zero for $i \gamma$ more seconds--a mathematical fast-forwarding of the system assuming no input.
+The matrix $e^{A i \gamma}$ provides a linear transformation that emulates the effect of holding the input signal at zero for $i \gamma$ more seconds -- a mathematical \emph{fast-forwarding} of the system assuming no input.
 This can be seen by solving the differential equation $\dot{\V{x}} = A \V{x}$ with the initial condition $\V{x}_0 = \V{x}(t)$.
 Thus, $e^{A i \gamma} \V{x}(t)$ provides the state-vector that corresponds to some input signal where the $i^\text{th}$ segment (ordered by seniority) has been shifted back in time to become the oldest segment. 
 Note that $e^0 = I$, and so the oldest segment ($i=0$) is not shifted.
@@ -803,20 +806,21 @@ This same technique works without loss of generality to zoom in on any slice of 
 Moreover, by the scale-invariance of the delay network (see section~\ref{sec:delay-scalability}), all of the matrices (e.g., $Z_k$, $B(\cdot, \cdot)$, $P_k$) are independent of $\theta$. That is, these matrices only need to be precomputed once for some choice of $k$ and $q$, and applied to any $\theta$.
 
 The last fact that we need is that the balanced realization is approximately unitary, in the sense that $\| \V{x}(t) \|$ is proportional to the RMS of its corresponding window of history.
-\TODO{cite}
 This conveniently implies that it sufficies to take the L2-norm of the resulting state-vector, as in equation~\ref{eq:approx-periodicity}, in order to obtain a proportional estimate of the RMS, $p_k(t)$, from equation~\ref{eq:periodicity}.
 This completes our proof sketch.
-To summarize, since the ideal computation involves a linear transformation of the input window, it can be recast as a linear transformation of the state.
+To summarize, since the superimposed-averaging computation is a linear transformation of the input window, it can be recast as a linear transformation of the state to provide a new state-vector corresponding to the averaged segment.
 And since the L2-norm of a balanced state reflects the RMS of its corresponding input signal, the former behaves as a proxy for the latter.
 
 \begin{figure}
   \centering
   \includegraphics[width=1.0\textwidth]{periodicity}
   \caption{\label{fig:periodicity}
-    The Delay Network (DN) approximating a measure of periodicity, tested against \numprint{1000} randomly generated input signals.
-    The true measure of the input signal's $k$-periodicity, $p_k(t)$ (see equation~\ref{eq:periodicity}), is plotted on the $y$-axis, for two classes of input signals ($500$ periodic, and $500$ aperiodic), and $k \in \{2, 3, 4, 5\}$.
-    The $x$-axis is the L2-norm of a linear transformation of the DN's state-vector, $\| P_k \V{x}(t) \|$ (see equation~\ref{eq:periodicity-matrix}).
-    This empirically validates the claim of equation~\ref{eq:approx-periodicity} that the state-vector of the DN can be linearly transformed by a fixed matrix $P_k$ to proportionally-approximate a signal's $k$-periodicity.
+    The Delay Network (DN) detecting repeating patterns over time, tested against \numprint{1000} randomly generated input signals.
+    The $x$-axis is the computed by the DN.
+    The $y$-axis is the true measure of the input signal's $k$-periodicity---how closely it resembles some segment repeated $k$ times---$p_k(t)$ (see equation~\ref{eq:periodicity}), for two classes of input signals ($500$ periodic, and $500$ aperiodic), for $k \in \{2, 3, 4, 5\}$.
+    The DN perfectly separates the two classes in all cases.
+    % The $x$-axis is the L2-norm of a linear transformation of the DN's state-vector, $\| P_k \V{x}(t) \|$ (see equation~\ref{eq:periodicity-matrix}).
+    % This empirically validates the claim of equation~\ref{eq:approx-periodicity} that the state-vector of the DN can be linearly transformed by a fixed matrix $P_k$ to proportionally-approximate a signal's $k$-periodicity.
   }
 \end{figure}
 
@@ -828,7 +832,7 @@ The results in Figure~\ref{fig:periodicity} empirically validate the claim of eq
 
 Crucially, nothing has changed about the DN in order to support this brand of temporal pattern recognition.
 The computation is merely a fixed linear transformation of the state, which is already being computed by the DN, followed by a nonlinear L2-norm operation.
-Thus, in order to detect temporal patterns, computations such as measures of $k$-periodicity can be embedded as fixed linear transformations between the DN and additional pools of neural nonlinearities via Principles~1 and~2 of the NEF.
+Thus, in order to detect temporal patterns, computations such as measures of $k$-periodicity are realized as fixed linear transformations between the DN and additional pools of neural nonlinearities via Principles~1 and~2 of the NEF.
 
 \subsection{Deep Delay Networks}
 \label{sec:deep-delay-networks}
