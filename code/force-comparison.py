@@ -10,7 +10,7 @@ def go(seed, theta):
     # Task parameters
     T_train = 10
     T_total = 15
-    dt = 0.001
+    dt = 0.005
 
     amplitude = 1
     process = nengo.processes.WhiteSignal(T_total, high=1, rms=0.5, y0=0)
@@ -30,7 +30,7 @@ def go(seed, theta):
     tau = 0.01                  # lowpass time-constant (10ms in [1])
     tau_learn = None            # filter for error / learning (needed for spiking)
     tau_probe = None            # filter for readout (needed for spiking
-    learning_rate = 1.0         # 1 in [1]
+    learning_rate = 0.001       # 1 in [1]
     g = 1.5 # / 400             # 1.5 in [1] (scale by firing rates for spiking)
     g_in = 1 # tau / amplitude  # scale the input encoders (usually 1)
     g_out = 1.0                 # scale the recurrent encoders (usually 1)
