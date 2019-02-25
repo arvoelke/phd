@@ -514,8 +514,8 @@ Compiling all of the equations of this network, for clarity (see Figure~\ref{fig
 v_i &= \frac{(q+i)(q-i)}{i+1} \theta^{-1} \text{,} \quad i = 0 \ldots q-1 \\
 A &= \begin{pmatrix} -v_0 & -v_0 & \cdots & -v_0 \\ v_1 & 0 & \cdots & 0 \\ 0 & \ddots & \ddots & \vdots \\ 0 & 0 & v_{q-1} & 0\end{pmatrix} \in \mathbb{R}^{q \times q} \\
 B &= \transpose{\begin{pmatrix} v_0 & 0 & \cdots & 0\end{pmatrix}} \in \mathbb{R}^{q} \\
-\bar{A} &= \sum_{i=0}^k c_i A^i = \sum_{i=0}^k \frac{\left(A\dt{}\right)^i}{i!} = e^{A\dt{}}  \\
-\bar{B} &= \left( \sum_{i=1}^k c_i A^{i-1} \right) B = A^{-1} \left(\bar{A} - I\right) B  \\
+\bar{A} &= \sum_{i=0}^\infty c_i A^i = \sum_{i=0}^\infty \frac{\left(A\dt{}\right)^i}{i!} = e^{A\dt{}}  \\
+\bar{B} &= \left( \sum_{i=1}^\infty c_i A^{i-1} \right) B = A^{-1} \left(\bar{A} - I\right) B  \\
 a &= e^{-\frac{\dt{}}{\tau}} \\
 \bar{A}^H &= \frac{1}{1 - a} \left(\bar{A} - aI\right) \\
 \bar{B}^H &= \frac{1}{1-a}\bar{B} \text{.}
