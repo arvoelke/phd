@@ -652,19 +652,23 @@ In all cases, the training and test signals were randomly sampled $1$\,Hz band-l
 We compared all four networks by sweeping $\theta$ across $0.01$--$1$\,s, with $10$ trials at each condition (boostrapped 95\% confidence intervals).
 Figure...\TODO{Figure}
 
-\subsection{Optimized Long Short-Term Memory}
+\subsection{Long short-term memory}
 \label{sec:delay-lstm}
 
-\subsection{Time Cells}
+\subsection{Time cell data}
 \label{sec:time-cells}
 
-We now describe a connection between the delay network from section~\ref{sec:delay} and recent neural evidence regarding time cells.
+This section has been reproduced from \citet{voelker2018}.
+
+We now describe a connection between the delay network from this chapter and recent neural evidence regarding time cells.
 Time cells were initially discovered in the hippocampus and proposed as temporal analogs of the more familiar place cells~\citep{eichenbaum2014}.
 Similar patterns of neural activity have since been found throughout striatum~\citep{mello2015scalable} and cortex~\citep{luczak2015packet}, and have been extensively studied in the rodent mPFC~\citep{kim2013neural, tiganj2016sequential}.
 
 Interestingly, we find that our delay network produces qualitatively similar neural responses to those observed in time cells.
 This is shown in Figure~\ref{fig:time-cells}, by comparing neural recordings from mPFC~\citep[][Figure~4~C,D]{tiganj2016sequential} to the spiking activity from a network implementing a delay of the same length used in the original experiments.
-Specifically, in this network, a random population of $300$ spiking LIF neurons maps a $4.784$\,s delay onto an alpha synapse ($\tau = 0.1$\,s) using our extension.
+Specifically, in this network, a random population of $300$ spiking LIF neurons maps a $4.784$\,s\footnote{%
+This value comes from \citet{tiganj2016sequential}.}
+delay onto an alpha synapse ($\tau = 0.1$\,s) using our extension.
 The order of the approximation is $q = 6$ (see equation~\ref{eq:ss-delay}), and the input signal is a rectangular pulse beginning at $t = -1$\,s and ending at $t = 0$\,s (height $= 1.5$).
 The simulation is started at $t = -1$\,s and stopped at $t = 5$\,s.
 
@@ -699,12 +703,14 @@ Specifically, we fit the spiking activity of each neuron with a Gaussian to mode
 We set $a_1 = P = S = 0$ in equation~1 from \citet{tiganj2016sequential}, since we have no external variables to control.
 }
 This fit was repeated for each of the $250$ simulated spiking LIF neurons that remained after selecting only those that had at least $90\%$ of their spikes occur within the delay interval.
-The correlation between $\mu_t$ and $\sigma_t$ had a Pearson's coefficient of $0.68$ ($\rho < \numprint{e-34}$), compared to $0.52$ ($\rho < \numprint{e-5}$) for the biological time cells.
+The correlation between $\mu_t$ and $\sigma_t$ had a Pearson's coefficient of $R = 0.68$ ($\rho < \numprint{e-34}$), compared to $R = 0.52$ ($\rho < \numprint{e-5}$) for the biological time cells.
 An ordinary linear regression model linking $\mu_t$ (independent variable) with $\sigma_t$ (dependent variable) resulted in an intercept of $0.27 \pm 0.06$ (standard error) and a slope of $0.40 \pm 0.03$ for our simulated data, compared to $0.27 \pm 0.07$ and $0.18 \pm 0.04$ respectively for the time cell data.
 We note that we used the same bin size of $1$\,ms, modeled the same delay length, and did not perform any parameter fitting beyond the informal choices of $90\%$ cutoff, dimensionality ($q=6$), area of the input signal ($1.5$), and synaptic time-constant ($\tau = 0.1$\,s).
 
 Neural mechanisms previously proposed to account for time cell responses have either been speculative~\citep{tiganj2016sequential},
-or rely on gradually changing firing rates from a bank of arbitrarily long, ideally spaced, lowpass filters~\citep{shankar2012scale, howard2014unified, tiganj2015simple, tiganj2017neural}.
+or rely on the precision of gradually changing firing rates from a bank of arbitrarily long, ideally spaced, lowpass filters~\citep{shankar2012scale, howard2014unified, tiganj2015simple, tiganj2017neural, zoran2018}.\footnote{%
+One may view this as a generalization of the main idea from \citet{goldman2009memory}.
+}
 It is unclear if such methods can be implemented accurately and scalably using heterogeneous spiking neurons.
 We suspect that robust implementation is unlikely given the high precision typically relied upon in these abstract models.
 % For instance, the model from must be able to distinguish values exponentially close to $0$ in the neural representation.
@@ -906,6 +912,8 @@ All of this should be systematically taken into account when choosing the state-
 
 \subsection{Harnessing Higher-order Synapses}
 \label{sec:pure_delay}
+
+This section has been adapted from \citet{voelker2018}.
 
 \TODO{Mention the existence of delays in Loihi and support of analog hardware such as in
 ``A programmable axonal propagation delay circuit for time-delay spiking neural networks''
