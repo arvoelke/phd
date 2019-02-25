@@ -350,7 +350,7 @@ In other words, equation~\ref{eq:basis-interpretation} is the optimal pseudoinve
 %Analysis of the approximation error, and some additional properties of this ``delay network'', may be found in \cite{voelker2018}.
 
 Moreover, every point along the window, along with its Taylor series expansion up to order $q-1$, as well as any other linear operations across the rolling window (e.g.,~Laplace transform), may be expressed using equation~\ref{eq:basis-interpretation} and equation~\ref{eq:basis-functions} as a fixed, known dot product with $\V{x}(t)$.
-To make this evident, let $k(\theta')$ ($0 \le \theta' \le \theta$) be any desired kernel, then:
+To make this evident, let $k(\theta')$ ($0 \le \theta' \le \theta$) be any desired kernel (e.g.,~Fourier transform), then:
 \begin{equation} \label{eq:delay-linear-transform}
 \begin{aligned}
 (u \ast k)(t) &= \int_{\theta'=0}^{\theta} u(t - \theta') k(\theta') \, d\theta' \\
@@ -360,12 +360,13 @@ To make this evident, let $k(\theta')$ ($0 \le \theta' \le \theta$) be any desir
 \end{equation}
 where $\V{k} = \transpose{\left[ k_0\text{,}\, \ldots \text{,}\, k_{q-1} \right]} \in \mathbb{R}^q$ is defined above independently of time.
 Hence, any integral transform is simply a dot product with $\V{x}(t)$.
+Similarly, one may obtain Taylor expansions by taking dot products with vectors derived by repeatedly differentiating both sides of equation~\ref{eq:basis-interpretation} with respect to $\theta'$ (not shown).
 Crucially, such dot products are precisely what the encoders $\V{e}_i$ compute in equation~\ref{eq:encoding}.
 This implies that the PSC of any neuron, by itself, necessarily represents a particular convolution across the window.\footnote{%
 There are infinitely many, since the system is overcomplete when working backwards from $\V{k} \mapsto k(\cdot)$, but we can enforce uniqueness by imposing L2-regularization, for instance.}
 The nonlinearity of each neuron thus provides a nonlinear function of some finite-width filter.
 %Yet, as shown below, this does not restrict our ability to also perform nonlinear computations across the window.
-Specifically, the state $\V{x}(t)$ is \emph{encoded} by a heterogeneous population of neurons, which allows for arbitrary nonlinear functions across the window,
+More generally, the state $\V{x}(t)$ is \emph{encoded} by a heterogeneous population of neurons, which allows for arbitrary nonlinear functions across the window,
 $$y(t) = f(\V{x}(t)) \approx f\left(\left[ u(t - \theta') \,:\, 0 \le \theta' \le \theta \right]\right)$$
 to be \emph{decoded} from its activity~\citep{eliasmith2003a}.
 For example, Figure~\ref{fig:delay-autocorrelation} visualizes $f$ within the space of $\V{x} \in \mathbb{R}^3$ for the autocorrelation function, $y(t) = u(t - \theta)\, u(t)$.
@@ -731,33 +732,6 @@ Such networks would thus be participating in the temporal coding of a stimulus, 
 % Possible predictions regarding time-constants / dimensionality?
 % our network generalizes to predict the responses of time-cells to stimuli that are not simply discrete impulse events.
 
-\subsection{Deconvolution}
-\label{sec:deconvolution}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{comm-channels}
-     
-    \caption{\label{fig:comm-channels} 
-      Demonstrating the ability of the Delay Network~(DN) to approximate a synaptic deconvolution operation, realizing a pure communication channel.
-      The test input $u(t)$ is a white noise signal band-limited at $10$\,Hz.
-      (Top)~A standard feed-forward communication channel, implemented by decoding the identity function at each layer.
-      (Bottom)~A recurrent communication channel, implemented by a Deep Delay Network~(DDN; section~\ref{sec:deep-delay-networks}) approximating $u(t)$ at each layer. Each layer is a NEF with $\theta = 50$\,ms and $q = 6$.
-      In either case, there are $8$ layers of \numprint{2500} spiking LIF neurons, with each layer communicating spikes to the next through a lowpass synapse with time-constant $\tau = 100$\,ms.
-    }
-\end{figure}
-
-\TODO{Demonstrate multiple layer communication channel without filtering.}
-
-\subsection{Computing Taylor Series}
-\label{sec:taylor-series}
-
-\TODO{Linear map between state-vector and Taylor series of input signal expanded about any point.
-More general than computing the derivative. Special case of a linear transformation of the input.}
-
-\subsection{Computing Fourier Transform}
-\label{sec:fourier-transform}
-
 \TODO{Fourier Transform another special case of linear transformation}
 
 \subsection{Detecting Repeating Patterns}
@@ -909,6 +883,23 @@ The final consideration that should be made in picking $(q, k)$ is in determinin
 Since each dimension is encoded by a heterogeneous pool of neural nonlinearities, this supports the decoding of nonlinear functions with respect to the coefficient on the corresponding basis function (equation~\ref{eq:basis-functions}) via Principles~1 and~2.
 Deeper networks effectively partition the basis functions into individual segments of input history, which enhances the complexity of the nonlinearities with respect to each segment, while limiting nonlinear interactions between segments.
 All of this should be systematically taken into account when choosing the state-space realization, the delay lengths of each layer, the dimensionality of each layer, and the number of layers.
+
+\subsection{Deconvolution}
+\label{sec:deconvolution}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{comm-channels}
+     
+    \caption{\label{fig:comm-channels} 
+      Demonstrating the ability of the Delay Network~(DN) to approximate a synaptic deconvolution operation, realizing a pure communication channel.
+      The test input $u(t)$ is a white noise signal band-limited at $10$\,Hz.
+      (Top)~A standard feed-forward communication channel, implemented by decoding the identity function at each layer.
+      (Bottom)~A recurrent communication channel, implemented by a Deep Delay Network~(DDN; section~\ref{sec:deep-delay-networks}) approximating $u(t)$ at each layer. Each layer is a NEF with $\theta = 50$\,ms and $q = 6$.
+      In either case, there are $8$ layers of \numprint{2500} spiking LIF neurons, with each layer communicating spikes to the next through a lowpass synapse with time-constant $\tau = 100$\,ms.
+    }
+\end{figure}
+
 
 \subsection{Harnessing Higher-order Synapses}
 \label{sec:pure_delay}
