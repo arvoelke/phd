@@ -1,39 +1,35 @@
 \chapter{Applications to Neuromorphic Hardware}
 \label{chapt:results}
 
-The NEF and Nengo provide useful tools for programming recurrent spiking networks to implement algorithms formulated as dynamical systems.
-The CPU backend is immensely useful for rapid prototyping of ideas, testing hypotheses, and experimenting with small-scale models on the order of a few thousand neurons.
+Nengo and the NEF provide a useful toolkit for programming recurrently coupled networks of spiking neurons to carry out the computations of algorithms formulated as dynamical systems.
+The CPU backend is immensely useful for rapidly prototyping ideas, testing hypotheses, and experimenting with small-scale models on the order of a few thousand neurons.
+However, for much larger models such as Spaun~\citep{eliasmith2012}, its 2.5~million neurons require about 2.5~hours of compute time per $1$~second of simulation time, that is $\approx \numprint{9000}$ times slower than real-time~\citep{stewart2014large, mundy2016real}.
+As a result, one must turn to specialized hardware such as GPUs, FPGAs, or neuromorphic architectures, in order to carry out much larger simulations of spiking neural networks (section~\ref{sec:neuromorphic}).
+For example, in our work in collaboration with \citet{knight2016}, we demonstrated that a heteroassociative memory network (see section~\ref{sec:unsupervised}) deployed on SpiNNaker, took a \emph{constant} amount of time per association, while the exact same network took a linear amount of time per association on a CPU.\footnote{%
+The number of neurons scaled linearly in the number of associations.}
+At its largest instantiation of \numprint{100000} neurons, the SpiNNaker simulation was more than $150$ times faster than a CPU, due to the massive parallelism afforded by the architecture.
 
-\citep{knight2016}.
-This section is taken from 
+However, there are very few instances of functional large-scale models running on neuromorphic hardware, with \citet{mundy2016real} being the only one that we are aware of to utilize on the order of millions of neurons to do something functionally ``useful''.\footnote{%
+Recall this is still five orders of magnitude removed from that of the human brain.}
+We believe that this surprising lack of scale---in a field that was essentially created to solve a problem in scaling---is primarily due to a lack of NEF-like frameworks for supporting the robust translation of computations specified in some high-level language (e.g.,~coupled differential equations), onto distributed networks of physically coupled devices.
+The Nengo backends for Braindrop~\citep{braindrop2019} and Loihi~\citep{nengoloihi} are brand new---as are the chips themselves~\citep{neckar2018braindrop, davies2018loihi}---and thus currently fall short of their promise to realize \emph{large-scale} functional SNNs in neuromorphic hardware.
+For the case of Braindrop, its shortcoming is by design: the chip is $0.65$\,mm${}^2$ and implements $\numprint{4096}$ neurons.
+It is a proof-of-concept prototype for research, that can in principle be tiled to scale to much larger models in the future and tailored to the requirements of some application space.
+The end-to-end design and fabrication of custom hardware is an extremely costly and complex process that demands a variety of skill-sets from a large number of people.
+For the case of Loihi, due to a combination of a lack of hardware support for factorized weight matrices, and limitations on connectivity and memory, the maximum recurrently-connected pool size is $342$ neurons.\footnote{Determined empirically using the \texttt{nengo-loihi==0.6.0} emulator.}
+And with current software work-arounds, the precision stops scaling after about $400$ neurons.
+On the other hand, this is the first and only software abstraction to currently make use of Loihi, and it is under active development.
+We expect this to get significantly better with time.
 
+Nevertheless, these two architectures---Braindrop and Loihi---represent significant milestones in the evolution of neuromorphic hardware.
+The first, Braindrop, consumes energy roughly equivalent to $381$\,fJ per synaptic operation, for typical network configurations, or about $10$--$20$ times more than the human brain (see section~\ref{sec:neuromorphic}).
+The second, Loihi, consumes about $24$\,pJ per synaptic operation, or about $50$--$100$ times more than Braindrop, but offers determinism and an unparalleled degree of flexibility given its power consumption.
+It remains to scale these systems up in useful ways.
 
-The accuracy of the system was evaluated by comparing the value at the output node of the network during recall with the output vector presented during training.
-Both the SpiNNaker and reference simulator correctly recalled the output vectors with a consistent RMSE of approximately \num{0.2} at all scales.
-However as Table~\ref{tab:results/memory_scale} shows, while the SpiNNaker simulations ran in real-time (\SI{0.25}{\second} per association), the time taken by the Nengo reference simulator grew quadratically -- over $150\times$ slower than real-time in the largest configuration.
-
-\begin{table}
-  \centering
-  \caption{Simulation times on SpiNNaker and Nengo reference simulator}
-  \label{tab:results/memory_scale}
-\sisetup{table-number-alignment=right, table-figures-decimal=0}
-\begin{tabular}{S S S r r}
-  \toprule
-  \multicolumn{2}{c}{Number of} & \multicolumn{2}{c}{Simulation time / minutes} \\
-  {Associations} & {Neurons} & {SpiNNaker} & {Nengo Reference}\\
-  \midrule
-    250 & 12500 & 1.0 & 20.1 \\
-    500 & 25000 & 2.1 & 75.5 \\
-    1000 & 50000 & 4.2 & 309.0 \\
-    2000 & 100000 & 8.3 & 1307.1 \\
-  \bottomrule
-\end{tabular}
-\end{table}
-
-The large number of afferent synapses associated with each neuron make simulating synaptic plasticity on SpiNNaker very computationally expensive.
-In this paper we built on our previous work~\citep{mundy2015} to show that, by taking advantage of the factorable synaptic weight matrices used by the NEF and not simulating individual synapses, we can simulate both plastic and static spiking neural networks highly efficiently.
-To demonstrate the benefits of this approach we implemented two biologically plausible learning rules on SpiNNaker and, using these, built a heteroassociative memory network that we proved to be capable of storing a human-scale semantic network.
-By simulating this memory network at scales of up to \numprint{100000} neurons, we demonstrated that these two learning rules only reduce the number of neurons each SpiNNaker core can simulate by \SI{6}{\percent} and that by using SpiNNaker rather than a standard desktop PC, simulation times are reduced by over $150\times$.
+Given this discussion, the goal of this chapter is to demonstrate that the fundamentals are in place.
+With the guarantees provided by chapter~\ref{chapt:analysis}, the extensions of chapter~\ref{chapt:nef-extensions}, and the functional capabilities of dynamical systems such as those explored in chapter~\ref{chapt:delays} -- we are confident that in principle these methods can scale to Spaun's 6.6~million neurons~\citep{choo2018} and beyond.
+However, since we only currently have room for a few hundred neurons, there is only so much that we can do~\citep{blouw2018a}.
+Thus, we now demonstrate the principles of the NEF, and a few of its extensions, applied to two fundamental dynamical systems, on the state-of-the-art architectures: Loihi and Braindrop.
 
 \section{Integrator}
 \label{sec:integrator}

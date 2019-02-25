@@ -649,11 +649,29 @@ we took the original FORCE network, but removed the feedback loop that re-encode
 This makes it equivalent to an ESN with a slightly different method of distributing the weights, while learning the decoders online.
 We refer to this last method as ``no-FORCE''.
 
-Finally, we compared all three of these to an idealized NEF implementation of the DN~(equation~\ref{eq:ss-delay}), consisting of just $n = 6$ linear units, coupled to one another by the discretized mapping of equation~\ref{eq:discrete-p3}, as summarized by equation~\ref{eq:delay-compiled} ($q = 6$).
+We now compare all three of these to an idealized NEF implementation of the DN~(equation~\ref{eq:ss-delay}), consisting of just $n = 6$ linear units, coupled to one another by the discretized mapping of equation~\ref{eq:discrete-p3}, as summarized by equation~\ref{eq:delay-compiled} ($q = 6$).
 In this scenario, the only error that remains is that of equation~\ref{eq:pade-delay-error} arising from the use of Pad\'e approximants to render the delay line finite-dimensional.
-In all cases, the training and test signals were randomly sampled $1$\,Hz band-limited white noise signals.
-We compared all four networks by sweeping $\theta$ across $0.01$--$1$\,s, with $10$ trials at each condition (boostrapped 95\% confidence intervals).
-Figure...\TODO{Figure}
+On the other hand, each FORCE network consists of $n = 500$ neurons (and $\bigoh{n^2}$ weights).
+The network is given $10$\,s of training data per trial.
+In all cases, the training and test signals are randomly sampled $1$\,Hz band-limited white noise signals, with $5$\,s of test data per trial.
+We compare all four networks by sweeping $\theta$ across $0.01$--$1$\,s, with $10$ trials at each condition (boostrapped 95\% confidence intervals) (see Figure~\ref{fig:force-comparison}).
+
+\fig{force-comparison}{0.7}{Memory capacity of FORCE versus the NEF.}{
+    Comparison of several FORCE learning methods versus the NEF on a delay task.
+    Each network is trained to delay a time-varying input by $\theta$ seconds.
+    The FORCE networks consists of $500$ $\tanh$ neurons, while the NEF network is $6$ linear neurons.
+    See text for details.
+}
+
+\TODO{Rerun with lower dt and higher learning rate again.}
+
+These results illustrate that the NEF's six rate neurons outperform all of the FORCE networks.
+The full-FORCE network performs well relative to classic-FORCE and no-FORCE for short delays ($\theta < 0.1$\,ms).
+For longer delays ($\theta > 0.1$\,s), the classic-FORCE network performs well relative to the other two, but still with error-rates approaching $100$\% as $\theta \rightarrow 1$,s, which is $200$ time-steps.
+%This reveals a situation in which training the network to re-encode its target output can hinder performance, relative to .
+%The NEF solution proposes a means of understanding this phenomenon.
+%In particular, the target output is only one dimension among six other orthogonal dimensions that must all be encoded into the state of the network.
+%Focusing on this one dimension and letting the randomized feedback attempt to fill in the rest, leads to competing objectives between the low-dimensional linear feedback required for optimal memory capacity and the high-dimensional chaos induced by nonlinear random feedback.
 
 \subsection{Long short-term memory}
 \label{sec:delay-lstm}
