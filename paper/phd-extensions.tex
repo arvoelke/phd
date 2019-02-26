@@ -6,6 +6,7 @@ Among these considerations, are issues involving:
 discretization (in time), quantization (truncation of both neural states and weight matrices), connectivity constraints, memory constraints, volume of spike traffic, external input-output bandwidth and delays, thermal variability, transistor mismatch, conversion of analog signals to digital pulses, and the introduction of higher-order dynamics throughout.
 The NEF already solves many of these problems in theory with varying degrees of success in practice.
 The focus of this chapter is to expose our novel contributions to solving these problems in the context of extending the scope of Principle~3.
+The intent is to bolster up the NEF with a variety of additional methods and techniques for analyzing and leveraging spiking dynamical computations.
 
 \section{Synapses}
 \label{sec:synaptic-extensions}
@@ -223,7 +224,7 @@ Letting $c := e^{\frac{\theta}{\tau}}$ and $r := \frac{\theta}{\lambda}$, and th
 \begin{align}
 F^H(s) = \exp \left\{ -\theta \left( \frac{1}{\lambda} W_0(ds) - \frac{1}{\tau} \right) \right\} = c \exp \left\{-r W_0(ds) \right\} = c \left( \frac{W_0(ds)}{ds} \right)^r \text{.} \nonumber
 \end{align}
-This may be numerically converted into a state-space model, of arbitrary dimensionality $q$, via the $\left[q-1/q\right]$ Pad\'e approximants of the following Maclaurin series:
+This may be numerically converted into a state-space model, of arbitrarily chosen dimensionality $q$, via the $\left[q-1/q\right]$ Pad\'e approximants of the following Maclaurin series:
 \begin{align} \label{eq:lambert-delay}
 F^H(s) = c r \sum_{i=0}^\infty \frac{(i+r)^{i-1}}{i!} (-ds)^i \text{.}
 \end{align}
@@ -660,7 +661,7 @@ However, challenges arise when obtaining its state-space matrices via equation~\
 in general, the expression $F \left( \frac{\sqrt{s} - 1}{\tau} \right)$ is not necessarily proper and finite-dimensional (rational in $s$). For instance, with the integrator,
 $$F(s) = 1/s \quad \iff \quad F^H(s) = \frac{\tau}{\sqrt{s} - 1}$$
 is infinite-dimensional (irrational in $s$).
-We cope with this by taking the Taylor series approximation $(\sqrt{s} - 1) / \tau \approx \left( s - 1 \right) / (2 \tau)$, which yields the approximation:
+We cope with this by taking the Taylor series approximation $(\sqrt{s} - 1) / \tau \approx \left( s - 1 \right) / (2 \tau)$, which yields the first-order approximation:
 \begin{equation} \label{eq:taylor-integral}
 F^H(s) \approx F \left( \frac{s-1}{2\tau} \right) = \frac{2 \tau}{s - 1} \text{.}
 \end{equation}
@@ -689,19 +690,20 @@ in some neighbourhood of $s = 0$.
 Any finite truncation of the series $g_n$ yields a finite-dimensional and proper approximation of the required $F^H(s)$ assuming the same of $F(s)$.
 %The resulting dimensionality increases with the order of the approximation.
 
-For example, returning to the alpha example, we have:
+For example, returning to the alpha example, we have the first-order approximation:
 \begin{align*}
 f(s) &= (\tau s + 1)^2 \\
 g_1 &= \lim_{s \rightarrow 0} \left( \frac{s}{ s(\tau^2 s + 2 \tau)} \right) = \frac{1}{2 \tau} \\
 \implies F^H(s) &\approx F \left( \frac{s - 1}{2\tau} \right)
 \end{align*}
 which is identical to equation~\ref{eq:taylor-integral} in the case of the integrator.
-More generally, for $H(s)^{-1} = \sum_{i=0}^k c_i s^i$, we have $g_1 = \frac{1}{c_1}$,
+For more general $H(s)^{-1} = \sum_{i=0}^k c_i s^i$, we have $g_1 = \frac{1}{c_1}$ as our first approximant,
 \begin{equation}
-\implies F^H(s) \approx F \left( \frac{s - c_0}{c_1} \right) = C \left( sI - (c_1 A + c_0 I) \right)^{-1} (c_1 B) + D.
+\implies F^H(s) \approx F \left( \frac{s - c_0}{c_1} \right) = C \left( sI - (c_1 A + c_0 I) \right)^{-1} (c_1 B) + D \text{.}
 \end{equation}
-Although here we have shown just a simple example, the advantage of this method is that, through the use of symbolic differentiation, one may extend equation~\ref{eq:lagrange} out to any finite order for any rational and finite $F(s)$ and $H(s)$.
-In other words, this math does not need to be figured out by hand; this procedure may be automated up to any desired order by Lemma~\ref{lemma:coord-transform} and equation~\ref{eq:lagrange}.
+Although here we have shown just the first-order solution to make this concrete, the advantage of this method is that, through the use of symbolic differentiation, one may extend equation~\ref{eq:lagrange} out to any finite order for any rational and finite $F(s)$ and $H(s)$.
+In other words, this math does not need to be figured out by hand; this procedure may be automated up to any chosen dimension by Lemma~\ref{lemma:coord-transform} and equation~\ref{eq:lagrange}.
+The main difficulty with this approach compared to others is that it will effectively expand the dimensionality of the state-vector that is to be represented (similar to equation~\ref{eq:lambert-delay}).
 
 \subsection{Accounting for mismatch}
 \label{sec:mismatch}

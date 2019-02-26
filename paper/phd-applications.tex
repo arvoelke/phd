@@ -5,31 +5,42 @@ Nengo and the NEF provide a useful toolkit for programming recurrently coupled n
 The CPU backend is immensely useful for rapidly prototyping ideas, testing hypotheses, and experimenting with small-scale models on the order of a few thousand neurons.
 However, for much larger models such as Spaun~\citep{eliasmith2012}, its 2.5~million neurons require about 2.5~hours of compute time per $1$~second of simulation time, that is $\approx \numprint{9000}$ times slower than real-time~\citep{stewart2014large, mundy2016real}.
 As a result, one must turn to specialized hardware such as GPUs, FPGAs, or neuromorphic architectures, in order to carry out much larger simulations of spiking neural networks (section~\ref{sec:neuromorphic}).
-For example, in our work in collaboration with \citet{knight2016}, we demonstrated that a heteroassociative memory network (see section~\ref{sec:unsupervised}) deployed on SpiNNaker, took a \emph{constant} amount of time per association, while the exact same network took a linear amount of time per association on a CPU.\footnote{%
-The number of neurons scaled linearly in the number of associations.}
-At its largest instantiation of \numprint{100000} neurons, the SpiNNaker simulation was more than $150$ times faster than a CPU, due to the massive parallelism afforded by the architecture.
 
-However, there are very few instances of functional large-scale models running on neuromorphic hardware, with \citet{mundy2016real} being the only one that we are aware of to utilize on the order of millions of neurons to do something functionally ``useful''.\footnote{%
+For example, in our work in collaboration with \citet{knight2016}, we demonstrated that a heteroassociative memory network deployed on SpiNNaker took a \emph{constant} amount of time per association, while the exact same network took a linear amount of time per association on a CPU.\footnote{%
+The number of neurons were scaled linearly in the number of associations.}
+At its largest instantiation of \numprint{100000} neurons, the SpiNNaker simulation was more than $150$ times faster than a CPU, due to the massive parallelism afforded by the architecture.
+This demonstration is encouraging to see, as it illustrates the potential for these methods to scale up and take full advantage of the distributed nature of spiking computation, while leveraging the power of dynamical systems to learn synaptic weights with both unsupervised (section~\ref{sec:unsupervised}) and supervised (section~\ref{sec:supervised}) learning rules.
+
+However, there are very few examples of functional large-scale models running on neuromorphic hardware, with \citet{mundy2016real} being the only one that we are aware of to utilize on the order of millions of neurons to do something functionally ``useful''.\footnote{%
 Recall this is still five orders of magnitude removed from that of the human brain.}
 We believe that this surprising lack of scale---in a field that was essentially created to solve a problem in scaling---is primarily due to a lack of NEF-like frameworks for supporting the robust translation of computations specified in some high-level language (e.g.,~coupled differential equations), onto distributed networks of physically coupled devices.
-The Nengo backends for Braindrop~\citep{braindrop2019} and Loihi~\citep{nengoloihi} are brand new---as are the chips themselves~\citep{neckar2018braindrop, davies2018loihi}---and thus currently fall short of their promise to realize \emph{large-scale} functional SNNs in neuromorphic hardware.
-For the case of Braindrop, its shortcoming is by design: the chip is $0.65$\,mm${}^2$ and implements $\numprint{4096}$ neurons.
-It is a proof-of-concept prototype for research, that can in principle be tiled to scale to much larger models in the future and tailored to the requirements of some application space.
-The end-to-end design and fabrication of custom hardware is an extremely costly and complex process that demands a variety of skill-sets from a large number of people.
+Such frameworks must be correct, scalable, complete, robust, extensible, and finally realized on the physical hardware itself, in order to be ultimately useful (section~\ref{sec:nef-suitability}).
+This has been validated by many of the extensions and analyses throughout this thesis, as well as by past work deploying NEF networks on
+SpiNNaker~\citep{mundy2015},
+Neurogrid~\citep{dethier2011brain},
+TrueNorth~\citep{fischl2018},
+and many other architectures~\citep{naylor2013managing, bekolay2014, corradi2014, wang2014compact, berzish2016, wang2017neuromorphic, rasmussen2018nengodl, blouw2018a}.
+
+However, at time of writing, the Nengo \emph{backends} for Braindrop~\citep{braindrop2019} and Loihi~\citep{nengoloihi} are brand new---as are the chips themselves~\citep{neckar2018braindrop, davies2018loihi}---and thus currently fall short of their promise to realize \emph{large-scale} functional SNNs in neuromorphic hardware.
+For the case of Braindrop, its shortcoming is mainly by design: the chip is $0.65$\,mm${}^2$ and implements $\numprint{4096}$ neurons.
+It is a proof-of-concept prototype for research, that can in principle be tiled to scale to much larger models in the future and tailored towards the requirements of some application space.
 For the case of Loihi, due to a combination of a lack of hardware support for factorized weight matrices, and limitations on connectivity and memory, the maximum recurrently-connected pool size is $342$ neurons.\footnote{Determined empirically using the \texttt{nengo-loihi==0.6.0} emulator.}
-And with current software work-arounds, the precision stops scaling after about $400$ neurons.
-On the other hand, this is the first and only software abstraction to currently make use of Loihi, and it is under active development.
+And with current software workarounds, the feed-forward precision stops scaling after about $400$ neurons.
+On the other hand, this is the first and only software abstraction to currently make use of Loihi~\citep{blouw2018a}, and it is under active development.
 We expect this to get significantly better with time.
 
+%The end-to-end design and fabrication of custom hardware is an extremely costly and complex process that demands a variety of skill-sets from a large number of people.
 Nevertheless, these two architectures---Braindrop and Loihi---represent significant milestones in the evolution of neuromorphic hardware.
 The first, Braindrop, consumes energy roughly equivalent to $381$\,fJ per synaptic operation, for typical network configurations, or about $10$--$20$ times more than the human brain (see section~\ref{sec:neuromorphic}).
-The second, Loihi, consumes about $24$\,pJ per synaptic operation, or about $50$--$100$ times more than Braindrop, but offers determinism and an unparalleled degree of flexibility given its power consumption.
-It remains to scale these systems up in useful ways.
+The second, Loihi, consumes about $24$\,pJ per synaptic operation, or about $50$--$100$ times more than Braindrop, but offers determinism and an unparalleled degree of flexibility given its power budget.
+At the same time, these two neuromorphic hardware architectures are about as different from one another as two could be in the space of neuromorphic computing, with each posing very different sets of issues when it comes to compiling NEF networks.
 
 Given this discussion, the goal of this chapter is to demonstrate that the fundamentals are in place.
-With the guarantees provided by chapter~\ref{chapt:analysis}, the extensions of chapter~\ref{chapt:nef-extensions}, and the functional capabilities of dynamical systems such as those explored in chapter~\ref{chapt:delays} -- we are confident that in principle these methods can scale to Spaun's 6.6~million neurons~\citep{choo2018} and beyond.
-However, since we only currently have room for a few hundred neurons, there is only so much that we can do~\citep{blouw2018a}.
-Thus, we now demonstrate the principles of the NEF, and a few of its extensions, applied to two fundamental dynamical systems, on the state-of-the-art architectures: Loihi and Braindrop.
+With the theoretical guarantees provided by chapter~\ref{chapt:analysis}, the methods for programming dynamical systems in chapter~\ref{chapt:methodology}, the extensions of chapter~\ref{chapt:nef-extensions}, and the functional capabilities of dynamical systems such as those explored in chapter~\ref{chapt:delays} -- we are confident that in principle these methods can scale to Spaun's 6.6~million neurons~\citep{choo2018} and beyond.
+%However, since we only currently have room for a few hundred neurons, there is only so much that we can do.
+%For example, \citet{blouw2018a} has shown impressive power reduction for a keyword spotter written using Nengo~DL~\citep{rasmussen2018} on Loihi.
+Thus, we focus on demonstrating the principles of the NEF, and a few of its extensions, applied to two fundamental---but admittedly small-scale---dynamical systems.
+These dynamical systems are described in the same high-level language of Nengo, but mapped onto two vastly different state-of-the-art architectures: Loihi and Braindrop.
 
 \section{Integrator}
 \label{sec:integrator}

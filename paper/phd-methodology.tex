@@ -11,7 +11,7 @@ The simulations in this thesis make extensive use of the following Python softwa
 \begin{itemize}
 \item Nengo 2.8.0~\citep{bekolay2014}; to construct and simulate NEF models on the CPU, which depends on NumPy for its algebraic routines,
 \item Nengo-Loihi 0.5.0~\citep{blouw2018a, nengoloihi}; to compile Nengo models onto the Loihi emulator and hardware (courtesy of ABR),
-\item Nengo-Brainstorm~\citep[pre-release;][]{neckar2018optimizing, braindrop2019}; to compile Nengo models onto Braindrop (courtesy of Terry Stewart), which depends on PyStorm (courtesy of Femtosense),
+\item Nengo-Brainstorm~\citep[pre-release;][courtesy of Terry Stewart]{neckar2018optimizing, braindrop2019}; to compile Nengo models onto Braindrop, which depends on PyStorm (courtesy of Femtosense),
 \item HyperOpt 0.0.2~\citep{bergstra2015hyperopt}; to optimize the hyperparameters associated with RC networks,
 \item Keras 2.2.4~\citep{gulli2017deep}; to train LSTMs and some custom RNNs,
 \item TensorFlow 1.12.0~\citep{abadi2016tensorflow}; as a backend for Keras,
@@ -166,7 +166,7 @@ We call this rule the \emph{voja} learning rule (for ``vector Oja'').
 Although the network itself is feed-forward, the dynamics that carry out the important computations are embedded within the learning rules that modify its synaptic weights online.
 We now describe the learning rule.
 
-Given a learning rate $\eta$, an input vector $\V{x}$ encoded by the activity of the input layer, the filtered activity $a(t)$ of  neurons in the middle layer, and the matrix $E$ whose rows are the ``preferred direction'' vectors of the middle layer neurons, we modify the preferred direction vectors of the middle layer neurons according to the equation:
+Given a learning rate $\eta$, an input vector $\V{x}$ encoded by the activity of the input layer, the filtered activity $a(t)$ of  neurons in the middle layer, and the matrix $E$ whose rows are the ``preferred direction'' vectors of the middle layer neurons, we modify the preferred direction vectors of the middle layer neurons according to the dynamical system:
 \begin{align} \label{voja}
     \Delta{E} = \eta \left( a(t) \transpose{\V{x}} - a(t)E \right) = \eta a(t) \left( \begin{pmatrix} \transpose{\V{x}} \\ \vdots \\ \transpose{\V{x}} \end{pmatrix} - E \right) \text{.}
 \end{align}
@@ -176,15 +176,15 @@ This gives $a_i(t) \V{x} = a_i(t) \V{e}_i$, and thus, for a particular $\V{x}$, 
     [\Delta{\V{e}_i} = 0]  \iff  [a_i(t) > 0  \implies  \V{e}_i = \V{x}] \text{.}
 \end{align}
 In plain words, the encoding vectors of the neurons that become active will, over time, become more active and store the input within its encoder.
-The effect of this rule is to make a sparse subset of the neurons fire only when $\V{x}$ or a similar enough (i.e.,~noisy) version of it, is presented (see Figures~\ref{fig:voja-spinnaker} and~\ref{fig:voja-encoders}).
+The effect of this rule is to self-organize a sparse representation, such that a subset of neurons fire only when $\V{x}$, or a similar enough (i.e.,~noisy) version of it, is presented (see Figures~\ref{fig:voja-spinnaker} and~\ref{fig:voja-encoders}).
 The preferred direction vectors of each neuron are embedded within the synaptic weights projecting from the previous layer.
-Thus, this can be realized as a local learning rule by multiplying the decoders through and expressing the update in its weight with the $j^\text{th}$ presynaptic neuron~\citep{knight2016}:
+Thus, this can be realized as a local learning rule by multiplying the decoders through and expressing the update as its weight with the $j^\text{th}$ presynaptic neuron~\citep{knight2016}:
 \begin{align}
   \label{eq:voja-weights}
   \Delta \omega_{ij} = \Delta \V{e}_i \cdot \V{d}_j = \eta \, a_i (\V{d}_j \cdot \V{x} - \omega_{ij}) \text{.}
 \end{align}
-In effect, this rule embeds some useful computation---the unsupervised learning of associations between inputs and outputs---as a localized dynamical system governing the behaviour of each synapse.
-We demonstrate similar ideas in the following section, as they pertain to supervised learning and oscillations.
+In effect, this rule achieves some useful computation---the unsupervised learning of inputs---by implementing a dynamical system within the state of each synapse.
+The networks of \citet{knight2016, aubin2016a} learn to associate each input vector with a distinct output vector, by combining this rule with a supervised learning rule discussed below.
 
 \begin{figure}
     \centering
@@ -201,18 +201,20 @@ Reproduced from \citet{knight2016}.
   \vspace{1em}
 
     \includegraphics[width=0.5\textwidth]{voja-encoders}
-    \caption[Unsupervised learning of a three-dimensional population.]{Input vector clustering of a 3-dimensional ensemble, presented with 6 evenly spaced $\V{x}$. (a)~The initial clustering, before any input has been given. (b)~Each input vector has been shown for two seconds of simulation time, with intercepts set to $cos \left(\frac{\pi}{6} \right)$. Gray plates show the area of attraction for each input vector. (c)~Same as b, with intercepts chosen to give $p_i = 1/6$. (d)~Same as b, with intercepts set to $cos \left(\frac{\pi}{3} \right)$. \label{e3d}
+    \caption[Unsupervised learning of a three-dimensional population.]{Input vector clustering of a 3-dimensional ensemble, presented with 6 evenly spaced $\V{x}$. (a)~The initial clustering, before any input has been given. (b)~Each input vector has been shown for two seconds of simulation time, with intercepts set to $\cos \left(\pi / 6 \right)$. Gray plates show the area of attraction for each input vector. (c)~Same as b, with intercepts chosen to give $p_i = 1/6$. (d)~Same as b, with intercepts set to $\cos \left( \pi / 3 \right)$. \label{e3d}
     Reproduced from \citet{voelker2014a}.
        \label{fig:voja-encoders}
     }
 \end{figure}
 
 \subsection{Supervised learning}
+\label{sec:supervised}
 
 This section has been adapted from preliminary work by \citet{voelker2015} and \citet{voelker2017c}.
 This approach highlights the utility in shifting perspectives in learning to that of a dynamical system embedded within some larger function.
-In particular, online learning is nothing more than a dynamical system realized by localized computations within the network.
-We illustrate this by unifying Nengo's supervised learning and the NEF's dynamical systems framework at a theoretical level, and leverage the resulting relationship in a practical spiking example with online learning.
+In particular, online learning is \emph{nothing more} than a dynamical system mapped onto localized computations manipulating state-variables within a network.
+% State-variables are mapped onto weights, and their evolution is some function that depends on the weights.
+We illustrate this by unifying Nengo's supervised learning and the NEF's dynamical systems framework at a theoretical level, and then leverage the resulting relationship in a practical spiking example with online learning.
 
 The NEF typically learns its connection weights offline, but Nengo also supports a number of biologically-plausible supervised and unsupervised learning rules to learn these weights online~\citep{bekolay2011a}.
 Prescribed Error Sensitivity~\citep[PES;][]{bekolay2013} is a biologically-plausible Hebbian supervised learning rule that is frequently used within Nengo models.
