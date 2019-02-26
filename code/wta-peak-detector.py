@@ -19,11 +19,12 @@ with nengo.Network() as model:
 with nengo.Simulator(model) as sim:
     sim.run(6)
 
-plt.figure()
+plt.figure(figsize=(8, 5))
 plt.plot(sim.trange(), sim.data[p_u], label=r"$u[k]$")
 plt.plot(sim.trange(), sim.data[p_peak], label="Peak")
 plt.legend(loc='best')
 plt.xlabel("Time (s)")
 plt.ylim(-1.1, 1.1)
+sns.despine(offset=15)
 savefig("wta-peak-detector.pdf")
 # plt.show()

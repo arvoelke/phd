@@ -425,7 +425,7 @@ This, in turn, enables useful computations that nonlinearly transform the state-
 	  \draw [->] (sumout) -- node {$\V{y}$} (output);
 	\end{tikzpicture}  
   }
-  \caption{ \label{fig:lti-system}
+  \caption[A linear time-invariant system.]{ \label{fig:lti-system}
     Block diagram for an LTI system.
     The integrator is driven by the signal $\dot{\V{x}}(t)$.
     Reproduced from \citet[][Figure~1]{voelker2018}.
@@ -460,7 +460,7 @@ This, in turn, enables useful computations that nonlinearly transform the state-
 	  \draw [->] (sumout) -- node {$\V{y}$} (output);
 	\end{tikzpicture}  
   }
-  \caption{ \label{fig:lti-system-mapped}
+  \caption[Principle~3 for a linear time-invariant system.]{ \label{fig:lti-system-mapped}
     Block diagram for an LTI system, equivalent to Figure~\ref{fig:lti-system}, with the integrator replaced by a first-order lowpass filter.
     % The exact same state-vector $\V{x}(t)$ is represented by a population of neurons (via Principles~1 and 2).
     The lowpass is driven by the signal $\tau \dot{\V{x}}(t) + \V{x}(t)$ to ensure that it implements the same system as in Figure~\ref{fig:lti-system}.
@@ -535,7 +535,7 @@ We find the approach of introducing random high-dimensional feedback to be ineff
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{rc-force-nef}
-  \caption{ \label{fig:architectures}
+  \caption[Architectural differences between FORCE, RC, and the NEF.]{ \label{fig:architectures}
     Comparing the recurrent architectures of (a)~Reservoir Computing~(RC), (b)~First-Order Reduced and Controlled Error~(FORCE), and (c)~the Neural Engineering Framework~(NEF).
     Blue weights are fixed and randomly chosen.
     Orange weights are learned either online or offline.
@@ -621,7 +621,7 @@ In general, the RC training method relies on \emph{explicit} simulation, since $
     NEF & $\thicksim$ & \checkmark & $\thicksim$ & \checkmark & $\thicksim$ & \checkmark \\
     \bottomrule
   \end{tabular}
-  \caption{ \label{tab:learning-types}
+  \caption[Summary of the training characteristics of FORCE, RC, and the NEF.]{ \label{tab:learning-types}
     Summary of the characteristics of each training method. Tildes ($\thicksim$) denote less-commonly advertised, but sensible, use-cases (see text for details).}
 %\begin{tabular}{ |c|c|c| } 
 %\hline

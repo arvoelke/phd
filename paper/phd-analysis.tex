@@ -100,11 +100,7 @@ This example is of special interest to us since the LIF neuron (equation~\ref{eq
 It follows that even the most basic spiking instantiation of Principle~3 must, in general, be simulated in order to determine its behaviour whenever the input signal drives the state-space outside the range of neural representation.
 Notably, this saturation effect is exploited to overload working memory with sequential items in the Spaun model~\citep{eliasmith2012}, which suggests that the model behaviour is chaotic at multiple levels of analysis.
 
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{chaotic-integrator}
-     
-    \caption{\label{fig:chaotic-integrator} 
+\fig{chaotic-integrator}{1}{Chaos in a simple Neural Engineering Framework network.}{
       An autonomous scalar integrator---the simplest possible recurrent SNN, built using the NEF---exhibiting chaotic neural dynamics.
       (Left)~Two deterministic simulations of the exact same network.
           One is initialized to $x_1(0) = 0$, and the other to $x_2(0) = \numprint{e-15}$.
@@ -113,8 +109,7 @@ Notably, this saturation effect is exploited to overload working memory with seq
           The neural states diverge exponentially quickly---leaping 30 orders of magnitude in 3 seconds---according to $\| \delta(t) \| \approx \bigoh{e^{\lambda t}}$.
           The representational difference $\Delta$ is essentially zero until $\delta$ hits the diameter of the attractor.
           It is physically impossible to predict the future state of this system beyond a time-scale of $\bigoh{\lambda^{-1}} \approx 0.1$~seconds (see text for details).
-    }
-\end{figure}
+}
 
 Perhaps even more surprisingly, one does not need to invoke any saturation to observe chaos, at the level of individual spiking neurons, in NEF networks implementing linear dynamics.
 For example, consider the one-dimensional, autonomous (i.e.,~no input), integrator:
@@ -159,19 +154,14 @@ However, there is historically little consensus between neuroscientists as to wh
 \citet{brette2015philosophy} argues that the question about which code the brain uses is irrelevant, and should be replaced by one that instead addresses the causal role of neural activity.
 \citet{eliasmith2003a} likewise proposes that we should focus on the physical instantiation, and functional consequences therein, of any given approach to neural coding, rather than resorting to semantic labels that are ultimately irrelevant. 
 
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{spike-time-coding}
-     
-    \caption{\label{fig:spike-time-coding} 
+\fig{spike-time-coding}{1}{Spike-time coding in the Neural Engineering Framework.}{
       Demonstrating the irrelevance of identifying a ``spike-time code'' versus a ``rate code'' in the context of a standard NEF-optimized network.
       We define this as a ``postsynaptic current code'' instead.
       (Left)~An ensemble of LIF neurons are trained to oscillate at approximately $3.5$\,Hz.
       (Right)~Spike rasters of \numprint{50} randomly selected neurons, ordered by their encoding vector's polar angle.
       Each neuron spikes only $0$, $1$, or $2$ times per oscillation, and at a precise moment in time---on the order of milliseconds (see inset)---before remaining silent for another couple hundred milliseconds.
       Thus, the precise spike-timing of each individual neuron reliably conveys information about the state-space of the oscillation, despite never explicitly incorporating such a requirement about timing into the training procedure.
-    }
-\end{figure}
+}
 
 Nevertheless, many have mislabelled the NEF as employing a rate-coding scheme [personal communication], including \citet{lagorce2015stick} and~\citet{frady2019robust} for two recent examples -- we refer to these two below, to illustrate why this accusation constitutes a damaging use of semantics.
 % On one hand, we understand that this is due to the way in which the optimization procedure is most often simplified using equation~\ref{eq:rate-approximation}.
@@ -355,7 +345,7 @@ We now describe each source of error in greater detail.
     \caption{State Discrepancy}
     \label{fig:nef-error-types-d}
   \end{subfigure}
-  \caption{ \label{fig:nef-error-types}
+  \caption[Three sources of error in spiking networks.]{ \label{fig:nef-error-types}
     Visualizing the three sources of error in a standard NEF network.
     (a)~A single simulation with arrows pointing to each type (b, c, d).
     (b)~Static distortion describes the difference between the linear combination of rate models and the desired static function.
@@ -612,16 +602,12 @@ Thus, precision continues to scale (i.e.,~error converges to zero by the CLT), e
 This ensures that the NEF, and its postsynaptic current coding scheme (see section~\ref{sec:psc-coding}), is asymptotically correct -- even when encoding arbitrarily high-frequency signals into spikes with arbitrarily small synaptic time-constants and low firing rates.
 We summarize many of these scaling properties in section~\ref{sec:scalability}.
 
-\begin{figure}[h!]
-\centering
-\includegraphics[width=1.0\textwidth]{frequency-ks-test}
-\caption{\label{fig:frequency-ks-test}
+\fig{frequency-ks-test}{1}{Linear correlation between neural states and error.}{
   Relationship between \emph{state discrepancy}~(KS-statistic; definition~\ref{def:state-discrepancy}) and representational error induced by filtered spikes~(RMSE), for sinusoidal stimuli of varying frequencies.
   (Left)~Empirical distribution of ISI positions (equation~\ref{eq:lif-isip}) is compared to the ideal uniform distribution using the KS-statistic ($p$-values~$< \numprint{e-6}$).
   % In the ideal case, the spiking LIF model is equal to its non-spiking counterpart in the sense of expectation.
   (Right)~The RMSE is highly correlated with the KS-statistic, with a Pearson correlation coefficient of $R = 0.90$ ($p$-value~$< \numprint{e-6}$).
 }
-\end{figure}
 
 However, in the NEF, when using LIF neurons, this criteria is violated as the frequency of the represented signal increases.
 To demonstrate, Figure~\ref{fig:frequency-ks-test} simulates a communication channel ($n = \numprint{2500}$, $\dt{} = 0.1$\,ms, $\tau = 1.6$\,ms, $\tau_\text{RC} = 20$\,ms, $\tau_\text{ref} = 2$\,ms), with tuning curves uniformly distributed to achieve maximum firing rates of $50$--$100$\,Hz, in order to encode sinusoid stimuli of increasing frequencies (visualizing 95\% confidence interval, bootstrapped across 5 random configurations at each frequency).

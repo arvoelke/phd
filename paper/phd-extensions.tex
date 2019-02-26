@@ -92,7 +92,7 @@ will implement the desired dynamics when using $H(s)$ as the dynamical primitive
 	  \draw [->] (sumout) -- node {$\V{y}$} (output);
 	\end{tikzpicture}  
   }
-  \caption{ \label{fig:lti-system-mapped-general}
+  \caption[Extending Principle~3 to arbitrary linear synapses.]{ \label{fig:lti-system-mapped-general}
     Block diagram for an LTI system, equivalent to Figure~\ref{fig:lti-system}, with the integrator replaced by a more general linear filter $H(s)$.
     The state-space model $\left( A^H\text{,}\, B^H\text{,}\, C^H\text{,}\, D^H \right)$ is obtained from some transfer function $F^{H}(s)$ that maps $F$ onto $H$, as defined in the text.
     This generalizes Figure~\ref{fig:lti-system-mapped} to arbitrary linear synapse models.
@@ -788,19 +788,15 @@ Second, a hidden layer uses a bank of decaying oscillators (i.e.,~bandpass filte
 The decoding weights are optimized from the data using a support vector machine~(SVM) to solve the least-squares problem as a classification problem.
 We find through cross-validation that the network performs best when it contains a wide variety of filters facilitating a rich feature expansion in time.
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.5\textwidth]{touch-1}
-     
-    \caption{\label{fig:touch-network} Architecture of the surface texture classifier.
-    Three sensors are encoded into the spiking activity of mechanoreceptor neurons.
-    A hidden layer extracts nonlinear features of its spike trains in the frequency domain using a bank of bandpass filters.
-    A recurrently connected output (feedback arrows omitted) represents the classification scores, lowpass filtered over time.
+\fig{touch-network}{0.5}{Architectures of a robotic surface texture classifier.}{
+  Architecture of the surface texture classifier.
+  Three sensors are encoded into the spiking activity of mechanoreceptor neurons.
+  A hidden layer extracts nonlinear features of its spike trains in the frequency domain using a bank of bandpass filters.
+  A recurrently connected output (feedback arrows omitted) represents the classification scores, lowpass filtered over time.
 % This score vector is linearly decoded from the recurrent layer to find the texture with the largest score. Connection weights and neural parameters  are given by the principles of the NEF.
-    Weights are determined using the NEF.
-    Reproduced from \citet[][Figure~1]{voelker2016a}.
+  Weights are determined using the NEF.
+  Reproduced from \citet[][Figure~1]{voelker2016a}.
 }
-\end{figure}
 
 \subsection{Solving for optimal filters}
 
@@ -827,7 +823,7 @@ We find through cross-validation that the network performs best when it contains
   \draw [->] (integ) -- node [name=fanout] {${x}(t)$} (output);
   \draw [->] (decoded) -| node[pos=0.98] {$+$} node [near end] {} (sum);
 \end{tikzpicture}
-\caption{\label{fig:decoding-filter} Architecture used to formulate the optimization problem that simultaneously solves for the decoding weights and the optimal linear filter.}
+\caption[Sovling for the optimal filters and decoders simultaneously.]{\label{fig:decoding-filter} Architecture used to formulate the optimization problem that simultaneously solves for the decoding weights and the optimal linear filter.}
 \end{figure}
 
 Now we consider the problem of analytically solving for the optimal linear filter, together with the optimal linear decoders, within the \emph{same} least-squares optimization problem.
@@ -952,7 +948,7 @@ Benefits 1 and 2 are lost, however, as the ReLU is a rectified linear (and unbou
 \begin{figure}
 \centering
 \includegraphics[width=0.9\textwidth]{poisson-frequency-scaling}
-\caption{\label{fig:poisson-frequency-scaling} Scaling of LIF performance with frequency, for each type: Poisson-spiking, non-leaky (i.e.,~integrate-and-fire), adaptive, and regular-spiking.
+\caption[Spiking neuron performance with input frequency.]{\label{fig:poisson-frequency-scaling} Scaling of LIF performance with frequency, for each type: Poisson-spiking, non-leaky (i.e.,~integrate-and-fire), adaptive, and regular-spiking.
 The input is a sinusoid with frequency $f$\,Hz.
 % Both the ideal sinusoid and the decoded spike trains are filtered by $\tau = 0.01 f^{-1}$\,s to compute the RMSE.
 %The number of neurons is set to $50 f$ in order to scale the total number of spikes with the input frequency, and the maximum firing rate of each neuron is uniformly distributed over $20-40$\,Hz.
@@ -963,7 +959,7 @@ Due to the memoryless property of the Poisson process, and the uniformity of ReL
 \vspace{1em}
 
 \includegraphics[width=0.9\textwidth]{poisson-neuron-scaling}
-\caption{\label{fig:poisson-neuron-scaling} Scaling of LIF performance with neuron count, for each type: Poisson-spiking, non-leaky (i.e.,~integrate-and-fire), adaptive, and regular-spiking.
+\caption[Spiking neuron performance with neuron count.]{\label{fig:poisson-neuron-scaling} Scaling of LIF performance with neuron count, for each type: Poisson-spiking, non-leaky (i.e.,~integrate-and-fire), adaptive, and regular-spiking.
 %The input signal is a sinusoid with frequency $10$\,Hz, and the maximum firing rates are uniformly distributed over $20-40$\,Hz.
 Regular-spiking LIF plateaus in performance for large numbers of neurons, due to the state discrepancy (definition~\ref{def:state-discrepancy}).
 The precision of integrate-and-fire and Poisson-spiking both scale as ${\sqrt{n}}$ as $n \rightarrow \infty$ (Theorem~\ref{thm:correctness}), since each neuron is always ready to spike with the ideal probability. 

@@ -182,7 +182,7 @@ This is achieved without appealing to the simulation time-step ($\dt{} = 1$\,ms)
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{{NECO-04-17-2838-Figure.3}.pdf}
-  \caption{ \label{fig:delay-example}
+  \caption[Example simulation of a spiking Delay Network.]{ \label{fig:delay-example}
     Delay of $1$\,s implemented by applying standard Principle~3 to equation~\ref{eq:ss-delay} using $q = 6$, $\dt{}=1$\,ms, $\numprint{1000}$ spiking LIF neurons, and a lowpass synapse with $\tau=0.1$\,s.
     The input signal is white noise with a cutoff frequency of $1$\,Hz.
     The plotted spikes are filtered with the same $\tau=0.1$\,s, and encoded with respect to $\numprint{1000}$ encoders sampled uniformly from the surface of the hypersphere (sorted by time to peak activation).
@@ -248,7 +248,7 @@ This demonstrates that the delay network compresses the input's history (lasting
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{{NECO-04-17-2838-Figure.4}.pdf}
-  \caption{ \label{fig:delay-full}
+  \caption[Accuracy of the Delay Network across its window.]{ \label{fig:delay-full}
     Decoding a rolling window of length $\theta$.
     Each line corresponds to a different delay, ranging from $0$ to $\theta$, decoded from a single delay network ($q = 12$).
     (Left)~Error of each delay, as the input frequency, $f$, is increased relative to $\theta$.
@@ -265,12 +265,13 @@ In particular, each basis function corresponds to the continuous window of histo
 The instantaneous value of each dimension acts as a coefficient on its basis function, to contribute to the representation of the window at that point in time.
 Overall, the entire state-vector determines a linear combination of these $q$ basis functions to represent the window.
 An intriguing consequence of this and equation~\ref{eq:delay-readouts}, is that the temporal code employed by this network---in terms of the basis functions that it takes to reconstruct the window---is a linear transformation of the \emph{shifted Legendre polynomials}, $\mathcal{P}_i\left(2 \left(\theta' \theta^{-1}\right) - 1\right)$ up to the same order ($i = 0 \ldots q - 1$), with previous connections having been made between these same polynomials and parameter identification in time-delay systems~\citep{hwang1985analysis}. 
+This means the network effectively projects the input onto its Legendre basis over time, thus providing a low-dimensional polynomial representation with coefficients given by the state-vector.
 % This is analogous to the static function representation explored previously within the context of Principles~1 and~2~\citep[][pp.~63--72]{eliasmith2003a}.
 
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{{NECO-04-17-2838-Figure.5}.pdf}
-  \caption{ \label{fig:basis-functions}
+  \caption[Temporal representation of the Delay Network.]{ \label{fig:basis-functions}
     Temporal basis functions of the delay network ($q = 12$).
     Each line corresponds to the basis function of a single dimension~($i$) ranging from $0$~(darkest) to $q - 1$~(lightest).
     The $i^\text{th}$ basis function is a polynomial over $\theta' \theta^{-1}$ with degree $i$ (see equation~\ref{eq:delay-readouts}). % ($0 \le \theta' \le \theta$).
@@ -298,7 +299,7 @@ This means that other delays will simply stretch or compress the impulse respons
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{{NECO-04-17-2838-Figure.6}.pdf}
-  \caption{ \label{fig:pca}
+  \caption[State-space trajectories of the Delay Network.]{ \label{fig:pca}
     Impulse response of the delay network with various orders ($q$) of Pad\'e approximants.
     (Top)~The state-vector $\V{x}(t)$ projected onto its first three principal components.
     (Bottom)~The length of the curve $\V{x}$ up to time $t$, computed using the integral $\smallint \|\dot{\V{x}}(t)\|$ (normalized to $1$ at $t = \theta$).
@@ -365,22 +366,18 @@ Similarly, one may obtain Taylor expansions by taking dot products with vectors 
 Crucially, such dot products are precisely what the encoders $\V{e}_i$ compute in equation~\ref{eq:encoding}.
 This implies that the PSC of any neuron, by itself, necessarily represents a particular convolution across the window.\footnote{%
 There are infinitely many, since the system is overcomplete when working backwards from $\V{k} \mapsto k(\cdot)$, but we can enforce uniqueness by imposing L2-regularization, for instance.}
-The nonlinearity of each neuron thus provides a nonlinear function of some finite-width filter.
+The nonlinearity of each neuron thus provides a nonlinear function of some finite-width filter (Principle~1).
 %Yet, as shown below, this does not restrict our ability to also perform nonlinear computations across the window.
 More generally, the state $\V{x}(t)$ is \emph{encoded} by a heterogeneous population of neurons, which allows for arbitrary nonlinear functions across the window,
 $$y(t) = f(\V{x}(t)) \approx f\left(\left[ u(t - \theta') \,:\, 0 \le \theta' \le \theta \right]\right)$$
-to be \emph{decoded} from its activity~\citep{eliasmith2003a}.
+to be \emph{decoded} from its activity (Principle~2).
 For example, Figure~\ref{fig:delay-autocorrelation} visualizes $f$ within the space of $\V{x} \in \mathbb{R}^3$ for the autocorrelation function, $y(t) = u(t - \theta)\, u(t)$.
 
-\begin{figure}
-\centering
-  \includegraphics[width=0.5\linewidth]{delay-autocorrelation}
-  \caption{ \label{fig:delay-autocorrelation} 
-    Visualizing the autocorrelation function $y(t) = u(t - \theta)\, u(t)$ with $q=3$.
-    Each point along the surface of the unit-sphere is $\V{x}(t)$, and is coloured according to its corresponding value of $y(t)$ obtained from equation~\ref{eq:basis-interpretation}.
-    A slice of the shell is cut away for visualization.
-  } 
-\end{figure}
+\fig{delay-autocorrelation}{0.5}{Autocorrelation function mapped onto the Delay Network.}{
+  Visualizing the autocorrelation function $y(t) = u(t - \theta)\, u(t)$ with $q=3$.
+  Each point along the surface of the unit-sphere is $\V{x}(t)$, and is coloured according to its corresponding value of $y(t)$ obtained from equation~\ref{eq:basis-interpretation}.
+  A slice of the shell is cut away for visualization.
+} 
 
 \subsection{Scalability considerations}
 \label{sec:delay-scalability}
@@ -492,7 +489,7 @@ HyperOpt was used to the benefit of LSMs and ESNs. All hyperparameters (apart fr
     %\draw [->] (x.south) -- (y);
     \path[->] (x.south) edge [loop below, min distance=5em, out=-60, in=-120] node {$\bar{A}^H$} (h.south);
   \end{tikzpicture}
-  \caption{ \label{fig:delay-architecture}
+  \caption[Model of the Delay Network for digital architectures.]{ \label{fig:delay-architecture}
     Delay Network~(DN) model for a digital architecture.
     The synapse $h[t]$ is driven by $\bar{A}^H \V{x}[t] + \bar{B}^H u[t]$ to yield the state $\V{x}[t]$.
     This state is nonlinearly encoded by a heterogeneous population of neurons and subsequently decoded to estimate the desired $y[t]$.
@@ -524,7 +521,7 @@ The final matrices $(\bar{A}^H\text{,}\, \bar{B}^H)$ determine the transformatio
 \begin{figure}
   \centering
   \includegraphics[width=0.8\textwidth]{rc-accuracy}
-  \caption{ \label{fig:rc-accuracy}
+  \caption[Accuracy of Reservoir Computing versus the NEF.]{ \label{fig:rc-accuracy}
   Performance from training various linear readouts to compute delays of $25$\,Hz band-limited white noise (bootstrapped across 10 trials).
   Each line corresponds to a single reservoir of $\numprint{1500}$ neurons, either randomly connected (in the case of ESNs and LSMs), or specifically engineered (in the case of the NEF).
   }
@@ -533,7 +530,7 @@ The final matrices $(\bar{A}^H\text{,}\, \bar{B}^H)$ determine the transformatio
 
   \centering
   \includegraphics[width=0.8\textwidth]{rc-speed}
-  \caption{ \label{fig:rc-speed}
+  \caption[Efficiency of Reservoir Computing versus the NEF.]{ \label{fig:rc-speed}
   Cost of simulating each RC network as the reservoir size is increased (bootstrapped across 10 trials).
   Conventional RC approaches require $\bigoh{ n^2 }$ space and time, while the NEF improves this to $\bigoh{ n }$ for constant dimensionality.
   }
@@ -638,7 +635,7 @@ For this experiment, we first ported the same implementation described in \citet
 We compared this to the standard FORCE approach---which we refer to as ``classic-FORCE''---and verified that it performed slightly worse than the full-FORCE network, but still better than an equivalent reservoir computer.
 Since Nengo allows for the substitution of various spiking and non-spiking neuron models, we further validated both implementations with spiking neurons as well, and obtained reasonable levels of accuracy, similar to \citet{depasquale2016using, thalmeier2016learning, nicola2016supervised}.
 
-However, we found that simply modifying the target signal to be a delayed version of a low-frequency signal, posed an incredible challenge for these networks.
+However, we found that simply modifying the target signal to be a delayed version of a low-frequency signal, posed a significant challenge to these networks.
 Thus, the learning rate was lowered from $1$ to $\numprint{e-3}$, and the time-step set to $\dt{} = 5$\,ms, which we found to help regularize the solution.
 We thus also considered a baseline approach:
 we took the original FORCE network, but removed the feedback loop that re-encodes the learned output.
@@ -650,27 +647,27 @@ In this scenario, the only error that remains is that of equation~\ref{eq:pade-d
 On the other hand, each FORCE network consists of $n = 500$ neurons (and $\bigoh{n^2}$ weights).
 The network is given $10$\,s of training data per trial.
 In all cases, the training and test signals are randomly sampled $1$\,Hz band-limited white noise signals, with $5$\,s of test data per trial.
-We compare all four networks by sweeping $\theta$ across $0.01$--$1$\,s, with $10$ trials at each condition (boostrapped 95\% confidence intervals) (see Figure~\ref{fig:force-comparison}).
+We compare all four networks by sweeping $\theta$ across $0.01$--$1$\,s, with $10$ trials at each value of $\theta$ (boostrapped 95\% confidence intervals).
 
 \fig{force-comparison}{0.7}{Memory capacity of FORCE versus the NEF.}{
     Comparison of several FORCE learning methods versus the NEF on a delay task.
-    Each network is trained to delay a time-varying input by $\theta$ seconds.
-    The FORCE networks consists of $500$ $\tanh$ neurons, while the NEF network is $6$ linear neurons.
+    Network are trained to delay a time-varying input by $\theta$ seconds.
+    Each FORCE network consists of $500$ $\tanh$ neurons, while the NEF network is $6$ linear neurons.
     See text for details.
 }
 
-\TODO{Rerun with lower dt and higher learning rate again.}
-
-These results illustrate that the NEF's six rate neurons outperform all of the FORCE networks.
+The results in Figure~\ref{fig:force-comparison} illustrate that the NEF's six rate neurons outperform all of the FORCE networks.
 The full-FORCE network performs well relative to classic-FORCE and no-FORCE for short delays ($\theta < 0.1$\,ms).
-For longer delays ($\theta > 0.1$\,s), the classic-FORCE network performs well relative to the other two, but still with error-rates approaching $100$\% as $\theta \rightarrow 1$,s, which is $200$ time-steps.
-%This reveals a situation in which training the network to re-encode its target output can hinder performance, relative to .
-%The NEF solution proposes a means of understanding this phenomenon.
-%In particular, the target output is only one dimension among six other orthogonal dimensions that must all be encoded into the state of the network.
-%Focusing on this one dimension and letting the randomized feedback attempt to fill in the rest, leads to competing objectives between the low-dimensional linear feedback required for optimal memory capacity and the high-dimensional chaos induced by nonlinear random feedback.
+For longer delays ($\theta > 0.1$\,s), the classic-FORCE network performs well relative to the other two, but still with error-rates approaching $100$\% as $\theta \rightarrow 1$\,s, or $200$ time-steps.
+This reveals a situation in which training the network to re-encode its target output can hinder performance.
+The NEF solution proposes a means of understanding this phenomenon.
+In particular, the target output is only one dimension among six orthogonal dimensions that must all be encoded into the state of the network.
+Focusing on this one dimension and letting the randomized feedback attempt to fill in the rest, leads to competing objectives between the low-dimensional linear feedback required for optimal memory capacity and the high-dimensional chaos induced by nonlinear random feedback.
 
 \subsection{Long short-term memory}
 \label{sec:delay-lstm}
+
+4x Nvidia Titan Xp GPUs with 12GB each
 
 \subsection{Detecting patterns}
 \label{sec:periodicity}
@@ -715,17 +712,13 @@ and $T$ is the similarity transform for the balanced realization.
 A visualization of $Z_k$ is provided in Figure~\ref{fig:zoom-matrix}, using a diagonal transformation to reveal its checkerboard structure.
 Specifically, setting $k=5$, $q=20$, and with $T$ taken by a diagonal realization that normalizes the system's Hankel singular values, and the Moore-Penrose pseudoinverse taken while truncating the singular values below a cutoff ratio of 10\%.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=0.4\textwidth]{zoom-matrix}
-  \caption{\label{fig:zoom-matrix}
-    Visualizing the ``zooming matrix'', $Z_5 \in \mathbb{R}^{20 \times 20}$ (see equation~\ref{eq:zoom-matrix}).
-   This matrix linearly transforms the state-space of the Delay Network to ``zoom in'' on the oldest segment of input history partitioned into $k$ segments.
-  }
-\end{figure}
+\fig{zoom-matrix}{0.4}{Zooming matrix for the Delay Network.}{
+  Visualizing the ``zooming matrix'', $Z_5 \in \mathbb{R}^{20 \times 20}$ (see equation~\ref{eq:zoom-matrix}).
+  This matrix linearly transforms the state-space of the Delay Network to ``zoom in'' on the oldest segment of input history partitioned into $k$ segments.
+}
 
 We sketch a constructive proof of this claim.
-Since the buffered window of input history is a linear transformation of the DN's state vector, we start by constructing a linear transformation of $\V{x}(t)$ that contains the average of all segments. 
+Since the buffered window of input history is a linear transformation of the DN's state-vector, we start by constructing a linear transformation of $\V{x}(t)$ that contains the average of all segments. 
 The matrix $e^{A i \gamma}$ provides a linear transformation that emulates the effect of holding the input signal at zero for $i \gamma$ more seconds -- a mathematical \emph{fast-forwarding} of the system assuming no input.
 This can be seen by solving the differential equation $\dot{\V{x}} = A \V{x}$ with the initial condition $\V{x}_0 = \V{x}(t)$.
 Thus, $e^{A i \gamma} \V{x}(t)$ provides the state-vector that corresponds to some input signal where the $i^\text{th}$ segment (ordered by seniority) has been shifted back in time to become the oldest segment. 
@@ -890,7 +883,7 @@ Regardless, it is clearly crucial to account for axonal transmission delays to a
 \begin{figure}
   \centering
   \includegraphics[width=1.0\textwidth]{{NECO-04-17-2838-Figure.8}.pdf}
-  \caption{\label{fig:principle3fail}
+  \caption[Accounting for higher-order synapses in the Delay Network.]{\label{fig:principle3fail}
     Comparing standard Principle~3 to our NEF extensions.
     (Left)~Error from mapping a $27$-dimensional $0.1$\,s delay onto $\numprint{1000}$ spiking LIF neurons, while varying the simulation time-step ($\dt{}$).
     The input to the network is white noise with a cutoff frequency of $50$\,Hz.
@@ -922,7 +915,7 @@ Expressing these parameters as dimensionless constants keeps our results scale-i
 \begin{figure}
   \centering
   \includegraphics[width=1.0\textwidth]{{NECO-04-17-2838-Figure.9}.pdf}
-  \caption{\label{fig:lambert}
+  \caption[Exploiting axonal spike-delays to improve the Delay Network.]{\label{fig:lambert}
     The pure delay mapped onto spiking networks with various synapse models (with parameters $q = 6$, $\tau\theta^{-1} = 0.1$, $\lambda\tau^{-1} = 1$, $\tau_1 = \tau$, and $\tau_1\tau_2^{-1} = 5$).
     (Left)~Error of each mapping in the frequency domain.
     This subfigure is scale-invariant with $\theta$.
@@ -963,8 +956,8 @@ The simulation is started at $t = -1$\,s and stopped at $t = 5$\,s.
   \centering
   \includegraphics[width=\textwidth]{{NECO-04-17-2838-Figure.10-Top}.pdf}
   \includegraphics[width=0.96\textwidth, trim=0 0 -0.7in -0.4in]{{NECO-04-17-2838-Figure.10-Bottom}.pdf}
-  \caption{ \label{fig:time-cells}
-    Comparison of time cells to a NEF delay network.
+  \caption[Comparison of time cells to a Delay Network.]{ \label{fig:time-cells}
+    Comparison of time cells to a delay network.
     (Top)~Spiking activity from the rodent mPFC~\citep[reproduced from][Figure~4~C,D]{tiganj2016sequential}.
     Neural recordings were taken during a maze task involving a delay period of $4.784$\,s.
     (Bottom)~Delay network implemented using the NEF (see text for details).

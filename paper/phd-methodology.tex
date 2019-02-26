@@ -112,13 +112,10 @@ for some (possibly infinite) number of samples, $m \ge 1$.
 In this context, determining the maximum of $\V{u}[k]$ is equivalent to the task of tracking the peak of the past history of the discrete-time signal, $u[k]$ (see Figure~\ref{fig:wta-peak-detector}), at a sampling interval of $\dt{}$.
 In other words, the problem of tracking the maximum across time, is equivalent to a WTA mechanism where the input dimensions are provided sequentially, as opposed to being provided all at the same moment in time (as is usually the case).
 
-\begin{figure}
-\centering
-\includegraphics[width=0.5\textwidth]{wta-peak-detector}
-\caption{ \label{fig:wta-peak-detector}
+\fig{wta-peak-detector}{0.5}{Peak detector as a dynamical system.}{
   An ideal ``peak detector'' implemented as a discrete-time dynamical system.
+  This is equivalent to performing a winner-take-all across data provided sequentially.
 }
-\end{figure}
 
 In the limit of $\dt{} \rightarrow 0$, the desired continuous-time dynamical system is:
 \begin{equation}
@@ -186,13 +183,13 @@ Thus, this can be realized as a local learning rule by multiplying the decoders 
   \label{eq:voja-weights}
   \Delta \omega_{ij} = \Delta \V{e}_i \cdot \V{d}_j = \eta \, a_i (\V{d}_j \cdot \V{x} - \omega_{ij}) \text{.}
 \end{align}
-In effect, this rule embeds some useful computation---the unsupervised learning of associations between inputs and outputs---as a localized dynamical system within the computation of individual synapses.
+In effect, this rule embeds some useful computation---the unsupervised learning of associations between inputs and outputs---as a localized dynamical system governing the behaviour of each synapse.
 We demonstrate similar ideas in the following section, as they pertain to supervised learning and oscillations.
 
 \begin{figure}
     \centering
   \includegraphics[width=\textwidth]{voja-spinnaker}
-  \caption{
+  \caption[Unsupervised learning of a two-dimensional representation.]{
 The effect of Voja on the encoders of a 2-dimensional population, over time.
 Each point corresponds to the encoder of one of \num{100} neurons.
 Four input vectors are chosen of the form $(\pm 1 / \sqrt{2}, \, \pm 1 / \sqrt{2})$, and their areas of attraction within the unit circle are indicated by shaded regions ($c = 0.6$).
@@ -204,7 +201,7 @@ Reproduced from \citet{knight2016}.
   \vspace{1em}
 
     \includegraphics[width=0.5\textwidth]{voja-encoders}
-    \caption{Input vector clustering of a 3-dimensional ensemble, presented with 6 evenly spaced $\V{x}$. (a) The initial clustering, before any input has been given. (b) Each input vector has been shown for two seconds of simulation time, with intercepts set to $cos \left(\frac{\pi}{6} \right)$. Gray plates show the area of attraction for each input vector. (c) Same as b, with intercepts chosen to give $p_i = 1/6$. (d) Same as b, with intercepts set to $cos \left(\frac{\pi}{3} \right)$. \label{e3d}
+    \caption[Unsupervised learning of a three-dimensional population.]{Input vector clustering of a 3-dimensional ensemble, presented with 6 evenly spaced $\V{x}$. (a)~The initial clustering, before any input has been given. (b)~Each input vector has been shown for two seconds of simulation time, with intercepts set to $cos \left(\frac{\pi}{6} \right)$. Gray plates show the area of attraction for each input vector. (c)~Same as b, with intercepts chosen to give $p_i = 1/6$. (d)~Same as b, with intercepts set to $cos \left(\frac{\pi}{3} \right)$. \label{e3d}
     Reproduced from \citet{voelker2014a}.
        \label{fig:voja-encoders}
     }
@@ -260,10 +257,7 @@ Finally, we conclude by discussing some implications for learning spiking dynami
 
 \subsubsection{Prescribed Error Sensitivity}
 
-\begin{figure}
-\centering
-\includegraphics[width=0.5\textwidth]{pes-filtered-network}
-\caption{\label{fig:pes-filtered-network}
+\fig{pes-filtered-network}{0.5}{Supervised learning rule analyzed as a dynamical system.}{
   Network diagram used to analyze the PES rule.
   A constant input $x$ is represented by a population of $n$ spiking neurons with the activity vector $\V{a} \in \mathbb{R}^n$.
   A dynamic reference signal $r(t)$ determines the error $e(t) = \left((y - r) \ast h\right)(t)$~(equation~\ref{eq:error}), which in turn drives $y(t)$ towards $r(t)$ by modulating the connection weights via PES~(equation~\ref{eq:pes}).
@@ -271,7 +265,6 @@ Finally, we conclude by discussing some implications for learning spiking dynami
   A linear filter $h(t)$ models the post-synaptic current induced by each spike.
   Reproduced from \citet[][Figure~1]{voelker2017c}.
 }
-\end{figure}
 
 Consider a network in Nengo, containing a population of $n$ spiking neurons, encoding the constant scalar input $x$.
 Let $\V{a} \in \mathbb{R}^n$ be the average (i.e.,~rate) activity of each neuron in response to this encoding.\footnote{Here on, we assume that $\V{a} \ne \V{0}$, otherwise PES will have no effect.}
@@ -397,21 +390,14 @@ In Figure~\ref{fig:pes-error}, we confirm that $(r \ast f)(t)$ approximates the 
 In Figure~\ref{fig:pes-oscillator}(Top), we exploit our knowledge of the impulse response, $f(t)$, to engineer a number of decaying oscillators by controlling $r(t)$.
 In Figure~\ref{fig:pes-oscillator}(Bottom), we evaluate \texttt{np.abs(F.evaluate(freqs))} at a variety of frequencies (\texttt{freqs}) to visualize the bandpass behaviour of each filter.
 
-\begin{figure}
-\centering
-\includegraphics[width=1.0\textwidth]{pes-error}
-\caption{ \label{fig:pes-error}
+\fig{pes-error}{1.0}{Validating the dynamical system describing supervised learning.}{
   Comparison of the analytical error (equation~\ref{eq:lowpass-solution}) to the numerical $e(t)$ obtained by simulating the network from Figure~\ref{fig:pes-filtered-network} ($\kappa = \numprint{e-3}$).
   The control signal $r(t)$ is randomly sampled white noise with a cutoff frequency of $10\,$Hz.
   The normalized root-mean-square error is approximately $3.7\%$.
   Reproduced from \citet[][Figure~2]{voelker2017c}.
 }
-\end{figure}
 
-\begin{figure}
-\centering
-\includegraphics[width=1.0\textwidth]{pes-oscillator}
-\caption{ \label{fig:pes-oscillator}
+\fig{pes-oscillator}{1.0}{Leveraging the dynamics of learning to produce oscillations.}{
   Harnessing the dynamics of PES with various $\kappa$ to engineer decaying oscillators with predetermined frequencies ($\omega$) and bandwidths ($Q$), using only a single leaky integrate-and-fire neuron.
   The time constant of the first-order lowpass filter is fixed at $\tau = 0.1\,$s, while $\kappa$ is set to achieve the desired $\omega$ via equation~\ref{eq:bandpass-w}.
   (Top)~Once every second, $r(t)$ is set to a unit-area impulse.
@@ -421,7 +407,6 @@ In Figure~\ref{fig:pes-oscillator}(Bottom), we evaluate \texttt{np.abs(F.evaluat
   The width of each filter is proportional to the decay rate $Q^{-1}$ (equation~\ref{eq:bandpass-Q}).
   Reproduced from \citet[][Figure~3]{voelker2017c}.
 }
-\end{figure}
 
 \subsubsection{Discussion}
 
@@ -461,10 +446,7 @@ For instance, the dynamics of the representational error, the chaotic dynamics o
 We do not go into detail here.
 We mention this because, similar to our lessons learned in the above discussion, it may become important to have the ability to systematically characterize and subsequently leverage the dynamics that are already naturally present in the network's function.
 
-\begin{figure}
-\centering
-\includegraphics[width=0.4\textwidth]{pes-poles}
-\caption{ \label{fig:pes-poles}
+\fig{pes-poles}{0.4}{Bifurcation analysis of oscillations from learning.}{
   Visualizing the poles of $F(s)$ (equation~\ref{eq:poles}) by sweeping $\kappa > 0$ (while $\| \V{a} \|^2$  and $\tau = 0.1\,$s remain fixed).
   Arrows follow the direction of \emph{increasing} $\kappa$.
   When $\phi \le \frac{1}{4}$, the dynamics of PES are a double-exponential.
@@ -474,7 +456,6 @@ We mention this because, similar to our lessons learned in the above discussion,
   As $\kappa$ decreases, the first pole converges to $s = -\frac{1}{\tau}$ (marked by a solid \texttt{x}) while the second pole cancels the zero at $s = 0$. %(i.e.,~$F(s) = -H(s)$, $s \ne 0$).
   Reproduced from \citet[][Figure~4]{voelker2017c}.
 }
-\end{figure}
 
 \subsection{Optimization}
 
