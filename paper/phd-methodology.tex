@@ -95,7 +95,7 @@ Likewise, a bank of oscillators can be used to facilitate motion processing in t
 
 Attractor networks describe a much broader class of nonlinear dynamical systems that capture many important phenomena observed in neurobiological systems~\citep{amit1989modeling, eliasmith2005b}.
 When oscillations, integrators, and point attractors, are all combined, networks may generate complex trajectories through space~\citep{ijspeert2013dynamical, dewolf2017}.
-By arranging all of these building blocks in an engineered fashion, together with feed-forward (i.e.,~synaptic) dynamics coupling various modules, complex systems such as Spaun may carry out end-to-end cognitive tasks and even learn to follow general sets of instructions~\citep{eliasmith2012, choo2018}.
+By arranging all of these building blocks in an engineered fashion, together with feed-forward synaptic dynamics coupling various modules, complex systems such as Spaun may carry out end-to-end cognitive tasks and even learn to follow general sets of instructions~\citep{eliasmith2012, choo2018}.
 The role of chapter~\ref{chapt:delays} is to unveil another class of dynamical systems for continuous nonlinear memory, that connects with ``time cell'' data from the neuroscience literature, and naturally fits into this framework.
 But first, we describe a few concrete examples to help illustrate the universality of dynamical descriptions of computation, in a number of distinct contexts.
 
@@ -120,19 +120,19 @@ In other words, the problem of tracking the maximum across time, is equivalent t
 In the limit of $\dt{} \rightarrow 0$, the desired continuous-time dynamical system is:
 \begin{equation}
 \label{eq:peak-detector-continuous}
-\dot{x}(t) = f(x(t), u(t)), \quad f(x, u) = \kappa \left[u - x \right]_+
+\dot{x}(t) = f(x(t), u(t)), \quad f(x, u) = \theta^{-1} \left[u - x \right]_+
 \end{equation}
-where $\left[ \cdot \right]_+$ denotes positive half-wave rectification. $\kappa > 0$ is a time-constant that determines how quickly the state should adjust to the positive difference. Note that in a purely continuous-time system, assuming no noise, $\kappa$ can be made arbitrarily large, in order to track the peak arbitrary quickly. 
+where $\left[ \cdot \right]_+$ denotes positive half-wave rectification. $\theta > 0$ is a time-constant that determines how quickly the state should adjust to the positive difference. Note that in a purely continuous-time system, assuming no noise, $\theta$ can be made arbitrarily small, in order to track the peak arbitrary quickly. 
 However, since we have a discrete sampling time, our desired dynamical system is:
 \begin{equation}
 \label{eq:peak-detector-discrete}
-x[k + 1] = \bar{f}(x[k], u[k]), \quad \bar{f}(x, u) = \bar{\kappa} \left[u - x \right]_+ + x
+x[k + 1] = \bar{f}(x[k], u[k]), \quad \bar{f}(x, u) = \bar{\theta}^{-1} \left[u - x \right]_+ + x
 \end{equation}
-where $0 < \bar{\kappa} \le 1$ is a (dimensionless) discrete time-constant.
-Equation~\ref{eq:peak-detector-discrete} is related to equation~\ref{eq:peak-detector-continuous} by $\bar{\kappa} = \left( \dt{} \right) \kappa$, assuming Euler integration.
-Note that $\bar{\kappa} = 1$ will give a perfect peak detector, assuming no noise.
+where $\bar{\theta} > 0 $ is a (dimensionless) discrete time-constant.
+Equation~\ref{eq:peak-detector-discrete} is related to equation~\ref{eq:peak-detector-continuous} by $\bar{\theta} = \theta \left( \dt{} \right)^{-1}$, assuming Euler integration.
+Note that $\bar{\theta} = 1$ will give a perfect peak detector, assuming no noise.
 
-In Figure~\ref{fig:wta-peak-detector}, we implement a peak detector by using Nengo directly as a dynamical systems simulator. This does not use any neurons, but rather digitally implements equation~\ref{eq:peak-detector-discrete} with $\bar{\kappa} = 1$ by coupling each variable in the correct way:
+In Figure~\ref{fig:wta-peak-detector}, we implement a peak detector by using Nengo directly as a dynamical systems simulator. This does not use any neurons, but rather digitally implements equation~\ref{eq:peak-detector-discrete} with $\bar{\theta} = 1$ by coupling each variable in the correct way:
 \begin{python}
 with nengo.Network() as model:
     u = nengo.Node(stim)  # stim defines the test input signal
@@ -144,7 +144,7 @@ with nengo.Network() as model:
 We remark that $\textasciitilde z$ is a dynamical primitive in NengoLib that implements a single time-step delay, in correspondance with the $\mathcal{Z}$-transform in signal processing.
 This illustrates the utility of discrete-time dynamical systems, the flexibility of this framework for describing useful computations, and the versatility of Nengo as a programming tool for simulating such systems.
 Both continuous-time and discrete-time versions of this system may be implemented using spiking neurons as well (not shown).
-In chapter~\ref{chapt:nef-extensions} we will address the implementation of such systems using neural populations in both analog and digital hardware.
+In chapter~\ref{chapt:nef-extensions} we will address the implementation of such systems---with both discrete- and continuous-time dynamics---using populations of spiking neurons in analog and digital hardware.
 
 \subsection{Unsupervised learning}
 \label{sec:unsupervised}
