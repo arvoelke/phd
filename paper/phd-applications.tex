@@ -24,7 +24,8 @@ and many other architectures~\citep{naylor2013managing, bekolay2014, corradi2014
 However, at time of writing, the Nengo \emph{backends} for Braindrop~\citep{braindrop2019} and Loihi~\citep{nengoloihi} are brand new---as are the chips themselves~\citep{neckar2018braindrop, davies2018loihi}---and thus currently fall short of their promise to realize \emph{large-scale} functional SNNs in neuromorphic hardware.
 For the case of Braindrop, its shortcoming is mainly by design: the chip is $0.65$\,mm${}^2$ and implements $\numprint{4096}$ neurons.
 It is a proof-of-concept prototype for research, that can in principle be tiled to scale to much larger models in the future and tailored towards the requirements of some application space.
-For the case of Loihi, due to a combination of a lack of hardware support for factorized weight matrices, and limitations on connectivity and memory, the maximum recurrently-connected pool size is $342$ neurons.\footnote{Determined empirically using the \texttt{nengo-loihi==0.6.0} emulator.}
+For the case of Loihi, due to a combination of a lack of hardware support for factorized weight matrices, and limitations on connectivity and memory, the maximum recurrently-connected pool size is $342$ neurons.\footnote{%
+Determined empirically using the \texttt{nengo-loihi==0.6.0} emulator.}
 And with current software workarounds, the feed-forward precision stops scaling in Nengo after about $400$ neurons.
 On the other hand, this is the first and only software abstraction to currently make use of Loihi~\citep{blouw2018a} outside of Intel~\citep{lin2018mapping}, and it is under active development.
 We expect this to get significantly better with time.
@@ -69,11 +70,11 @@ These dynamical systems are described in the same high-level language of Nengo, 
   }\label{fig:integrator-neuromorphic}
 \end{figure}
 
-The integrator, $\theta \dot{\V{x}}(t) = \V{u}(t)$, is a dynamical system used extensively by Spaun~\citep{eliasmith2012} and many other NEF and SPA models~\citep[][to name a few]{singh2004, trujillo2014a, rasmussen2017} for cognitive tasks involving working memory.
+The integrator, $\theta \dot{\V{x}}(t) = \V{u}(t)$, is a dynamical system used extensively by Spaun~\citep{eliasmith2012} and many other NEF and SPA models~\citep[][to name a few]{singh2004, trujillo2014a, rasmussen2017} for cognitive tasks involving working memory (also see section~\ref{sec:dynamics-language} for a brief review).
 This system persists information about the history of an input signal, starting from $t_0$ and extended indefinitely throughout time, as characterized by the solution to its differential equation,
 $$\V{x}(t) = \V{x}(t_0) + \frac{1}{\theta} \int_{t'=t_0}^{t} \V{u}(t')\, dt' \text{.}$$
-The parameter $\theta$ is a time-constant that controls how quickly the memory integrates new information.\footnote{
-This parameter is useful for dimensional analysis, and when considering the transfer function, $\frac{\V{X}(s)}{\V{U}(s)} = \left( \theta s \right)^{-1}$.}
+The parameter $\theta$ is a system-level time-constant that controls how quickly the memory integrates new information.\footnote{%
+This parameter is useful for dimensional analysis, when considering the transfer function, $\frac{\V{X}(s)}{\V{U}(s)} = \left( \theta s \right)^{-1}$, and in determining the precision of the system: $n$ scales as $\bigoh{\theta^{-2}}$ (see Table~\ref{tab:scalability}).}
 For example, beginning from an initial state of $\V{x}(t_0) = \V{0}$, if we hold the input constant at $\V{u}(t) = \V{v}$ for $\theta$ seconds ($t_0 < t \le t_0 + \theta$), and then clamp the input to $\V{u}(t) = \V{0}$ thereafter ($t > t_0 + \theta$), then $\V{x}(t) = \V{v}$ will ``store'' the vector $\V{v}$ indefinitely.
 More generally, any finite set of nonlinear differential equations can be described as the integration of an input vector that is some nonlinear function of the state-vector---augmented to also include $\V{u}(t)$---as in $\theta \dot{\V{x}}(t) = \V{f}\left({\V{x}(t)}\right)$.
 The nonlinearity $\V{f}(\cdot)$ may then be supported by a pool of neurons encoding the state-vector, as explained in section~\ref{sec:nef}.
@@ -81,7 +82,7 @@ Thus, the integrator is a basic component that can be used to implement sophisti
 We therefore use the integrator, implemented by a pool of spiking neurons using the methods of the NEF, as a benchmark for evaluating the ability of neuromorphic hardware to implement generic dynamical systems.
 
 In Figure~\ref{fig:integrator-neuromorphic}, we instantiate a one-dimensional integrator ($\theta = 1$\,s) on both Braindrop (1024 neurons) and Loihi (256 neurons).
-%\footnote{
+%\footnote{%
 %We use four times fewer neurons on Loihi versus Braindrop, as increasing the pool size leads to a bug in the \texttt{nengo-loihi}~v0.4.0 software.}
 In both cases, the input signal is a white-noise test signal, band-limited to $1$\,Hz.
 Both the ideal and the spiking activity are filtered with a lowpass ($\tau = 200$\,ms).

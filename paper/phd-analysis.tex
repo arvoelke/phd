@@ -587,6 +587,7 @@ Therefore,
 \sqrt{ \variance{ \V{\mu}(t) } } &= \sqrt{ \variance{\sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i- \sum_{i=1}^n \left( r_i \ast h \right)(t) \V{d}^\V{f}_i} } \\
 &= \sqrt{ \variance{\sum_{i=1}^n \left( \tilde{Y}_i(t) - \expect{ \tilde{Y}_i(t) } \right) \V{d}^\V{f}_i } } \\
 &= \sqrt{ n \variance{\tilde{Y}_\cdot(t)} \variance{\V{d}^\V{f}_\cdot}} \\
+&= \sqrt{ n \left(\tau^{-2}\right) \left(n^{-2}\right) } \\
 &= \bigoh{ \frac{1}{\tau \sqrt{n}} } \text{.}
 \end{aligned}
 \end{equation}
