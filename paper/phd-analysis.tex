@@ -759,7 +759,7 @@ This occurs even when the input is filtered using a lowpass synapse with an arbi
 We take this to be of importance in the context of biological modelling and neuromorphic hardware, since there is usually some undesirable signal, error, noise, or likewise, that must eventually be accounted for in some manner.
 Integrating zero-mean error is not a general solution (although it may be sufficient in some contexts in conjunction with saturation effects).
 The NEF accounts for this by explicitly incorporating a noise model into the training procedure (see equation~\ref{eq:decoder_solution}) and implicitly establishing an array of fixed points in state-space~\citep[][p.~237]{eliasmith2003a}.
-For these reasons, it is also robust to a number of different neuron models and synapse models, as is the focus of the extensions discussed below.
+In addition, the NEF is robust to the use of a number of different neuron models and synapse models, as is the focus of extensions discussed below.
 
 \subsection{Extensibility}
 \label{sec:nef-extensibility}

@@ -131,7 +131,7 @@ This can be used as a basic building block for working memory models that must r
 
 \TODO{Grab and plot the distribution from the calibration data using the mapped xy coordinates for the 3 ensembles.}
 
-To implement the DN, three pools, each containing $128$ spiking neurons, are recurrently coupled to each other (and to themselves), and trained to optimally buffer a white-noise test signal---band-limited to $3$\,Hz---across a $100$\,ms sliding time-window.
+To implement the DN, three pools, each containing $128$ spiking LIF neurons, are recurrently coupled to each other (and to themselves), and trained to optimally buffer a white-noise test signal---band-limited to $3$\,Hz---across a $100$\,ms sliding time-window.
 Output spikes are filtered using a lowpass synapse with $\tau = 20$\,ms, and weighted to decode both the state-vector and the window of history using equation~\ref{eq:delay-readouts}.
 
 In this experiment we use identical Nengo model code for both neuromorphic backends.

@@ -385,13 +385,9 @@ For example, Figure~\ref{fig:delay-autocorrelation} visualizes $f$ within the sp
 \subsection{Scalability considerations}
 \label{sec:delay-scalability}
 
-\begin{figure}
-\centering
-  \includegraphics[width=1.0\linewidth]{pade-delay-error}
-  \caption{ \label{fig:pade-delay-error} 
-    Visualizing the error in the Delay Network, $|E_q(2 \pi i f \cdot \theta)|$ (see equation~\ref{eq:pade-delay-error}), while varying the dimensionless quantity $f \cdot \theta$ (input frequency multiplied by delay length), and the order of approximation, $q$.
-  } 
-\end{figure}
+\fig{pade-delay-error}{1}{Performance scaling of the Deep Delay Network.}{
+  Visualizing the error in the Delay Network, $|E_q(2 \pi i f \cdot \theta)|$ (see equation~\ref{eq:pade-delay-error}), while varying the dimensionless quantity $f \cdot \theta$ (input frequency multiplied by delay length), and the order of approximation, $q$.
+} 
 
 In this section we address several fundamental questions regarding the scalability, or memory ``capacity'', of the Delay Network~(DN) with respect to $q$, $\theta$, and the complex frequency of the input signal, $s = 2 \pi i f$, for some real frequency, $f$.
 For the time being, we disregard the error arising from neural representation by assuming we can make $n$ sufficiently large (see section~\ref{sec:scalability}).
@@ -849,16 +845,17 @@ In each case, the system of equations~\ref{eq:ss-delay} are balanced and simulat
 The simulated value of $\| P_k(t) \|$ (equation~\ref{eq:periodicity-matrix}) is then compared to the ideal value of $p_k(t)$ (equation~\ref{eq:periodicity}).
 The results in Figure~\ref{fig:periodicity} empirically validate the claim of equation~\ref{eq:approx-periodicity} for $k \in \{2, 3, 4, 5\}$, by demonstrating that $\|P_k \V{x}(t) \|$ proportionally-approximates the true $k$-periodicity.
 
-Crucially, nothing has changed about the DN in order to support this brand of temporal pattern recognition.
+Crucially, nothing has changed about the DN in order to support this form of temporal pattern recognition.
 The computation is merely a fixed linear transformation of the state, which is already being computed by the DN, followed by a nonlinear L2-norm operation.
 Thus, in order to detect temporal patterns, computations such as measures of $k$-periodicity are realized as fixed linear transformations between the DN and additional pools of neural nonlinearities via Principles~1 and~2 of the NEF.
 
-\subsection{Deep Delay Networks}
+\subsection{Deep delay networks}
 \label{sec:deep-delay-networks}
 
 We now consider an architecture that stacks multiple DNs on top of one another, to form a \emph{Deep Delay Network}~(DDN) chaining multiple delays together.
+This is the same as considering a single ``column'' from the architecture explored in section~\ref{sec:delay-lstm}, although here we analyze it theoretically.
 For simplicity, we consider the case where each delay has the same length, $\gamma$, and each layer has the same dimensionality, $q$.
-Thus, $k$ layers results in an overall delay of length $\theta = k \gamma$, and represents $k \cdot q$ total dimensions.
+Thus, $k$ layers result in an overall delay of length $\theta = k \gamma$, and represent $k q$ dimensions in total.
 
 The state-vector of the $i^\text{th}$ layer, is denoted $\V{x}_i(t)$, where $i=0$ corresponds to the deepest layer (i.e., the last delay), and $i=k-1$ corresponds to the shallowest layer (i.e., the first delay).
 We note that such an architecture realizes an alternative solution to computing the $k$-periodicity in section~\ref{sec:periodicity}; in particular, since $\V{x}_i(t)$ corresponds to the $i^\text{th}$ segment of input history, we have:
@@ -889,14 +886,15 @@ When $k = 1$, this reduces to equation~\ref{eq:pade-delay-error}.
 
 To gain insights into potential trade-offs between $k$ and $q$, we require additional constraints to keep the comparison meaningful.
 If our main constraint is the number of neurons, then resource usage scales as $\bigoh{k q}$ given a constant level of accuracy per dimension.
-However, if our main constraint is the number of multiply-adds and memory usage (i.e.,~connection density), then these scale as $\bigoh{k q^2}$ assuming the use of factored connection-weight matrices (as in the standard NEF formulation, and as realized on both SpiNNaker and Braindrop) and assuming the use of balanced state-space realizations.
-In either case, we evaluate $E_{q,k}(\theta s)$ while varying $(q, k)$ to keep the resource-cost fixed (see Figure~\ref{fig:deep-delay-network-error}).
+However, if our main constraint is the number of multiply-adds and memory usage (i.e.,~connection density), then these scale as $\bigoh{k q^2}$ assuming the use of factorized connection-weight matrices (as in the standard NEF formulation, and as realized on both SpiNNaker and Braindrop, but not Loihi) and assuming the use of balanced state-space realizations.
+$\bigoh{k q^2}$ is also the number of internal cell parameters that need to be learned in the architecture of section~\ref{sec:delay-lstm}, since these are shared across all columns.
+In both cases, we evaluate $E_{q,k}(\theta s)$ while varying $(q, k)$ in such a way that keeps the resource-cost fixed (see Figure~\ref{fig:deep-delay-network-error}).
 
 Depending on which resource-cost function is considered, we obtain very different trade-offs for the amount of error at some desired operating point $\theta s$ (see Figure~\ref{fig:pade-delay-error}).
 In the former case of minimizing neural resources, we should set $k = 1$ and minimize $q$ such that $\theta s$ falls within the radius of convergence.
 This should come as no surprise, as the DN has been derived to optimally approximate the delay line, and so there is no benefit to adding additional layers if we are free to scale $q$.
-However, for the latter case of minimizing connectivity, we should primarily minimize $q$.
-In other words, deeper structures provide an improvement in accuracy when paying $\bigoh{kq^2}$ for resources.
+However, for the latter case of minimizing connectivity or the number of trainable parameters, then we should primarily minimize $q$ and maximize $k$.
+In other words, deeper delay structures provide a considerable payoff when the cost is $\bigoh{kq^2}$.
 
 Furthermore, note that in Figure~\ref{fig:deep-delay-network-error}, the error oscillates with dampened amplitude beyond the radius of convergence for larger $k$.
 This can be seen from equation~\ref{eq:deep-delay-network-error} by noticing that $[q-1/q]e^{-\gamma s}$ is a complex number with magnitude less than $1$, that is then exponentiated to the power of $k$.
