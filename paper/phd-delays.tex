@@ -635,7 +635,7 @@ For this experiment, we first ported the same implementation described in \citet
 We compared this to the standard FORCE approach---which we refer to as ``classic-FORCE''---and verified that it performed slightly worse than the full-FORCE network, but still better than an equivalent reservoir computer.
 Since Nengo allows for the substitution of various spiking and non-spiking neuron models, we further validated both implementations with spiking neurons as well, and obtained reasonable levels of accuracy, similar to \citet{depasquale2016using, thalmeier2016learning, nicola2016supervised}.
 
-However, we found that simply modifying the target signal to be a delayed version of a low-frequency signal, posed a significant challenge to these networks.
+However, we found that simply modifying the target signal to be a delayed version of its low-frequency input signal, posed a significant challenge to these networks.
 Thus, the learning rate was lowered from $1$ to $\numprint{e-3}$, and the time-step set to $\dt{} = 5$\,ms, which we found to help regularize the solution.
 We thus also considered a baseline approach:
 we took the original FORCE network, but removed the feedback loop that re-encodes the learned output.

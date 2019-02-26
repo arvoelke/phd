@@ -2,9 +2,9 @@
 \label{chapt:background}
 
 
-One of the earliest citations in the neural network literature can be traced back to Rosenblatt's invention of the perceptron~\citep{rosenblatt1958perceptron} based on the work of \citet{mcculloch1943logical}.
-The perceptron is equivalent to a single-layer, feed-forward, neural network, where the input vector is multiplied by a matrix, and then projected through static nonlinear activation units (e.g., a threshold function, sigmoid function, rectified linear function, or similar).\footnote{A constant bias term is usually added to the weights, to control the activation threshold of each unit.}
-This static nonlinearity is intended to correspond to the abstract behaviour (i.e., average activation level) of an artificial ``neuron'', while the matrix corresponds to the synaptic weights of each neuron -- hence the term ``weight matrix''.
+One of the earliest citations in the neural network literature can be traced back to Rosenblatt's invention of the perceptron~\citep{rosenblatt1958perceptron} based on the model of \citet{mcculloch1943logical}.
+The perceptron is equivalent to a single-layer, feed-forward, neural network, where the input vector is multiplied through a weight matrix, and then projected through static nonlinear activation units (e.g., a threshold function, sigmoid function, rectified linear function, or similar).\footnote{A constant bias term is usually added to the weights, to control the activation threshold of each unit.}
+This static nonlinearity is intended to correspond to the abstract behaviour (i.e., average activation level) of an artificial ``neuron'', while the matrix corresponds to a postsynaptic weighting of activations -- hence the term ``weight matrix''.
 The output(s) of the network provide a classification of the input vector -- the interpretation of which is task-dependent.
 The weight matrix is learned from example data, in a black-box manner, by applying a simple delta rule that, in effect, performs gradient descent on a loss function across the training data.
 
@@ -14,7 +14,7 @@ The XOR function is perhaps the simplest example of a function that \emph{cannot
 As a brief aside, many have credited this book as bringing upon the ``AI winter'' of the 1970s: neural network architectures were soon abandoned in favour of symbol-based architectures and so-called production systems, in which general aspects of human-like intelligence are reproduced by the manipulation of abstract symbolic representations~\citep{historyofperceptrons, newell1972human}.
 
 Fortunately, additional layers permit the computation of more complicated nonlinear functions.
-That is, multi-layer feed-forward networks do not suffer the severe limitation of requiring linear-separability.
+That is, multi-layer feed-forward networks do not suffer the severe limitation of requiring linearly-separable output classes.
 By merely stacking two perceptrons together (i.e., introducing a ``hidden layer''), the network becomes able to compute any bounded continuous function---a result known as the universal approximation theorem~\citep{hornik1989multilayer}---assuming the nonlinear activation units are bounded and continuous themselves.
 This insight, together with the stacking of deeper layers to compose increasingly-complicated functions with fewer neurons, the use of ``backpropagation''~\citep{werbos1974beyond, rumelhart1986learning}---performing gradient descent across multiple layers via the chain rule---to learn all of the weight matrices, combined with increasingly-powerful GPUs to process large datasets, all coalesced to usher in the reviving era of ``deep learning''~\citep{sejnowski2018deep}.
 
@@ -48,11 +48,11 @@ That is,
 \begin{equation}
 \begin{aligned} \label{eq:discrete-dynamical-system}
 \V{x}\left[ t + 1 \right] &= \V{f}\left(\V{x}\left[ t \right], \V{u}\left[ t \right] \right) \\
-\V{y}\left[ t + 1 \right] &= \V{g}\left(\V{x}\left[ t \right] \right) \text{,}
+\V{y}\left[ t \right] &= \V{g}\left(\V{x}\left[ t \right] \right) \text{,}
 \end{aligned}
 \end{equation}
 where $\V{x} \in \mathbb{R}^d$ is a finite-dimensional ($d \in \mathbb{N}$) state-vector, $\V{u}$ is some input vector, and $\V{y}$ is some output vector -- all indexed at discrete units of time, $t$.\footnote{
-There is a similar theorem for continuous-time dynamical systems~\citep{funahashi1993approximation, bennett1995universal}.
+There are similar theorems for continuous time~\citep{funahashi1993approximation, bennett1995universal}.
 }
 The state updates according to a nonlinear mixing of itself with the input.
 The output is a static mapping (i.e., ``readout'') of the state.
@@ -60,7 +60,7 @@ The causality constraint implies that these functions do not require knowledge o
 % Intuitively, the input and recurrent connections correspond to $\V{f}\left(\cdot, \cdot\right)$ while the outputs correspond to $\V{g}\left(\cdot\right)$.
 Crucially, an RNN with sufficiently many nonlinear units can approximate any instantiation of equation~\ref{eq:discrete-dynamical-system} arbitrarily well, which in turn serves as a universal model of computation~\citep{turing1938computable}.
 
-On the other hand, the human brain itself, is a highly recurrent system~\citep{dayan2001theoretical}.
+On the other hand, the human brain itself is a highly recurrent system~\citep{dayan2001theoretical}.
 Assuming its mechanisms obey the laws of physics, it must also necessarily be a dynamical system~\citep{amit1989modeling, mckenna1994brain, port1995mind}.
 And unless the brain harnesses quantum physics---which is argued to be irrelevant to cognitive function~\citep{litt2006brain}---is a ``hypercomputer'' or a ``super-Turing'' computer---which is argued to require unphysical resources~\citep{broersma2018computability}---its dynamics must also be finite-dimensional.
 Causality follows from assuming the brain does not violate the second law of thermodynamics~\citep{evans1996causality}.
@@ -69,7 +69,7 @@ In essense, we assume that the brain is a physical ``machine'' with finite spati
 From this position, it follows that the class of computations made available by RNNs is at least as large as the class of computations that can be performed by the brain.
 Constraints on the physical devices leveraged by the brain (i.e.,~constraints on timing, connectivity, precision, and so forth) are likely to impose limitations that make RNNs strictly more powerful in theory.
 
-In summary, the field of neural network theory has progressed from: the perceptron, which had the problem of not being powerful enough; to the multi-layer feed-forward network, which is a universal approximator to static functions; and finally to the RNN, which is a universal approximator to physically-implementable dynamical systems, for which we consider the brain to be an instance.
+In summary, the field of neural network theory has progressed from: the perceptron, which had the problem of not being very powerful; to the multi-layer feed-forward network, which is a universal approximator to static functions; and finally to the RNN, which is a universal approximator to physically-implementable dynamical systems, for which we consider the brain to be an instance.
 Thus, while feed-forward networks are fundamentally incapable of reproducing human intelligence, RNNs are, at least in theory, up to the task.
 
 % Then why have RNNs not yet successfully displayed human levels of intelligence?
@@ -115,7 +115,7 @@ The Long Short-Term Memory~\citep[LSTM;][]{hochreiter1997long} network addresses
 Rather than a static nonlinearity, the basic computational element is an LSTM ``cell'': a group of five nonlinearities and three multiplicative gates, dynamically coupled to one another in a specific manner, such that its default behaviour is to ``store'' its input, by propagating an internal state variable back to itself on the next time-step (i.e.,~using an internal feedback connection).
 Multiplicative gating controls whether the input should be integrated, whether the memory is to decay with some leakage, and whether to output the contents of the memory~\citep{gers1999learning}.
 Importantly, all of these mechanisms are differentiable, and so BPTT can be applied to automatically learn all of the gating parameters.
-Thus, the LSTM can be viewed as a particular way of configuring and initializing an RNN in a manner that assists BPTT, by biasing it towards latching onto values and persisting them for long, yet controlled, periods of time.
+Thus, the LSTM may be viewed as a particular way of configuring and initializing an RNN in a manner that assists BPTT, by biasing it towards latching onto values and persisting them for long, yet controlled, periods of time.
 
 The LSTM reduces the vanishing and exploding gradient problems, described in \citet{bengio1994learning}, by restructuring the gradient that is involved when integrating over time.
 The standard practice is to create layers of LSTM cells, and then stack several of these layers on top of one another, using weight matrices to fully connect each layer to the next~\citep{graves2013speech}.
@@ -143,7 +143,7 @@ These traces can then be decoded to reconstruct the output signal in a manner th
 Details are provided in section~\ref{sec:relationships} after introducing the NEF.
 
 There are two great insights driving the adoption of RC: (1)~randomized feedback provides an overcomplete basis of nonlinear time-varying signals that can be linearly combined to approximate some target signal, and (2)~by leaving the recurrent weights fixed, the optimization procedure is greatly simplified; training the readout weights amounts to a least-squares problem.
-However, the benefits of RC do not come without limitations involving memory capacity. \TODO{Cite some key results.}
+However, the benefits of RC do not come without limitations involving memory capacity~\citep{wallace2013randomly}.
 In particular, section~\ref{sec:delay-rc} compares the performance of RC to the NEF on a continuous-time memory benchmark, thus highlighting severe scaling issues with RC, while demonstrating how the NEF solves these practical issues.
 
 \subsection{Engineered approaches}
@@ -166,14 +166,14 @@ And ``Dynamic Neural Fields as a Step Towards Cognitive Neuromorphic Architectur
 
 It is important to preface our discussion with a reminder that, although all of these approaches are engineered from a top-down modelling perspective, one can still apply BPTT (or any other optimization method) to fine-tune the resulting RNN end-to-end from example input-output pairs -- a hybrid approach that is embraced by the NEF, its software implementation Nengo, and related libraries~\citep{rasmussen2018nengodl, hazan2018bindsnet}.
 In this context, the purpose of these engineered approaches is as follows: incorporate prior knowledge of tasks to dramatically simplify the optimization procedure, provide guarantees regarding scalability and precision, and place appropriate constraints on the initial configuration of the RNN to assist in future rounds of optimization.
-At the same time, this provide greater transparency into the relationships between network parameters, configuration, and function.
+At the same time, this provides greater transparency into the relationships between network parameters, configuration, and function.
 This transparency enables theoretical insights into neural computation, and, as we will show in chapter~\ref{chapt:delays}, practical advances on RNN benchmarks that would otherwise be quite difficult to obtain with a pure black-box approach.
 
 In section~\ref{sec:nef} we provide a detailed account of the NEF, and in section~\ref{sec:relationships} we draw architectural comparisons to both RC and FORCE.
-Its extension, full-FORCE~\citep{depasquale2018full}, can be viewed an an instance of the NEF with full-rank weight matrices~\citep{tripp2006neural}, where training is performed online rather than offline, and randomized feedback is thrown in to serve the same purposes as in RC.
+Its extension, full-FORCE~\citep{depasquale2018full}, may be viewed an an instance of the NEF with full-rank weight matrices~\citep{tripp2006neural}, where training is performed online rather than offline, and randomized feedback is thrown in to serve the same purposes as in RC.
 The crucial difference is that FORCE networks assert that recurrently connecting the estimate of the target variable back into the network during both training and inference will improve performance. 
 The methods of \citet{thalmeier2016learning} provide a means of realizing full-FORCE networks in biologically-plausible spiking networks using a precise spike-time coding mechanism, similar to ~\citet{boerlin2013predictive}, supported by nonlinearities in the synapses.
-On the other hand, \citet{jaeger2014controlling} can be viewed as an extension of RC that is essentially an offline variant of FORCE, or a non-spiking NEF network~\citep{aubin2017}.
+On the other hand, \citet{jaeger2014controlling} may be viewed as an extension of RC that is essentially an offline variant of FORCE, or a non-spiking NEF network~\citep{aubin2017}.
 In section~\ref{sec:force-comparison}, we find that both the NEF and RC outperform FORCE on a continuous-time memory benchmark, suggesting that the primary assumption made by FORCE could be incorrect for a large class of memory-based tasks.
 
 Balanced spiking networks also share many commonalities with the NEF, primarily a procedure for mapping a dynamical state-vector onto a population of spiking neurons, via a low-rank weight matrix that accounts for the dynamics of the neurons and synapses.
