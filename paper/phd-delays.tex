@@ -446,7 +446,7 @@ In all cases, the representation employed by the DN (i.e., the linear relationsh
 \label{sec:delay-applications}
 
 We have developed rigorous theory to understand the Delay Network~(DN) in terms of its linear dynamics, and its nonlinear encoding of time, and used the NEF to present a spiking example in Figure~\ref{fig:delay-example}.
-Now, we turn to several concrete applications that are of relevance to those studying reservoir computing, FORCE learning, deep RNNs and stacked LSTMs, as well as the computational neuroscience and cognitive modelling communities at large.
+Now, we turn to several concrete applications that are of relevance to those studying reservoir computing, FORCE learning, deep RNNs and stacked LSTMs, as well as the cognitive modelling and computational neuroscience communities at large.
 
 \subsection{Reservoir computing}
 \label{sec:delay-rc}
@@ -671,83 +671,6 @@ For longer delays ($\theta > 0.1$\,s), the classic-FORCE network performs well r
 
 \subsection{Long short-term memory}
 \label{sec:delay-lstm}
-
-\subsection{Time cell data}
-\label{sec:time-cells}
-
-This section has been reproduced from \citet{voelker2018}.
-
-We now describe a connection between the delay network from this chapter and recent neural evidence regarding time cells.
-Time cells were initially discovered in the hippocampus and proposed as temporal analogs of the more familiar place cells~\citep{eichenbaum2014}.
-Similar patterns of neural activity have since been found throughout striatum~\citep{mello2015scalable} and cortex~\citep{luczak2015packet}, and have been extensively studied in the rodent mPFC~\citep{kim2013neural, tiganj2016sequential}.
-
-Interestingly, we find that our delay network produces qualitatively similar neural responses to those observed in time cells.
-This is shown in Figure~\ref{fig:time-cells}, by comparing neural recordings from mPFC~\citep[][Figure~4~C,D]{tiganj2016sequential} to the spiking activity from a network implementing a delay of the same length used in the original experiments.
-Specifically, in this network, a random population of $300$ spiking LIF neurons maps a $4.784$\,s\footnote{%
-This value comes from \citet{tiganj2016sequential}.}
-delay onto an alpha synapse ($\tau = 0.1$\,s) using our extension.
-The order of the approximation is $q = 6$ (see equation~\ref{eq:ss-delay}), and the input signal is a rectangular pulse beginning at $t = -1$\,s and ending at $t = 0$\,s (height $= 1.5$).
-The simulation is started at $t = -1$\,s and stopped at $t = 5$\,s.
-
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{{NECO-04-17-2838-Figure.10-Top}.pdf}
-  \includegraphics[width=0.96\textwidth, trim=0 0 -0.7in -0.4in]{{NECO-04-17-2838-Figure.10-Bottom}.pdf}
-  \caption{ \label{fig:time-cells}
-    Comparison of time cells to a NEF delay network.
-    (Top)~Spiking activity from the rodent mPFC~\citep[reproduced from][Figure~4~C,D]{tiganj2016sequential}.
-    Neural recordings were taken during a maze task involving a delay period of $4.784$\,s.
-    (Bottom)~Delay network implemented using the NEF (see text for details).
-    %A random population of $300$ spiking LIF neurons map a $4.784$\,s delay onto an alpha synapse ($\tau = 0.1$\,s) using equation~\ref{eq:general-linear-approx}.
-    %The order of the approximation is $q = 6$ (see equation~\ref{eq:ss-delay}), and the input signal is a rectangular pulse beginning at $t = -1$\,s and ending at $t = 0$\,s.
-    $73$ time cells are selected by uniformly sampling encoders from the surface of the hypersphere.
-    (A)~Cosine similarity between the activity vectors for every pair of time-points.
-    The diagonal is normalized to the warmest colour.
-    The similarity spreads out over time.
-    (B)~Neural activity sorted by the time to peak activation.
-    Each row is normalized between $0$ (cold) and $1$ (warm).
-    We overlay the curve from Figure~\ref{fig:pca}~(Bottom) ($q = 6$) to model the peak-response times.
-    Reproduced from \citet[][Figure~10]{voelker2018}.
-  }
-\end{figure}
-
-We also note a qualitative fit between the length-curve for $q=6$ in Figure~\ref{fig:pca} and the peak response-times in Figure~\ref{fig:time-cells}.
-Specifically, Figure~\ref{fig:pca}~(Bottom) models the non-uniform distribution of the peak response-time of the cells as the length of the trajectory of $\V{x}(t)$ through time.
-Implicit to this model are the simplifying assumptions that encoders are uniformly distributed, and that the L2-norm of the state-vector remains constant throughout the delay period.
-Nevertheless, this model produces a qualitatively similar curve when $q = 6$ to both peak response-times from Figure~\ref{fig:time-cells}~(Right) (see overlay).
-
-More quantitatively, we performed the same analysis on our simulated neural activity as \citet{tiganj2016sequential} performed on the biological data to capture the relationship between the peak and width of each time cell.
-Specifically, we fit the spiking activity of each neuron with a Gaussian to model the peak time~($\mu_t$) and the standard deviation~($\sigma_t$) of each cell's ``time field''.\footnote{%
-We set $a_1 = P = S = 0$ in equation~1 from \citet{tiganj2016sequential}, since we have no external variables to control.
-}
-This fit was repeated for each of the $250$ simulated spiking LIF neurons that remained after selecting only those that had at least $90\%$ of their spikes occur within the delay interval.
-The correlation between $\mu_t$ and $\sigma_t$ had a Pearson's coefficient of $R = 0.68$ ($\rho < \numprint{e-34}$), compared to $R = 0.52$ ($\rho < \numprint{e-5}$) for the biological time cells.
-An ordinary linear regression model linking $\mu_t$ (independent variable) with $\sigma_t$ (dependent variable) resulted in an intercept of $0.27 \pm 0.06$ (standard error) and a slope of $0.40 \pm 0.03$ for our simulated data, compared to $0.27 \pm 0.07$ and $0.18 \pm 0.04$ respectively for the time cell data.
-We note that we used the same bin size of $1$\,ms, modeled the same delay length, and did not perform any parameter fitting beyond the informal choices of $90\%$ cutoff, dimensionality ($q=6$), area of the input signal ($1.5$), and synaptic time-constant ($\tau = 0.1$\,s).
-
-Neural mechanisms previously proposed to account for time cell responses have either been speculative~\citep{tiganj2016sequential},
-or rely on the precision of gradually changing firing rates from a bank of arbitrarily long, ideally spaced, lowpass filters~\citep{shankar2012scale, howard2014unified, tiganj2015simple, tiganj2017neural, zoran2018}.\footnote{%
-One may view this as a generalization of the main idea from \citet{goldman2009memory}.
-}
-It is unclear if such methods can be implemented accurately and scalably using heterogeneous spiking neurons.
-We suspect that robust implementation is unlikely given the high precision typically relied upon in these abstract models.
-% For instance, the model from must be able to distinguish values exponentially close to $0$ in the neural representation.
-
-In contrast, our proposed spiking model has its network-level dynamics derived from first principles to optimally retain information throughout the delay interval, without relying on a particular synapse model or bank of filters.
-All of the neurons recurrently work together in a low-dimensional vector space to make efficient use of neural resources.
-By using the methods of the NEF, this solution is inherently robust to spiking noise and other sources of uncertainty.
-Furthermore, our explanation accounts for the nonlinear distribution of peak firing times as well as its linear correlation with the spread of time fields.
-
-The observation of time cells across many cortical and subcortical areas suggests that the same neural mechanisms may be used in many circuits throughout the brain.
-As a result, the neural activity implicated in a variety of delay tasks may be the result of many networks optimizing a similar problem to that of delaying low-frequency signals recurrently along a low-dimensional manifold.
-Such networks would thus be participating in the temporal coding of a stimulus, by representing its history across a delay interval.
-%\footnote{%
-%In appendix~\ref{app:ss-delay}, we briefly mention that this delay length may also be modulated on-the-fly.
-% Some food for thought: since multiplication is so inaccurate, this might suggest that biological systems have a way to induce effective changes in the time-constants with some sort of adaptive normalization or gating or etc.
-%In apendix~\ref{app:window}, we derive the output transformations required to decode a rolling window.
-%}
-% Possible predictions regarding time-constants / dimensionality?
-% our network generalizes to predict the responses of time-cells to stimuli that are not simply discrete impulse events.
 
 \subsection{Detecting patterns}
 \label{sec:periodicity}
@@ -1017,4 +940,82 @@ Likewise, by exploiting an axonal delay, the same level of performance (e.g.,~$5
 In summary, accounting for higher-order synaptic properties allows us to harness the axonal transmission delay to more accurately approximate network-level delays in spiking dynamical networks.
 
 Together, these results demonstrate that our extensions can significantly improve the accuracy of high-level network dynamics.
-Having demonstrated this for delays, in particular, suggests that the extension is useful for a wide variety of biologically relevant networks -- for instance, the time cells discussed in section~\ref{sec:time-cells}.
+Having demonstrated this for delays, in particular, suggests that the extension is useful for a wide variety of biologically relevant networks, such as those discussed in the following section.
+
+\subsection{Time cell data}
+\label{sec:time-cells}
+
+This section has been reproduced from \citet{voelker2018}.
+
+We now describe a connection between the delay network from this chapter and recent neural evidence regarding time cells.
+Time cells were initially discovered in the hippocampus and proposed as temporal analogs of the more familiar place cells~\citep{eichenbaum2014}.
+Similar patterns of neural activity have since been found throughout striatum~\citep{mello2015scalable} and cortex~\citep{luczak2015packet}, and have been extensively studied in the rodent mPFC~\citep{kim2013neural, tiganj2016sequential}.
+
+Interestingly, we find that our delay network produces qualitatively similar neural responses to those observed in time cells.
+This is shown in Figure~\ref{fig:time-cells}, by comparing neural recordings from mPFC~\citep[][Figure~4~C,D]{tiganj2016sequential} to the spiking activity from a network implementing a delay of the same length used in the original experiments.
+Specifically, in this network, a random population of $300$ spiking LIF neurons maps a $4.784$\,s\footnote{%
+This value comes from \citet{tiganj2016sequential}.}
+delay onto an alpha synapse ($\tau = 0.1$\,s) using our extension.
+The order of the approximation is $q = 6$ (see equation~\ref{eq:ss-delay}), and the input signal is a rectangular pulse beginning at $t = -1$\,s and ending at $t = 0$\,s (height $= 1.5$).
+The simulation is started at $t = -1$\,s and stopped at $t = 5$\,s.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{{NECO-04-17-2838-Figure.10-Top}.pdf}
+  \includegraphics[width=0.96\textwidth, trim=0 0 -0.7in -0.4in]{{NECO-04-17-2838-Figure.10-Bottom}.pdf}
+  \caption{ \label{fig:time-cells}
+    Comparison of time cells to a NEF delay network.
+    (Top)~Spiking activity from the rodent mPFC~\citep[reproduced from][Figure~4~C,D]{tiganj2016sequential}.
+    Neural recordings were taken during a maze task involving a delay period of $4.784$\,s.
+    (Bottom)~Delay network implemented using the NEF (see text for details).
+    %A random population of $300$ spiking LIF neurons map a $4.784$\,s delay onto an alpha synapse ($\tau = 0.1$\,s) using equation~\ref{eq:general-linear-approx}.
+    %The order of the approximation is $q = 6$ (see equation~\ref{eq:ss-delay}), and the input signal is a rectangular pulse beginning at $t = -1$\,s and ending at $t = 0$\,s.
+    $73$ time cells are selected by uniformly sampling encoders from the surface of the hypersphere.
+    (A)~Cosine similarity between the activity vectors for every pair of time-points.
+    The diagonal is normalized to the warmest colour.
+    The similarity spreads out over time.
+    (B)~Neural activity sorted by the time to peak activation.
+    Each row is normalized between $0$ (cold) and $1$ (warm).
+    We overlay the curve from Figure~\ref{fig:pca}~(Bottom) ($q = 6$) to model the peak-response times.
+    Reproduced from \citet[][Figure~10]{voelker2018}.
+  }
+\end{figure}
+
+We also note a qualitative fit between the length-curve for $q=6$ in Figure~\ref{fig:pca} and the peak response-times in Figure~\ref{fig:time-cells}.
+Specifically, Figure~\ref{fig:pca}~(Bottom) models the non-uniform distribution of the peak response-time of the cells as the length of the trajectory of $\V{x}(t)$ through time.
+Implicit to this model are the simplifying assumptions that encoders are uniformly distributed, and that the L2-norm of the state-vector remains constant throughout the delay period.
+Nevertheless, this model produces a qualitatively similar curve when $q = 6$ to both peak response-times from Figure~\ref{fig:time-cells}~(Right) (see overlay).
+
+More quantitatively, we performed the same analysis on our simulated neural activity as \citet{tiganj2016sequential} performed on the biological data to capture the relationship between the peak and width of each time cell.
+Specifically, we fit the spiking activity of each neuron with a Gaussian to model the peak time~($\mu_t$) and the standard deviation~($\sigma_t$) of each cell's ``time field''.\footnote{%
+We set $a_1 = P = S = 0$ in equation~1 from \citet{tiganj2016sequential}, since we have no external variables to control.
+}
+This fit was repeated for each of the $250$ simulated spiking LIF neurons that remained after selecting only those that had at least $90\%$ of their spikes occur within the delay interval.
+The correlation between $\mu_t$ and $\sigma_t$ had a Pearson's coefficient of $R = 0.68$ ($\rho < \numprint{e-34}$), compared to $R = 0.52$ ($\rho < \numprint{e-5}$) for the biological time cells.
+An ordinary linear regression model linking $\mu_t$ (independent variable) with $\sigma_t$ (dependent variable) resulted in an intercept of $0.27 \pm 0.06$ (standard error) and a slope of $0.40 \pm 0.03$ for our simulated data, compared to $0.27 \pm 0.07$ and $0.18 \pm 0.04$ respectively for the time cell data.
+We note that we used the same bin size of $1$\,ms, modeled the same delay length, and did not perform any parameter fitting beyond the informal choices of $90\%$ cutoff, dimensionality ($q=6$), area of the input signal ($1.5$), and synaptic time-constant ($\tau = 0.1$\,s).
+
+Neural mechanisms previously proposed to account for time cell responses have either been speculative~\citep{tiganj2016sequential},
+or rely on the precision of gradually changing firing rates from a bank of arbitrarily long, ideally spaced, lowpass filters~\citep{shankar2012scale, howard2014unified, tiganj2015simple, tiganj2017neural, zoran2018}.\footnote{%
+One may view this as a generalization of the main idea from \citet{goldman2009memory}.
+}
+It is unclear if such methods can be implemented accurately and scalably using heterogeneous spiking neurons.
+We suspect that robust implementation is unlikely given the high precision typically relied upon in these abstract models.
+% For instance, the model from must be able to distinguish values exponentially close to $0$ in the neural representation.
+
+In contrast, our proposed spiking model has its network-level dynamics derived from first principles to optimally retain information throughout the delay interval, without relying on a particular synapse model or bank of filters.
+All of the neurons recurrently work together in a low-dimensional vector space to make efficient use of neural resources.
+By using the methods of the NEF, this solution is inherently robust to spiking noise and other sources of uncertainty.
+Furthermore, our explanation accounts for the nonlinear distribution of peak firing times as well as its linear correlation with the spread of time fields.
+
+The observation of time cells across many cortical and subcortical areas suggests that the same neural mechanisms may be used in many circuits throughout the brain.
+As a result, the neural activity implicated in a variety of delay tasks may be the result of many networks optimizing a similar problem to that of delaying low-frequency signals recurrently along a low-dimensional manifold.
+Such networks would thus be participating in the temporal coding of a stimulus, by representing its history across a delay interval.
+%\footnote{%
+%In appendix~\ref{app:ss-delay}, we briefly mention that this delay length may also be modulated on-the-fly.
+% Some food for thought: since multiplication is so inaccurate, this might suggest that biological systems have a way to induce effective changes in the time-constants with some sort of adaptive normalization or gating or etc.
+%In apendix~\ref{app:window}, we derive the output transformations required to decode a rolling window.
+%}
+% Possible predictions regarding time-constants / dimensionality?
+% our network generalizes to predict the responses of time-cells to stimuli that are not simply discrete impulse events.
+
