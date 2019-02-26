@@ -169,16 +169,17 @@ Output spikes are filtered using a lowpass synapse with $\tau = 20$\,ms, and wei
 For this experiment, we use identical Nengo model code for both neuromorphic backends.
 On Braindrop~(see Figure~\ref{fig:dn-neuromorphic}~(a), reproduced from \citet[][Figure~16]{braindrop2019}),
 the chip is configured to use the default distribution of synaptic time-constants (mean $\tau \approx 18$\,ms).
-For Loihi~(see Figure~\ref{fig:dn-neuromorphic}~(b)), the recurrent time-constant is set to $\tau=10$\,ms.
+For Loihi~(see Figure~\ref{fig:dn-neuromorphic}~(b)), the recurrent time-constant is set to $\tau=10$\,ms, and weight matrices are unfactored.
 We also compare this to the reference Nengo simulator ($\tau=10$\,ms) running the exact same model on a conventional desktop CPU, to obtain a baseline level of performance.
 The overall error is evaluated across the entire delay interval $\theta' \in [0, \theta]$ using the corresponding analytical readout, $\mathcal{P}_{i, 3}(\cdot)$.
 
 Table~\ref{tab:dn-neuromorphic} reports the bootstrapped 95\% confidence intervals across $25$ trials of $10$ separate test cases.
 Given the inherent variability in Braindrop's analog computation, and its incredibly low power-consumption relative to both Loihi and the CPU solutions, it is surprisingly accurate given our anecdotal experience simulating noisy small-scale dynamical spiking networks.
-However, these results reveal a significant drop in precision on Loihi relative to the reference CPU solution.
-We attribute this to a combination of: the LIF neuron model's discretization in time, quantization errors in neural states and recurrent weights, and the uniform ISIP criteria being systematically violated leading to state discrepancy (definition~\ref{def:state-discrepancy}).
-Notably, this problem is revealed by the faster input frequencies, faster system-level time-constant ($\theta$), and faster synaptic time-constant ($\tau$), relative to the previous experiment in section~\ref{sec:integrator}.
-This suggests that future work is needed to ensure that high-bandwidth signals are being adequately and scalably encoded as per our analysis in chapter~\ref{chapt:analysis}.
+However, these results reveal an unexpected drop in precision on Loihi relative to the reference CPU solution.
+We attribute this to a combination of: the input's encoding into spikes, the LIF neuron model's discretization in time, quantization errors in neural states and recurrent weights, and the uniform ISIP criteria being systematically violated leading to state discrepancy (definition~\ref{def:state-discrepancy}).
+Notably, this problem is revealed by fewer neurons per dimension, faster input frequencies, a faster system-level time-constant ($\theta$), and faster synaptic time-constant ($\tau$), relative to the previous experiment in section~\ref{sec:integrator}.
+It is difficult to explore these issues without direct access to the hardware.
+Future work is needed to ensure that high-bandwidth signals are being adequately and scalably encoded as per our analysis in chapter~\ref{chapt:analysis}.
 %But all things considered, the accuracy of all of these methods is remarkable given that spiking reservoirs and FORCE networks cannot achieve these levels of accuracy for the same number of neurons, on a CPU, with additional memory, slower processing, and longer training times (see sections~\ref{sec:delay-rc} and~\ref{sec:force-comparison}).
 
 \begin{table}
