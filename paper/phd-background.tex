@@ -482,7 +482,7 @@ This form of an LTI system is commonly referred to as the \emph{state-space mode
 For LTI systems, the \emph{dynamical primitive}---that is, the source of the dynamics---is the integrator (see Figure~\ref{fig:lti-system}).
 However, in the model that we consider (see Figure~\ref{fig:lti-system-mapped}), the dynamical primitive at our disposal is the \emph{leaky} integrator, given by the canonical first-order lowpass filter modelling the synapse (repeating equation~\ref{eq:lowpass-impulse}, for clarity):
 \begin{align} \label{eq:lowpass-laplace}
-h(t) = \frac{1}{\tau} e^{-\frac{t}{\tau}} = \mathcal{L}^{-1}\left\{ \frac{1}{\tau s + 1} \right\} \text{,}
+h(t) = \frac{1}{\tau} e^{-\frac{t}{\tau}} = \invlaplace{ \frac{1}{\tau s + 1} } \text{,}
 \end{align}
 where $\mathcal{L}^{-1}\{ \cdot \}$ denotes the inverse Laplace transform, and the latter representation is referred to as a transfer function.\footnote{
 For comparison, the Laplace transform of the integrator is $\mathcal{L}\left\{ 1 \right\} = \frac{1}{s}$.}

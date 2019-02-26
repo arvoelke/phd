@@ -218,7 +218,7 @@ The properties of these rhythms can be understood as arising from the dynamics o
 See Figure~\ref{fig:chaotic-integrator} for an example of ten spiking LIF neurons implementing a line attractor ($\tau = 5$\,ms), or section~\ref{sec:delay-lstm} for a six neuron cell that outperforms LSTM cells.
 No matter how complex the function, the mandate of the NEF is to leverage its neuron models as a basis for that function. 
 Sometimes this can be done with sufficient accuracy using a single neuron, and in other cases one might need a few million or even more.
-In general, the feed-forward precision scales as $\bigoh{\tau \sqrt{n}}$ while the dynamical precision scales as $\bigoh{\sqrt{n}}$ (under fairly weak assumptions; see section~\ref{sec:spike-coding}).
+In general, the feed-forward precision scales as $\bigoh{\tau \sqrt{n}}$ while the dynamical precision scales as $\bigoh{\theta \sqrt{n}}$, where $\theta$ is the time-constant of the dynamical system (under fairly weak assumptions; see section~\ref{sec:spike-coding}).
 But one cannot consider the questions of resource usage and functional precision within a vacuum.
 One must resolve such questions with respect to the device-level models of the physical hardware implementation as well as the intended target application.
 Some advances in this direction are underway~\citep{schwemmer2015constructing, thalmeier2016learning}.
@@ -393,7 +393,9 @@ The variability in spike-trains across the population leads to an additional err
 The $\tau^{-1}$ term comes from the variance of the filter's impulse response -- supposing equation~\ref{eq:lowpass-impulse} is applied to both the decoded spikes and the encoded input.
 The $\sqrt{n}^{-1}$ term follows from the convergence rate of the central limit theorem~\citep[CLT;][]{berry1941accuracy, esseen1942liapunov}, and assuming the spiking noise is Gaussian and independent.
 Under these assumption, the spike noise asymptotically dominates the static distortion, and the SNN's feed-forward precision scales as $\bigoh{\tau \sqrt{n}}$.
-However, in the context of Principle 3, the transformations of the signals are scaled by $\tau$, which results in a cancellation and the recurrent SNN having precision that scales as $\bigoh{\sqrt{n}}$.
+However, in the context of Principle 3, the transformations of the signals are scaled by $\tau \theta^{-1}$, where $\theta$ is the time-constant of integration for the desired dynamical system, which results in a cancellation and the recurrent SNN having precision that scales as $\bigoh{\theta \sqrt{n}}$.
+
+\TODO{Verify that this makes sense.}
 
 Figure~\ref{fig:nef-error-types}(c) visualizes a kernel density estimate~\citep[KDE;][]{michael_waskom_2015_19108} of this error ($t > 0.15$\,s).
 A Kolmogorov-Smirnov~(KS) test of $\transpose{\V{d}}a - \hat{x}$, versus a zero-mean Gaussian distribution with equal variance, produces a KS-statistic of $\approx 0.034$ ($p$-value~$< \numprint{e-6}$).
@@ -668,18 +670,19 @@ Some application-specific trade-offs are discussed in section~\ref{sec:delay-app
     Multiply-adds per step & $\bigoh{nq}$ & Inference & \citet{voelker2018} \\
     Total memory & $\bigoh{nq}$ & Inference & \citet{mundy2015, voelker2018} \\
     Time \& memory & $\bigoh{nq}$ & Training & section~\ref{sec:principle2} (assuming randomized SVD) \\
-    Static precision & $\bigoh{n}$ & Recurrent & section~\ref{sec:spike-coding} and \citet[][p.~47]{eliasmith2003a} \\
-    Spiking precision & $\bigoh{\sqrt{n}}$ & Recurrent & section~\ref{sec:spike-coding} and \citet[][p.~47]{eliasmith2003a} \\
+    Static precision & $\bigoh{n}$ & Fitting & section~\ref{sec:spike-coding} \\
     Spiking precision & $\bigoh{\tau \sqrt{n}}$ & Feed-forward & section~\ref{sec:spike-coding} \\
+    Spiking precision & $\bigoh{\theta \sqrt{n}}$ & Recurrent & section~\ref{sec:spike-coding} \\
     Bandwidth (Hz) & $\bigoh{\left(2\pi \tau \right)^{-1}}$ & Fixed energy & section~\ref{sec:energy-minimization} \\
     Relative energy & $\bigoh{2\pi \tau f }$ & Fixed precision & section~\ref{sec:energy-minimization} \\
     Neuron count & $\bigoh{2 \pi f}$ & Fixed precision, $\tau = f^{-1}$ & equation~\ref{eq:psc-code-power} and Figure~\ref{fig:poisson-frequency-scaling} \\
     Dimensionality & $\bigoh{ n^{\frac{2}{3}} }$ & Fixed precision & \citet[][p.~60]{gosmann2018} \\ % this is actually big omega
     \bottomrule
   \end{tabular}
-  \caption{ \label{tab:scalability}
+  \caption[Summary of scaling trade-offs in the NEF.]{ \label{tab:scalability}
     A summary of trade-offs present in standard NEF networks.
     Each property's scaling is context-dependent.
+    Variables include neuron count ($n$), dimensionality ($q$), synaptic time-constant ($\tau$), system-level time-constant ($\theta$), and representational frequency ($f$).
     % Many of these are abusing big-oh notation and should be big-theta or big-omega...
   }
 \end{sidewaystable}

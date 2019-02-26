@@ -287,11 +287,11 @@ We discuss this in more detail in the following section.
 
 To more thoroughly characterize the delay dynamics, we analyze the behavior of the delay network as the dimensionality is increased (see Figure~\ref{fig:pca}).
 Specifically, we perform a standard principal component analysis~(PCA) on the state-vector for the impulse response, and vary the order from $q=3$ to $q=27$.
-This allows us to visualize a subset of the state-vector trajectories, via projection onto their first three principal components (see Figure~\ref{fig:pca}(Top)). %\footnote{%
+This allows us to visualize a subset of the state-vector trajectories, via projection onto their first three principal components (see Figure~\ref{fig:pca}~(Top)). %\footnote{%
 %These same trajectories are obtained by a PCA on the %filtered neural activities, by linearity of decoding.
 %}
-The length of this trajectory over time distinguishes different values of $q$ (see Figure~\ref{fig:pca}(Bottom)).
-This length-curve is approximately logarithmic when $q = 6$, convex when $q \le 12$, and sigmoidal when $q > 12$. % (also see Figure~\ref{fig:time-cells}(Bottom)).
+The length of this trajectory over time distinguishes different values of $q$ (see Figure~\ref{fig:pca}~(Bottom)).
+This length-curve is approximately logarithmic when $q = 6$, convex when $q \le 12$, and sigmoidal when $q > 12$. % (also see Figure~\ref{fig:time-cells}~(Bottom)).
 To generate this figure we use a delay of $\theta = 10\,$s, but in fact this analysis is scale-invariant with time.
 This means that other delays will simply stretch or compress the impulse response linearly in time (not shown).
 
@@ -385,7 +385,7 @@ For example, Figure~\ref{fig:delay-autocorrelation} visualizes $f$ within the sp
 \subsection{Scalability considerations}
 \label{sec:delay-scalability}
 
-\fig{pade-delay-error}{1}{Performance scaling of the Deep Delay Network.}{
+\fig{pade-delay-error}{1}{Performance scaling of the Delay Network.}{
   Visualizing the error in the Delay Network, $|E_q(2 \pi i f \cdot \theta)|$ (see equation~\ref{eq:pade-delay-error}), while varying the dimensionless quantity $f \cdot \theta$ (input frequency multiplied by delay length), and the order of approximation, $q$.
 } 
 
@@ -706,15 +706,15 @@ The simulation is started at $t = -1$\,s and stopped at $t = 5$\,s.
     The similarity spreads out over time.
     (B)~Neural activity sorted by the time to peak activation.
     Each row is normalized between $0$ (cold) and $1$ (warm).
-    We overlay the curve from Figure~\ref{fig:pca}(Bottom) ($q = 6$) to model the peak-response times.
+    We overlay the curve from Figure~\ref{fig:pca}~(Bottom) ($q = 6$) to model the peak-response times.
     Reproduced from \citet[][Figure~10]{voelker2018}.
   }
 \end{figure}
 
 We also note a qualitative fit between the length-curve for $q=6$ in Figure~\ref{fig:pca} and the peak response-times in Figure~\ref{fig:time-cells}.
-Specifically, Figure~\ref{fig:pca}(Bottom) models the non-uniform distribution of the peak response-time of the cells as the length of the trajectory of $\V{x}(t)$ through time.
+Specifically, Figure~\ref{fig:pca}~(Bottom) models the non-uniform distribution of the peak response-time of the cells as the length of the trajectory of $\V{x}(t)$ through time.
 Implicit to this model are the simplifying assumptions that encoders are uniformly distributed, and that the L2-norm of the state-vector remains constant throughout the delay period.
-Nevertheless, this model produces a qualitatively similar curve when $q = 6$ to both peak response-times from Figure~\ref{fig:time-cells}(Right) (see overlay).
+Nevertheless, this model produces a qualitatively similar curve when $q = 6$ to both peak response-times from Figure~\ref{fig:time-cells}~(Right) (see overlay).
 
 More quantitatively, we performed the same analysis on our simulated neural activity as \citet{tiganj2016sequential} performed on the biological data to capture the relationship between the peak and width of each time cell.
 Specifically, we fit the spiking activity of each neuron with a Gaussian to model the peak time~($\mu_t$) and the standard deviation~($\sigma_t$) of each cell's ``time field''.\footnote{%
@@ -826,18 +826,14 @@ This completes our proof sketch.
 To summarize, since the superimposed-averaging computation is a linear transformation of the input window, it can be recast as a linear transformation of the state to provide a new state-vector corresponding to the averaged segment.
 And since the L2-norm of a balanced state reflects the RMS of its corresponding input signal, the former behaves as a proxy for the latter.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=1.0\textwidth]{periodicity}
-  \caption{\label{fig:periodicity}
-    The Delay Network (DN) detecting repeating patterns over time, tested against \numprint{1000} randomly generated input signals.
-    The $x$-axis is the computed by the DN.
-    The $y$-axis is the true measure of the input signal's $k$-periodicity---how closely it resembles some segment repeated $k$ times---$p_k(t)$ (see equation~\ref{eq:periodicity}), for two classes of input signals ($500$ periodic, and $500$ aperiodic), for $k \in \{2, 3, 4, 5\}$.
-    The DN perfectly separates the two classes in all cases.
-    % The $x$-axis is the L2-norm of a linear transformation of the DN's state-vector, $\| P_k \V{x}(t) \|$ (see equation~\ref{eq:periodicity-matrix}).
-    % This empirically validates the claim of equation~\ref{eq:approx-periodicity} that the state-vector of the DN can be linearly transformed by a fixed matrix $P_k$ to proportionally-approximate a signal's $k$-periodicity.
-  }
-\end{figure}
+\fig{periodicity}{1}{Detecting repeating patterns using a Delay Network.}{
+  The Delay Network (DN) detecting repeating patterns over time, tested against \numprint{1000} randomly generated input signals.
+  The $x$-axis is the computed by the DN.
+  The $y$-axis is the true measure of the input signal's $k$-periodicity---how closely it resembles some segment repeated $k$ times---$p_k(t)$ (see equation~\ref{eq:periodicity}), for two classes of input signals ($500$ periodic, and $500$ aperiodic), for $k \in \{2, 3, 4, 5\}$.
+  The DN perfectly separates the two classes in all cases.
+  % The $x$-axis is the L2-norm of a linear transformation of the DN's state-vector, $\| P_k \V{x}(t) \|$ (see equation~\ref{eq:periodicity-matrix}).
+  % This empirically validates the claim of equation~\ref{eq:approx-periodicity} that the state-vector of the DN can be linearly transformed by a fixed matrix $P_k$ to proportionally-approximate a signal's $k$-periodicity.
+}
 
 We validate the above derivation by fixing $\theta=0.24$\,s, $q=20$, and then sampling white noise signals band-limited at $22$\,Hz (such that the error in the Pad\'e approximants, equation~\ref{eq:pade-delay-error}, is bounded above by 5\%) with RMS=$1$ from the two possible classes: periodic and aperiodic.
 The periodic signals are generated by repeating a segment of length $\gamma$, $k$ times, while the aperiodic signals are random across the interval of length $\theta$.
@@ -872,17 +868,13 @@ E_{q,k}(\theta s) = \left( [q-1/q]e^{-\gamma s} \right)^k - e^{-\theta s} \text{
 \end{equation}
 When $k = 1$, this reduces to equation~\ref{eq:pade-delay-error}.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=1.0\textwidth]{deep-delay-network-error}
-  \caption{\label{fig:deep-delay-network-error}
-    Visualizing the error in the Deep Delay Network~(DDN) of width~$q$ and depth~$k$ (see equation~\ref{eq:deep-delay-network-error}) for two different resource-cost functions.
-    (Left) Fixing the number of dimensions, $kq$, to be constant.
-    Smaller $k$ scales further in this case.
-    (Right) Fixing the density of connections, $kq^2$, to be constant.
-    Smaller $q$ is more accurate in this case.
-  }
-\end{figure}
+\fig{deep-delay-network-error}{1}{Performance scaling of the Deep Delay Network.}{
+  Visualizing the error in the Deep Delay Network~(DDN) of width~$q$ and depth~$k$ (see equation~\ref{eq:deep-delay-network-error}) for two different resource-cost functions.
+  (Left) Fixing the number of dimensions, $kq$, to be constant.
+  Smaller $k$ scales further in this case.
+  (Right) Fixing the density of connections, $kq^2$, to be constant.
+  Smaller $q$ is more accurate in this case.
+}
 
 To gain insights into potential trade-offs between $k$ and $q$, we require additional constraints to keep the comparison meaningful.
 If our main constraint is the number of neurons, then resource usage scales as $\bigoh{k q}$ given a constant level of accuracy per dimension.
@@ -905,23 +897,48 @@ Since each dimension is encoded by a heterogeneous pool of neural nonlinearities
 Deeper networks effectively partition the basis functions into individual segments of input history, which enhances the complexity of the nonlinearities with respect to each segment, while limiting nonlinear interactions between segments.
 All of this should be systematically taken into account when choosing the state-space realization, the delay lengths of each layer, the dimensionality of each layer, and the number of layers.
 
-\subsection{Deconvolution}
+\subsection{Acausal deconvolution}
 \label{sec:deconvolution}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{comm-channels}
-     
-    \caption{\label{fig:comm-channels} 
-      Demonstrating the ability of the Delay Network~(DN) to approximate a synaptic deconvolution operation, realizing a pure communication channel.
-      The test input $u(t)$ is a white noise signal band-limited at $10$\,Hz.
-      (Top)~A standard feed-forward communication channel, implemented by decoding the identity function at each layer.
-      (Bottom)~A recurrent communication channel, implemented by a Deep Delay Network~(DDN; section~\ref{sec:deep-delay-networks}) approximating $u(t)$ at each layer. Each layer is a NEF with $\theta = 50$\,ms and $q = 6$.
-      In either case, there are $8$ layers of \numprint{2500} spiking LIF neurons, with each layer communicating spikes to the next through a lowpass synapse with time-constant $\tau = 100$\,ms.
-    }
-\end{figure}
+In general, if one takes a communication channel, $f(u) = u$, constructed using normal NEF methods, and stacks it $k$ times, then the $i^\text{th}$ layer will represent $\invlaplace{ H(s)^k U(s) }(t)$, that is, the input $u(t)$ convolved $k$ times with $h(t)$.
+This is demonstrated in Figure~\ref{fig:comm-channels}~(Top), which encodes a $10$\,Hz band-limited white noise signal through $8$ layers of $\numprint{2500}$ spiking LIF neurons ($\tau = 100$\,ms).
+As we see, deeper layers become progressively more lowpass-filtered in time.
+This has the often\footnote{%
+\citet{goldman2009memory} has shown that repeated lowpass filtering can be usefully exploited to implement an integrator, by summing across all of the filters.
+}
+undesirable effect of losing information within the frequency content of the input.
+This phenomenon contributes to the misconception that the NEF does not support high-speed transmission of information through networks, as discussed in section~\ref{sec:psc-coding}.
 
-\TODO{Write}
+To solve this problem, we are free to scale $\tau$ arbitrarily small, so long as $n$ is scaled as $\bigoh{\tau^{-2}}$ (see Theorem~\ref{thm:correctness}) to maintain the same level of feed-forward precision.
+Alternatively, if $\tau$ is fixed, then one can use Principle~3 to implement a lowpass filter $\left(\theta s + 1\right)^{-1}$ with arbitrarily small $\theta$, which likewise requires $\bigoh{\theta^{-2}}$ neurons (see Table~\ref{tab:scalability}).
+Our solution can be viewed as a generalization of the latter.
+
+\TODO{verify}
+
+A natural solution falls out of the DN, given by equation~\ref{eq:basis-interpretation}: the current value of $u(t)$ is represented by the population that encodes $\V{x}(t)$.
+It is not obvious that this should be the case, as $u(t)$ has been filtered by the synapse model (e.g.,~a lowpass filter) to produce a filtered version (e.g.,~phase-shifted) of its input.
+Nevertheless, the state-vector is reconstructing an unfiltered version of the window of input history, which includes the current moment in time.
+Such a reconstruction is also known as a deconvolution operation (i.e.,~the inverse convolution), and is an acausal operation in general.
+That is, to perform deconvolution in general for arbitrary inputs, one requires future knowledge of the input.
+The same applies to constructing Taylor series approximants at the current moment in time.
+
+The low-frequency approximation of the DN essentially models the statistics of the input, and provides a robust estimate of the current $u(t)$ from the spiking activity of the population.
+As can be seen in Figure~\ref{fig:basis-functions} at $\theta' = 0$, the transformation to do so (ignoring alternative state-space realizations) is simply a summation across the state:
+\begin{equation}
+u(t) \approx \sum_{i=0}^{q-1} x_i(t) \text{.}
+\end{equation}
+We use this fact in Figure~\ref{fig:comm-channels}~(Bottom) to instantaneously propagate the input through 8 layers, using the same neurons and synapses as in (Top).
+The difference between these two simulations is that the recurrence, local to each layer, effectively undoes the filtering by using its internal model of the input's history.
+This demonstrates the utility in including recurrence at each layer, not only to support dynamical computations, but to maintain the frequency content of the input signal while facilitating high-speed computation through deep neural structures.
+
+\fig{comm-channels}{1}{Instantaneously propagating information through 8 layers of synapses.}{
+  Demonstrating the ability of the Delay Network~(DN) to approximate a synaptic deconvolution operation, realizing a pure communication channel.
+  The test input $u(t)$ is a white noise signal band-limited at $10$\,Hz.
+  (Top)~A standard feed-forward communication channel, implemented by decoding the identity function at each layer.
+  (Bottom)~A recurrent communication channel, implemented by a Deep Delay Network~(DDN; section~\ref{sec:deep-delay-networks}) approximating $u(t)$ at each layer. Each layer is a DN with $\theta = 50$\,ms and $q = 6$.
+  In either case, there are $8$ layers of \numprint{2500} spiking LIF neurons, with each layer communicating spikes to the next through a lowpass synapse with time-constant $\tau = 100$\,ms.
+}
+
 
 \subsection{Higher-order synapses}
 \label{sec:pure_delay}
@@ -931,7 +948,7 @@ This section has been adapted from \citet{voelker2018}, and applies the extensio
 We begin by making the practical point that it is crucial to account for the effect of the simulation time-step in digital simulations, if the time-step is not sufficiently small relative to the time scale of the desired network-level dynamics.
 To demonstrate this, we simulate a $27$-dimensional delay network using $\numprint{1000}$ spiking LIF neurons, implementing a $0.1$\,s delay of $50$\,Hz band-limited white noise.
 We vary the simulation time-step ($\dt{}$) from $0.1$\,ms to $2$\,ms.
-The accuracy of our extension does not depend on $\dt{}$ (see Figure~\ref{fig:principle3fail}(Left)).
+The accuracy of our extension does not depend on $\dt{}$ (see Figure~\ref{fig:principle3fail}~(Left)).
 When $\dt{}=1$\,ms (the default in Nengo), the standard Principle~3 mapping (equation~\ref{eq:p3-novel}) obtains a NRMSE of $1.425$ ($43\%$ worse than random chance), versus $0.387$ for the discrete lowpass mapping which accounts for $\dt{}$ (equation~\ref{eq:discrete-p3})---a $73\%$ reduction in error.
 As $\dt{}$ approaches $0$ the two methods become equivalent.
 
@@ -941,7 +958,7 @@ More to the point, we can analyze the delay network's frequency response
 %}
 when using a delayed continuous lowpass synapse (equation~\ref{eq:delayed-lowpass}) instead of the canonical lowpass (equation~\ref{eq:lowpass}) as the dynamical primitive.
 This provides a direct measure of the possible improvement gains when using the extension.
-Figure~\ref{fig:principle3fail}(Right) compares the use of Principle~3 (which accounts for $\tau$ but ignores $\lambda)$, to our extension (which fully accounts for both; see equation~\ref{eq:lambert-delay}) when $\lambda = \tau$.
+Figure~\ref{fig:principle3fail}~(Right) compares the use of Principle~3 (which accounts for $\tau$ but ignores $\lambda)$, to our extension (which fully accounts for both; see equation~\ref{eq:lambert-delay}) when $\lambda = \tau$.
 The figure reveals that increasing the dimensionality improves the accuracy of our extension, while magnifying the error from Principle~3.
 In the worst case, the Principle~3 mapping has an absolute error of nearly $\numprint{e15}$.
 In practice, saturation from the neuron model bounds this error by the maximum firing rates.
@@ -992,11 +1009,11 @@ Expressing these parameters as dimensionless constants keeps our results scale-i
   }
 \end{figure}
 
-Figure~\ref{fig:lambert} reveals that axonal delays may be effectively ``amplified'' $10$-fold while reducing the NRMSE by $71\%$ compared to the lowpass (see Figure~\ref{fig:lambert}(Right); NRMSE for lowpass=$0.702$, delayed lowpass=$0.205$, and double-exponential=$0.541$).
+Figure~\ref{fig:lambert} reveals that axonal delays may be effectively ``amplified'' $10$-fold while reducing the NRMSE by $71\%$ compared to the lowpass (see Figure~\ref{fig:lambert}~(Right); NRMSE for lowpass=$0.702$, delayed lowpass=$0.205$, and double-exponential=$0.541$).
 The double-exponential synapse outperforms the lowpass, despite the additional poles introduced by the ZOH assumption in equation~\ref{eq:general-linear-approx} that we analyze in section~\ref{sec:derivatives} .
 This is because the double-exponential filters the spike-noise twice.
 % Including the first-order derivative of the input signal further improves the double-exponential mapping by $X\%$.
-Likewise, by exploiting an axonal delay, the same level of performance (e.g.,~$5\%$ error) may be achieved at approximately $1.5$ times higher frequencies, or equivalently for $1.5$ times longer network delays, when compared to the lowpass synapse (see~Figure~\ref{fig:lambert}(Left)).
+Likewise, by exploiting an axonal delay, the same level of performance (e.g.,~$5\%$ error) may be achieved at approximately $1.5$ times higher frequencies, or equivalently for $1.5$ times longer network delays, when compared to the lowpass synapse (see~Figure~\ref{fig:lambert}~(Left)).
 In summary, accounting for higher-order synaptic properties allows us to harness the axonal transmission delay to more accurately approximate network-level delays in spiking dynamical networks.
 
 Together, these results demonstrate that our extensions can significantly improve the accuracy of high-level network dynamics.
