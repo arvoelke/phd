@@ -601,7 +601,7 @@ Thus, it is important to characterize the difference between $\hat{F}$ and $F$ f
 To do so, we can examine the \emph{poles} of the transfer function $F(s) = \frac{\mathcal{C}(s)}{\mathcal{D}(s)}$, which are defined as the complex roots of $\mathcal{D}(s)$.
 The poles of a system fully define the dynamics of its state (up to a change of basis).
 For instance,
-each pole $\lambda$ is related to a time-constant via $\tau = -\lambda^{-1}$.
+each pole $\lambda$ corresponds to a time-constant of $\left(-\lambda^{-1}\right)$ in the system's dynamics.
 A system is exponentially stable if and only if $\text{Re} \left[ \lambda \right] < 0$ for all poles $\lambda \in \mathbb{C}$, since all time-constants will be positive.
 Furthermore, $\lambda \in \text{sp}(A)$ if and only if $\lambda$ is a pole, where $\text{sp}(A)$ denotes the eigenvalues of the state-space matrix $A$.\footnote{%
 Note that $\text{sp}(A) = \text{sp}(TAT^{-1})$ for any invertible matrix $T$ with the same shape as $A$.
@@ -639,7 +639,7 @@ In this instance, the `$+$' case gives back the known poles, $\phi = \lambda$, a
 Consequently, the poles of $\hat{F}$ are the poles of $F$, duplicated and reflected horizontally about the real line $- b$, where $b := \frac{\tau_1 + \tau_2}{2 \tau_1 \tau_2}$ (and the imaginary components are unchanged).
 
 Interestingly, $b$ may be rewritten as $\left( \frac{ \tau_1 + \tau_2}{2} \right) / \sqrt{\tau_1^2 \tau_2^2}$, which is the ratio of the arithmetic mean to the geometric mean of $\{\tau_1, \tau_2\}$, which may in turn be interpreted as a cross-entropy expression~\citep{woodhouse2001ratio}.
-Regardless, $\hat{F}$ behaves like $F$ when $\left(-\text{Re}^{-1} \left[ \lambda \right]\right) \gg b^{-1}$.
+Regardless, $\hat{F}$ behaves like $F$ when $\left(-\text{Re}\left[ \lambda \right]^{-1} \right) \gg b^{-1}$.
 %For the delay system (equation~\ref{eq:ss-delay}), $\text{Re} \left[ \lambda \right] \propto -\frac{q}{\theta}$ (in fact, the mean value across all $q$ poles achieves equality), and so we need $b \gg \frac{q}{\theta}$.
 %This predicts that a delay system using the double-exponential synapse, without access to the input's derivative, must necessarily implement a delay that is proportionally longer than $\frac{q}{b}$.
 %Otherwise, the second-order dynamics from the synapse will dominate the system-level dynamics.
