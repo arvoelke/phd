@@ -40,13 +40,13 @@ Thus, we now demonstrate the principles of the NEF, and a few of its extensions,
     \centering
     \includegraphics[width=\linewidth]{braindrop-integrator}
     \caption{Braindrop}
-    \label{fig:dn-braindrop}
+    \label{fig:braindrop-integrator}
   \end{subfigure}%
   \begin{subfigure}{.5\textwidth}
     \centering
     \includegraphics[width=\linewidth]{loihi-integrator}
     \caption{Loihi}
-    \label{fig:dn-loihi}
+    \label{fig:loihi-integrator}
   \end{subfigure}
   \caption[Dynamical integration on Braindrop and Loihi.]{
     An integrator running on state-of-the-art neuromorphic hardware.
@@ -76,11 +76,11 @@ In both cases, the input signal is a white-noise test signal, band-limited to $1
 Both the ideal and the spiking activity are filtered with a lowpass ($\tau = 200$\,ms).
 We report the mean output's 95\% confidence intervals, bootstrapped from $200$ trials.
 
-On Braindrop (see Figure~\ref{fig:integrator-neuromorphic}(a), reproduced from \citet[][Figure~15]{braindrop2019}), we compensate for the distribution of synaptic time-constants, arising from transistor mismatch in the analog circuitry, using the methods of \citet{voelker2017iscas} and section~\ref{sec:mismatch}.
+On Braindrop (see Figure~\ref{fig:integrator-neuromorphic}~(a), reproduced from \citet[][Figure~15]{braindrop2019}), we compensate for the distribution of synaptic time-constants, arising from transistor mismatch in the analog circuitry, using the methods of \citet{voelker2017iscas} and section~\ref{sec:mismatch}.
 We do this by first measuring the time-constants, and then targetting them individually with the specific transform given by our extension.
 The chip is configured to maximize the synaptic time-constants; the empirically measured mean is $179.3$\,ms, with a standard deviation of $53.8$\,ms.
 
-On Loihi (see Figure~\ref{fig:integrator-neuromorphic}(b)), we set $\tau = 200$\,ms, and use the methods of section~\ref{sec:linear-extensions} to discretize the integrator according to the simulation time-step ($\dt{} = 1$\,ms).
+On Loihi (see Figure~\ref{fig:integrator-neuromorphic}~(b)), we set $\tau = 200$\,ms, and use the methods of section~\ref{sec:linear-extensions} to discretize the integrator according to the simulation time-step ($\dt{} = 1$\,ms).
 We also use non-leaky neurons, as this provides the best accuracy (see section~\ref{sec:poisson-spiking}).
 Lastly we move the input synapse onto the spike-generator from host to chip, and uniformly initialize the states of the spike-generators to satisfy the uniform ISIP criteria (Theorem~\ref{thm:correctness}).
 
@@ -135,9 +135,9 @@ To implement the DN, three pools, each containing $128$ spiking LIF neurons, are
 Output spikes are filtered using a lowpass synapse with $\tau = 20$\,ms, and weighted to decode both the state-vector and the window of history using equation~\ref{eq:delay-readouts}.
 
 In this experiment we use identical Nengo model code for both neuromorphic backends.
-On Braindrop~(see Figure~\ref{fig:dn-neuromorphic}(a), reproduced from \citet[][Figure~16]{braindrop2019}),
+On Braindrop~(see Figure~\ref{fig:dn-neuromorphic}~(a), reproduced from \citet[][Figure~16]{braindrop2019}),
 the chip is configured to use the default distribution of synaptic time-constants (mean $\tau \approx 18$\,ms).
-For Loihi~(see Figure~\ref{fig:dn-neuromorphic}(b)), the recurrent time-constant is set to $\tau=10$\,ms.
+For Loihi~(see Figure~\ref{fig:dn-neuromorphic}~(b)), the recurrent time-constant is set to $\tau=10$\,ms.
 We also compare this to the reference Nengo simulator ($\tau=10$\,ms) running the exact same model on a conventional desktop CPU, to obtain a baseline level of performance.
 The overall error, reported as bootstrapped 95\% confidence intervals across $10$ test cases with $25$~trials each, is:
 [0.156,~0.163] for Braindrop,

@@ -222,10 +222,9 @@ This learning rule has been used to model episodic memory~\citep{trujillo2014}, 
 We note that the PES learning rule is also supported by Loihi~[personal communication].
 
 We solve the discrete dynamical system for the case of constant inputs and no noise, to show that the decoding vectors given by the NEF have a simple closed-form expression in terms of the number of simulation timesteps. Moreover, with $\gamma = (1 - \kappa \|\V{a}\|^2) < 1$, where $\kappa$ is the learning rate and $\V{a}$ is the vector of firing rates, the error at timestep $k$ is the initial error times $\gamma^k$. Thus, $\gamma > - 1$ implies exponential convergence to a unique stable solution, $\gamma < 0 $ results in oscillatory weight changes, and $\gamma \le -1$ implies instability.
-\begin{theorem}
-\label{thm:pes-dynamics}
+\begin{lemma}[Dynamics of discrete unfiltered supervised learning]
+\label{lemma:pes-dynamics}
 {\normalfont \citep{voelker2015}}
-\newline
 Let $\gamma = (1 - \kappa \|\V{a}\|^2) < 1$, and $e_0 = y^* - \V{d}[0]^T \V{a}$, then:
 \begin{align}
 \label{eq:dk}
@@ -238,14 +237,14 @@ and so the error at timestep $k$ is $y^* - \V{d}[k]^T \V{a} = e_0\gamma^k$. In p
 \end{align}
 On the other hand, if $\gamma \le -1$ then the system is unstable.
 The proof is given by \citet{voelker2015}.
-\end{theorem}
+\end{lemma}
 
 Continuing this work, we solve for the dynamics of PES, while filtering the error with an arbitrary linear synapse model. 
 For the most common case of a lowpass filter, the continuous-time weight changes happen to be characterized by a second-order bandpass filter with frequency $\omega = \sqrt{\tau^{-1} \kappa \|\V{a}\|^2 }$ and bandwidth $Q = \sqrt{\tau \kappa \|\V{a}\|^2 }$, where $\tau$ is the exponential time constant, $\kappa$ is the learning rate, and $\V{a}$ is the activity vector.
 Therefore, the error converges to zero, yet oscillates if and only if $\tau \kappa \|\V{a}\|^2 > 1/4$.
 This provides a heuristic for setting $\kappa$ based on the synaptic $\tau$, and a method for engineering remarkably accurate decaying oscillators using only a single spiking leaky integrate-and-fire neuron.
 
-Theorem~\ref{thm:pes-dynamics} fully characterized the discrete-time dynamics of PES under the restricted setting of a constant input signal, constant reference signal, and no noise.
+Lemma~\ref{lemma:pes-dynamics} fully characterized the discrete-time dynamics of PES under the restricted setting of a constant input signal, constant reference signal, and no noise.
 Due to the absence of noise, no filter was required for the error signal.
 However, for spiking networks considered in practice, a lowpass is applied to the error to filter out spike-noise~\citep[e.g.,][]{dewolf2016, rasmussen2017},  
 We now relax the assumption of a constant reference signal, and apply an arbitrary linear filter to the error signal.
@@ -297,10 +296,9 @@ This also naturally extends to the case where $x$ and $y$ are vectors (using a p
 Now, we aim to characterize the dynamics of $e(t)$ in response to the control signal $r(t)$.
 Alternatively, we could characterize the dynamics of $y(t)$ or $\V{d}(t)$, but the former is easier to work with, while describing the latter via equations~\ref{eq:decoding} and~\ref{eq:pes} (i.e.,~by integrating $e(t)$).
 
-\begin{theorem}
+\begin{theorem}[Dynamics of supervised learning with continuous filtered feedback]
 \label{thm:pes-filtered}
 {\normalfont \citep{voelker2017c}}
-\newline
 Let $\phi = \tau \kappa \|\V{a}\|^2$.
 For the network described in Figure~\ref{fig:pes-filtered-network}, we have:
 \begin{equation}

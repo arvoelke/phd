@@ -235,7 +235,7 @@ We remark that each of $d$, $c$, and $r$ are dimensionless (i.e.,~unitless) cons
 \subsubsection{Coordinate transformation}
 
 Before proceeding with the general solution, we introduce some useful intermediate results:
-\begin{lemma} \label{lemma:coord-transform}
+\begin{lemma}[Transforming coordinates between dynamical systems] \label{lemma:coord-transform}
 Let $\V{f}(t)$ and $\V{g}(t)$ be infinitely time-differentiable signals, that are related by:
 \begin{equation} \label{eq:f}
 \V{f} = \sum_{i=0}^\infty c_i \V{g}^{(i)} \text{,}
@@ -346,7 +346,7 @@ H(s) = \frac{1}{\sum_{i=0}^k c_i s^i} \text{,}
 \end{equation}
 where $k$ is potentially infinite. Now we state and prove the main theorem of this section.
 
-\begin{theorem}
+\begin{theorem}[General state-space solution to leverage postsynaptic currents]
 \label{thm:general-linear}
 To map $F$ onto equation~\ref{eq:synapse-rewritten}, we let: %we begin by defining our solution to $F^{H}(s)$ in the form of its state-space model (see equation~\ref{eq:ss-mapped}):
 \begin{equation} \label{eq:general-linear}
@@ -458,7 +458,7 @@ Letting $\V{w}(t) = f^h(\V{x}, \V{u})$ for some recurrent function $f^h$ and obs
 \iff && \V{w}(t) &= \sum_{i=0}^k c_i \V{x}^{(i)}
 \end{align*}
 since $s$ is the differential operator. This proves the following theorem:
-\begin{theorem} \label{thm:p3cont-nonlinear}
+\begin{theorem}[Nonlinear solution to leverage continuous postsynaptic currents] \label{thm:p3cont-nonlinear}
 Let the function computed along the recurrent connection be:
 \begin{align}
 f^h(\V{x}, \V{u}) = \sum_{i=0}^k c_i \V{x}^{(i)}
@@ -471,7 +471,7 @@ For the discrete case, we begin with some desired nonlinear dynamics expressed o
 \V{x}[t+dt] = \bar{f}(\V{x}, \V{u}) \text{,}
 \end{equation}
 using equation~\ref{eq:synapse-rewritten} (with $s$ replaced by $z$; the coordinate transformation still applies) as the synaptic filter $h[t]$, followed by an analogous theorem:
-\begin{theorem} \label{thm:p3disc-nonlinear}
+\begin{theorem}[Nonlinear solution to leverage discrete postsynaptic currents] \label{thm:p3disc-nonlinear}
 Let the function computed along the recurrent connection be:
 \begin{align}
 \bar{f}^h(\V{x}, \V{u}) = \sum_{i=0}^k \bar{c}_i \V{x}^{[i]}
