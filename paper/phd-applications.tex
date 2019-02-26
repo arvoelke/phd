@@ -13,11 +13,11 @@ This demonstration is encouraging to see, as it illustrates the potential for th
 
 However, there are very few examples of functional large-scale models running on neuromorphic hardware, with \citet{mundy2016real} being the only one that we are aware of to utilize on the order of millions of neurons to do something functionally ``useful''.\footnote{%
 Recall this is still five orders of magnitude removed from that of the human brain.}
-We believe that this surprising lack of scale---in a field that was essentially created to solve a problem in scaling---is primarily due to a lack of NEF-like frameworks for supporting the robust translation of computations specified in some high-level language (e.g.,~coupled differential equations), onto distributed networks of physically coupled devices.
-Such frameworks must be correct, scalable, complete, robust, extensible, and finally realized on the physical hardware itself, in order to be ultimately useful (section~\ref{sec:nef-suitability}).
-This has been validated by many of the extensions and analyses throughout this thesis, as well as by past work deploying NEF networks on
-SpiNNaker~\citep{mundy2015},
+We believe that this surprising lack of scale---in a field that was essentially created to solve a problem in scaling---is primarily due to a lack of NEF-like frameworks for supporting the translation of computations specified in some high-level language (e.g.,~coupled differential equations), onto distributed networks of physically coupled devices.
+These frameworks must be correct, scalable, complete, robust, extensible, and finally realized on the physical hardware itself, in order to be ultimately useful (section~\ref{sec:nef-suitability}).
+In the case of the NEF, this criteria has been validated by many of the extensions and analyses throughout this thesis, as well as by past work compiling networks onto
 Neurogrid~\citep{dethier2011brain},
+SpiNNaker~\citep{mundy2015},
 TrueNorth~\citep{fischl2018},
 and many other architectures~\citep{naylor2013managing, bekolay2014, corradi2014, wang2014compact, berzish2016, wang2017neuromorphic, rasmussen2018nengodl, blouw2018a}.
 
@@ -25,8 +25,8 @@ However, at time of writing, the Nengo \emph{backends} for Braindrop~\citep{brai
 For the case of Braindrop, its shortcoming is mainly by design: the chip is $0.65$\,mm${}^2$ and implements $\numprint{4096}$ neurons.
 It is a proof-of-concept prototype for research, that can in principle be tiled to scale to much larger models in the future and tailored towards the requirements of some application space.
 For the case of Loihi, due to a combination of a lack of hardware support for factorized weight matrices, and limitations on connectivity and memory, the maximum recurrently-connected pool size is $342$ neurons.\footnote{Determined empirically using the \texttt{nengo-loihi==0.6.0} emulator.}
-And with current software workarounds, the feed-forward precision stops scaling after about $400$ neurons.
-On the other hand, this is the first and only software abstraction to currently make use of Loihi~\citep{blouw2018a}, and it is under active development.
+And with current software workarounds, the feed-forward precision stops scaling in Nengo after about $400$ neurons.
+On the other hand, this is the first and only software abstraction to currently make use of Loihi~\citep{blouw2018a} outside of Intel~\citep{lin2018mapping}, and it is under active development.
 We expect this to get significantly better with time.
 
 %The end-to-end design and fabrication of custom hardware is an extremely costly and complex process that demands a variety of skill-sets from a large number of people.
@@ -40,7 +40,7 @@ With the theoretical guarantees provided by chapter~\ref{chapt:analysis}, the me
 %However, since we only currently have room for a few hundred neurons, there is only so much that we can do.
 %For example, \citet{blouw2018a} has shown impressive power reduction for a keyword spotter written using Nengo~DL~\citep{rasmussen2018} on Loihi.
 Thus, we focus on demonstrating the principles of the NEF, and a few of its extensions, applied to two fundamental---but admittedly small-scale---dynamical systems.
-These dynamical systems are described in the same high-level language of Nengo, but mapped onto two vastly different state-of-the-art architectures: Loihi and Braindrop.
+These dynamical systems are described in the same high-level language of Nengo, but mapped onto two vastly different state-of-the-art neuromorphic architectures: Loihi and Braindrop.
 
 \section{Integrator}
 \label{sec:integrator}

@@ -667,6 +667,8 @@ Focusing on this one dimension and letting the randomized feedback attempt to fi
 \subsection{Long short-term memory}
 \label{sec:delay-lstm}
 
+LSTM networks address the problem of storing information across long intervals of time by using an explicit memory unit to alleviate the vanishing and exploding gradient problems. However, we find that when given a continuous-time delay task, the performance of a "stacked LSTM" suffers catastrophically in the number of time-steps. This motivates the discovery of a new cell that we derive using modern control theory. An accurate spiking implementation of this cell in Nengo displays a striking resemblance to time cells in the cortex. Applying backpropagation through time enables an equivalently-sized network to store longer windows of time, train faster, and outperform a stacked LSTM on the Mackey-Glass dataset.
+
 4x Nvidia Titan Xp GPUs with 12GB each
 
 \subsection{Detecting patterns}
