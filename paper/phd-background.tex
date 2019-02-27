@@ -215,9 +215,9 @@ Similarly, the synapse models commonly used in biological models incorporate dis
 Chapter~\ref{chapt:nef-extensions} improves the scope of the NEF, by characterizing the network-level effects of these higher-order synapse models, and harnesses them to implement both discrete-time and continuous-time dynamical systems with improved accuracy.
 Chapter~\ref{chapt:delays} explores a novel theoretical system that equips any RNN---not just NEF-based---with an enhanced ability to compute nonlinear functions across windows of memory.
 We find some connections between this system's NEF implementation and the neural responses of ``time cells'' recorded in the rodent medial prefrontal cortex~(mPFC).
-In this section, we provide the basic building blocks adapted from the original proposal by \citet{eliasmith2003a}, before analyzing its theoretical merits in Chapter~\ref{chapt:analysis}.
+In this section, we provide the basic building blocks adapted from the original proposal by \citet{eliasmith2003a}, before analyzing its theoretical merits in chapter~\ref{chapt:analysis}.
 
-In the context of RNNs, the NEF provides generic machinery for training the weights of a recurrent network of spiking (and non-spiking) neurons in order to implement some particular dynamical system~\citep{dynamicspatent}.
+In the context of RNNs, the NEF provides generic machinery for training the weights of a recurrent network of spiking (or non-spiking) neurons in order to implement some particular dynamical system~\citep{dynamicspatent}.
 This is made efficient through three important steps: (1)~weight matrices are factored into two $n \times q$ \emph{encoding} and \emph{decoding} matrices, where $q \in \bigoh{1}$ is the dimensionality of the dynamical state-vector, and $n$ is the number of neurons, (2)~the optimization problem is recast as a batched least-squares problem that can be solved offline without needing to explicitly simulate the network over time, and (3)~the dynamics of the synapse model are leveraged as a temporal basis for the overall system.
 These insights lead to procedures for training and simulation that are efficiently implemented---scaling as $\bigoh{n}$ in both time and space---by the Nengo~2.X software package~\citep{bekolay2014}.
 Backpropagation through time can be applied to further improve the performance of these networks, by use of the Nengo~DL extension~\citep{hunsberger2018, rasmussen2018nengodl, blouw2018a}, which bidirectionally integrates Nengo with Google's machine learning toolkit, Tensorflow~\citep{abadi2016tensorflow}.
@@ -259,7 +259,7 @@ After normalizing the range of $v_i(t)$ to the interval $[0, 1]$, the subthresho
 \tau_\text{RC} \dot{v}_i(t) + v_i(t) = s_i(t) \text{,} \quad 0 \le v_i(t) < 1 \text{,}
 \end{equation}
 where $v_i(t) = 1$ generates a spike at time $t$, followed by a reset to $v_i(t) = 0$ that lasts $\tau_\text{ref}$ seconds.
-This model is considered to strike a convenient balance between simplicity and biological realism~\citep[][pp.~81--82]{eliasmith2003a}, although the NEF does not eliminate the possibility of considering significantly more biologically-detailed neuron models~\citep{duggins2017incorporating}.
+This model is considered to strike a convenient balance between simplicity and biological realism~\citep[][pp.~81--82,~88-89]{eliasmith2003a}, although the NEF does not eliminate the possibility of considering significantly more biologically-detailed neuron models~\citep{duggins2017incorporating}.
 Likewise, neurons driven by nonlinear conductances, rather than pure current-sources, can be leveraged by the NEF~\citep{stoeckel2018}.
 Nevertheless, a modelling competition centered around fitting biological recordings from real pyramidal neurons, using artificial models of action-potential generation, discovered that simpler models (e.g.,~non-leaky integration with an adaptive threshold) are often the most successful at reproducing precisely-timed spike-trains~\citep{gerstner2009good}.
 
@@ -278,7 +278,7 @@ For now, we set this to be an exponentially decaying PSC with time-constant $\ta
 h(t) = \frac{1}{\tau} e^{-\frac{t}{\tau}} \text{,} \quad t \ge 0 \text{.}
 \end{equation}
 This is equivalent (in the Laplace domain) to the canonical first-order lowpass filter (also known as a ``leaky integrator''), with the same dynamics as equation~\ref{eq:lif-model}.
-The lowpass synapse is the conventional choice of synapse in the NEF, since it is mathematically tractable while capturing a central feature of biological synapses -- namely the continuous filtering of spikes over time~\citep{eliasmith2003a}.
+The lowpass synapse is the conventional choice of synapse in the NEF, since it is mathematically tractable while capturing a central feature of biological synapses and approximating the optimal \emph{acausal} filter~\citep[][pp.~109--114,~223]{eliasmith2003a}.
 In section~\ref{sec:synaptic-extensions}, we relax this requirement by considering more general synapse models that are capable of reproducing a much broader variety of PSCs.
 
 We can now characterize the decoding of the neural response, which determines the information extracted from the neural activities encoding $\V{x}(t)$.
