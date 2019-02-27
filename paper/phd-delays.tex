@@ -693,12 +693,12 @@ Therefore, the highest frequency component oscillates at most six times, within 
 The data set consists of $256$ samples, each $1$\,s long.
 This data is randomly partitioned into $50$\% training and $50$\% testing.
 The training data is further partitioned into a different random $25$\% sample used for validation at every epoch.
-Backpropagation through time is carried out by the Adam optimizer~\citep{kingma2014adam} with respect to the MSE loss function.
-Training is parallelized using TensorFlow~\citep{abadi2016tensorflow} across four Nvidia Titan Xp GPUs (12\,GB each).\footnote{%
+Backpropagation through time is carried out using the Adam optimizer~\citep{kingma2014adam} with respect to the MSE loss function.
+Training is parallelized using Keras and TensorFlow~\citep{abadi2016tensorflow} across four Nvidia Titan Xp GPUs (12\,GB each).\footnote{%
 This took approximately 14 hours in our largest experiment, in stark contrast to the sub-second time that it takes to train a spiking delay network using Nengo.}
 
 We found that for time-steps ($\dt{}$) on the order of a couple milliseconds or more, backpropagation could find adequate parameters to solve this task -- that is, the LSTM could in fact represent the entire delay interval consisting of about $100$ time-steps (not shown).
-However, after decreasing the time-step, by an order of magnitude, to $\dt{} = 200$\,$\mu$s---while increasing the length of data by the same factor so that the data still represents the exact same signals---the performance collapses; accuracy exponentially as a function of delay length across the $\numprint{1000}$ time-step window (see Figure~\ref{fig:lstm-capacity}~(b)).
+However, after decreasing the time-step, by an order of magnitude, to $\dt{} = 200$\,$\mu$s---while increasing the length of data by the same factor so that the data still represents the exact same signals---the performance collapses; accuracy exponentially decays as a function of delay length across the $\numprint{1000}$ time-step window (see Figure~\ref{fig:lstm-capacity}~(b)).
 
 \TODO{Run again with linear units on the output layer. Move the tanh in the DN cell to the input rather than output.}
 
