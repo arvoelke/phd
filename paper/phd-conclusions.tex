@@ -1,7 +1,26 @@
 \chapter{Conclusions}
 \label{chapt:conclusions}
 
-\section{Contributions}
+We have discussed a number of theoretical and practical results involving the synthesis of dynamical systems, spiking neural networks, and neuromorphic hardware.
+We now summarize our main contributions in order.
+
+First, section~\ref{sec:sub-principles} observed a number of computational ``sub-principles'' that follow from the adoption of the NEF's three principles.
+Arbitrary network topologies reduce to a single recurrently connected layer with sparse encoders and decoders with block structure isomorphic to the original graph structure.
+Heterogeneous dynamical primitives form the basis for neural computation, and may be expressed within a unified language to facilitate mathematical analyses that leverage the interchangeability and composibility of such primitives.
+Chaotic strange attractors emerge from even the simplest spiking implementations of such dynamical systems.
+The NEF represents state-vectors by linearly projecting them onto the postsynaptic currents of neurons,  independent of any considerations of what it means to use a ``rate code'' or a ``spike-time code''.
+Likewise, these state-vectors represent frequency content that grows linearly with the relative amount of energy required to drive the synapses of each postsynaptic neuron, for a fixed level of precision.
+
+Second, section~\ref{sec:nef-suitability} addressed the suitability of NEF as a framework for compiling SNNs onto neuromorphic hardware.
+Correctness is guaranteed by Theorem~\ref{thm:correctness}, which provides a novel proof of the scaling of the NEF's precision, conditioned upon a specific criteria characterizing the distribution of neural states.
+Scalability is guaranteed by the previous theorem, in conjunction with a number of prior observations made about time, space, and energy requirements (Table~\ref{tab:scalability}).
+Completeness is provisioned by the Turing-completeness of dynamical systems, which justifies the use of spiking neural networks---trained using the NEF to approximate the same dynamics---as powerful models of computation.
+Robustness is ensured by a volume of prior work, together with our novel observation that NEF is robust to neural attractor dynamics.
+Extensibility is demonstrated by a large number of Nengo backends demonstrating NEF networks functioning on a variety of seemingly disparate architectures, in addition to the extensions summarizes below.
+
+Third, section~\ref{sec:dynamics-language} provided a number of novel perspectives on computations that are not normally viewed from a dynamical systems-based perspective.
+
+
 
 We have discussed two main theoretical results.
 The first provides a method for accurately implementing continuous-time delays in recurrent spiking neural networks.
