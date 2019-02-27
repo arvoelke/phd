@@ -341,8 +341,8 @@ Repeating the equation for these polynomials (equation~\ref{eq:delay-readouts}),
 \begin{equation} \label{eq:basis-functions}
 \mathcal{P}_{i,q}(r) = \begin{pmatrix}q \\ i\end{pmatrix}^{-1} \sum_{j=0}^i \begin{pmatrix}q \\ j\end{pmatrix} \begin{pmatrix}2q - 1 - j \\ i - j\end{pmatrix} \left( -r \right)^{i - j} \text{.} %\text{,}\quad 0 \le r \le 1 \text{,}\quad i = 0 \ldots d - 1
 \end{equation}
-A set of polynomials $\{ \mathcal{P}_{i, q} \}$ are shown in Figure~\ref{fig:basis-functions}.
-% These are again a linear transformation of the shifted Legendre polynomials.
+A set of polynomials $\{ \mathcal{P} \}_{i, q}$ are shown in Figure~\ref{fig:basis-functions}.
+This means the system is implicitly projecting its window of history onto a linear transformation of the shifted Legendre basis functions.
 In essence, equation~\ref{eq:basis-interpretation} determines a linear map from the $q$-dimensional state, $\V{x}(t)$, to the infinite-dimensional rolling window, $[ u(t - \theta') \,:\, 0 \le \theta' \le \theta ]$.
 In other words, equation~\ref{eq:basis-interpretation} is the optimal pseudoinverse of the linear compression defined by equation~\ref{eq:delay-system}.
 %The frequencies in $u(t)$ that may be accurately encoded by this approach scale inversely with $\theta$.
@@ -667,9 +667,100 @@ Focusing on this one dimension and letting the randomized feedback attempt to fi
 \subsection{Long short-term memory}
 \label{sec:delay-lstm}
 
-LSTM networks address the problem of storing information across long intervals of time by using an explicit memory unit to alleviate the vanishing and exploding gradient problems. However, we find that when given a continuous-time delay task, the performance of a "stacked LSTM" suffers catastrophically in the number of time-steps. This motivates the discovery of a new cell that we derive using modern control theory. An accurate spiking implementation of this cell in Nengo displays a striking resemblance to time cells in the cortex. Applying backpropagation through time enables an equivalently-sized network to store longer windows of time, train faster, and outperform a stacked LSTM on the Mackey-Glass dataset.
+Long Short-Term Memory~\citep[LSTM;][]{hochreiter1997long, gers1999learning} networks address the problem of storing information across long intervals of time by using an explicit memory unit to alleviate the vanishing and exploding gradient problems~\citep{bengio1994learning, bengio1994credit}.
+Each memory unit implements a small-scale dynamical system---similar \emph{in spirit} to equation~\ref{eq:delay-compiled}---referred to as an ``LSTM cell'', with a number of free parameters that control its nonlinear transfer function.
+This is replicated $n$ times to create a single layer.
+Each layer is then stacked $k$ times to form a ``stacked LSTM'', with each consecutive layer representing increasingly higher-order dynamical transformations of its previous inputs~\citep{graves2013speech}.
 
-4x Nvidia Titan Xp GPUs with 12GB each
+Since all of these mechanisms are differentiable, backpropagation through time~(BPTT) may be applied end-to-end from raw data to optimize all of the parameters in a black-box manner (see section~\ref{sec:bptt}).
+Recently, this has found numerous successes in sequence learning, machine translation, and speech~\citep{graves2013speech, sutskever2014sequence, cho2014learning, bahdanau2014neural}, leading to a widespread adoption of LSTM networks as the RNN of choice~\citep{lecun2015deep}.
+
+However, we find that when given a continuous-time delay task, the performance of stacked LSTMs suffer catastrophically in the number of time-steps that roll through the memory.
+This motivates the substitution of each ``LSTM cell'' with our Delay Network~(DN)---explored extensively throughout this chapter---and its subsequent training via backpropagation in an equivalent manner.
+We now discuss these experimental results.
+
+\subsubsection{Memory capacity}
+
+In our first set of experiments,
+we use an off-the-shelf implementation of a stacked LSTM~\citep[Keras;][]{gulli2017deep}
+to construct $k=3$ layers with $n=50$ cells each.
+Each layer is fully-connected to the next, and uses all of the default settings (e.g.,~$\tanh$ activations).
+The final layer likewise consists of a $\tanh$ activation unit for each output.
+The input data is white noise, band-limited to $30$\,Hz, starting at $0$, and normalized to an absolute range of $[-1, 1]$.
+The output data is a $50$-dimensional vector representing a uniform arrangement of delayed inputs between $0$--$0.2$\,s.\footnote{%
+Therefore, the highest frequency component oscillates at most six times, within any given delay interval.
+}
+The data set consists of $256$ samples, each $1$\,s long.
+This data is randomly partitioned into $50$\% training and $50$\% testing.
+The training data is further partitioned into a different random $25$\% sample used for validation at every epoch.
+Backpropagation through time is carried out by the Adam optimizer~\citep{kingma2014adam} with respect to the MSE loss function.
+Training is parallelized using TensorFlow~\citep{abadi2016tensorflow} across four Nvidia Titan Xp GPUs (12\,GB each).\footnote{%
+This took approximately 14 hours in our largest experiment, in stark contrast to the sub-second time that it takes to train a spiking delay network using Nengo.}
+
+We found that for time-steps ($\dt{}$) on the order of a couple milliseconds or more, backpropagation could find adequate parameters to solve this task -- that is, the LSTM could in fact represent the entire delay interval consisting of about $100$ time-steps (not shown).
+However, after decreasing the time-step, by an order of magnitude, to $\dt{} = 200$\,$\mu$s---while increasing the length of data by the same factor so that the data still represents the exact same signals---the performance collapses; accuracy exponentially as a function of delay length across the $\numprint{1000}$ time-step window (see Figure~\ref{fig:lstm-capacity}~(b)).
+
+\TODO{Run again with linear units on the output layer. Move the tanh in the DN cell to the input rather than output.}
+
+We then took the exact same code and network specification -- but replaced each LSTM cell with a ``Delay Network~(DN) cell'', defined as follows.
+We consider the $q$-dimensional LTI system described by equation~\ref{eq:delay-system}, with a balanced state-space (section~\ref{sec:software}), and discretized using Euler's method:
+$$\V{x}[t+1] =  \bar{\theta}^{-1} \left( A \V{x}[t] + B u [t] \right)] + \V{x}[t] \text{.}$$
+This discretization assumes $\bar{\theta}$ is sufficiently large, such that $\dt{} \approx \bar{\theta}^{-1}$.
+This ``trick'' enables us to include $\bar{\theta}$ as a free parameter, unique to each cell, and backpropagate along it -- thus learning the delay length of each cell.
+The unit of this discretized $\bar{\theta}$ is the number of time-steps.
+This is repeated across all cells within the same layer, while \emph{sharing} the $(A, B)$ matrices across each cell within the same layer (akin to weight-sharing in a convolutional neural network).
+Finally a $\tanh$ nonlinearity is added to each unit, that receives input from all state-variables across the same layer, thus supporting nonlinear computations across a mixture of scaled Legendre bases (see section~\ref{sec:delay-nonlinear}).
+For small values of $q$, the DN cell is roughly comparable to the resource requirements of the original stacked LSTM model, using $q$ state-variables, $\bigoh{q^2}$ multiply-adds, and $1$ nonlinearity with $qn$ weights, per cell.
+
+Each DN cell receives a one-dimensional input. The trainable parameters are the weights between layers, and the delay lengths $\bar{\theta}$ within each cell.
+In this experiment, we disable training on the shared $(A, B)$ weights.
+The overall architecture remains fixed with $n$ cells stacked $k$ times.
+The final output layer consists of linear activation units, since $\tanh$ has already been applied at this point.
+Finally, we fix $q=9$, initialize the encoding weights of each cell to $1$ for the first layer and $n^{-1}$ for all subsequent layers~(i.e., the reciprocal of the fan-in), distribute $\bar{\theta}$ values according to $\mathcal{U}[100, 1000]$, and set the weights projecting to each $\tanh$ using the $C$ matrix from equation~\ref{eq:delay-system} with zero weights for all other state-variables from outside the cell.
+In other words, each cell is \emph{initialized} to approximate $\tanh u[t - \bar{\theta}]$, where $u[\cdot]$ is the cell's mean input.
+Backpropagation then refines the values of $\bar{\theta}$ and learns to mix weighted nonlinear combinations of inputs and outputs between layers.
+
+\begin{figure}
+  \centering
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{lstm-capacity-training}
+    \caption{Training \& Validation}
+  \end{subfigure}%
+  \begin{subfigure}{.5\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{lstm-capacity-testing}
+    \caption{Testing}
+  \end{subfigure}
+  \caption[Memory capacity of stacked LSTMs versus Delay Network.]{
+    Performance of a stacked LSTM versus a stacked Delay Network~(DN) on a delay task.
+    (a)~Training and validation rapidly converge for the DN but not for the LSTM.
+    (b)~Testing NRMSE is nearly uniform across the delay interval for the DN, 
+    but grows exponentially for LSTMs (linear on a log-scale) up to a maximum $100$\% error.
+    See text for details.
+  }\label{fig:lstm-capacity}
+\end{figure}
+
+\TODO{Show experiment with longer time-step.}
+\TODO{Fit line to (b)-LSTM.}
+
+Running the exact same code and analysis, on the exact same training, validation, and testing data, reveals a dramatic difference in training time between the two approaches.
+We found that the stacked DN takes $52.5$\,s per epoch to train, compared to $102.6$\,s per epoch for the stacked LSTM.
+Furthermore, the DN outperforms the LSTM in every measure of accuracy.
+Figure~\ref{fig:lstm-capacity}~(a) demonstrates nearly three orders of magnitude reduction in MSE across both training and validation, while converging much more rapidly to the ideal solution.
+Figure~\ref{fig:lstm-capacity}~(b) displays the NRMSE on the test data as a function of delay length (unit of time-steps).
+We see that the DN architecture achieves nearly uniform accuracy across the delay interval, while the equivalently-sized LSTM cell archictecture approaches $100$\% error rates towards the end of the window.
+This illustrates that the stacked LSTM struggles to memorize low-frequency signals (relative to the time-step) across long intervals of time.
+On the other hand, this task is natural for the stacked DN, as its state represents a $q$-degree polynomial expansion of input history (see Figure~\ref{fig:basis-functions}).
+We now proceed to demonstrate that backpropagation enables the stacked DN cells to outperform the stacked LSTM even on tasks that are not readily supported by the initial configuration of the network.
+
+\subsubsection{Predicting chaotic time-series}
+
+
+
+
+
+%This motivates the discovery of a new cell that we derive using . An accurate spiking implementation of this cell in Nengo displays a striking resemblance to time cells in the cortex. Applying backpropagation through time enables an equivalently-sized network to store longer windows of time, train faster, and outperform a stacked LSTM on the Mackey-Glass dataset.
 
 \subsection{Detecting patterns}
 \label{sec:periodicity}
