@@ -98,7 +98,7 @@ This approach also extends to more biologically-plausible realizations of the RN
 These networks are named Spiking Neural Networks~(SNNs), and are the subject matter of later sections.
 The issue in this context is that spikes (i.e.,~Dirac impulses) are non-differentiable with respect to time.
 But recently, many research groups have independently demonstrated that SNNs can also be trained with backpropagation by softening the gradient in a variety of creative ways~\citep{esser2015backpropagation, hunsberger2015spiking, hunsberger2016training, lee2016training, marblestone2016toward, neftci2017neuromorphic, bellec2018long, hunsberger2018, huh2018gradient, severa2018whetstone, rasmussen2018nengodl, shrestha2018slayer, neftci2019surrogate}, although there are challenges in realizing biologically-plausible implementations that carry this out online~\citep[][submitted]{hunsberger2018, stockel2019align}.
-Reviews that focus on feed-forward architectures are given by \citet{pfeiffer2018deep, tavanaei2018deep}, while an example applied to RNNs is demonstrated in \citet{diehl2016conversion}.
+Reviews that focus on feed-forward architectures are given by \citet{pfeiffer2018deep, tavanaei2018deep}, while examples applied to RNNs are demonstrated by \citet{diehl2016conversion, huh2018gradient}.
 It was also recently shown by \citet{chen2018neural} that both RNNs and backpropagation may be extended to continuous-time (i.e.,~taking the limit of infinitesimally small time-steps), consistent with the the NEF and Principle~3~(see section~\ref{sec:principle3}).
  
 While these approaches are theoretically sound, BPTT encounters many problems in practice~\citep{bengio1994learning}.
