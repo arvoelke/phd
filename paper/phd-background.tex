@@ -203,7 +203,7 @@ The NEF has been used to construct a wide variety of neural models, including a 
 This model incorporates many kinds of observed neural dynamics, including self-generated oscillations, sustained activity, and point attractor dynamics.
 
 Meanwhile, the flexibility of the NEF has lead to it being deployed on mixed-analog-digital neuromorphic chips~\citep{choudhary2012silicon, corradi2014, voelker2017iscas, voelker2017neuromorphic, braindrop2019} and digital architectures~\citep{bekolay2014, wang2014compact, mundy2015, knight2016, berzish2016, wang2017neuromorphic, blouw2018a, fischl2018}.
-Consequently, the NEF provides a practical method for programming neuromorphics, thus helping the field realize its promise of a low-energy computing platform that emulates core principles of the nervous system~\citep{boahen2017neuromorph}.
+Consequently, the NEF provides a practical method for programming neuromorphics, thus helping the field deliver on its promise of a low-energy computing platform that emulates core principles of nervous systems~\citep{boahen2017neuromorph}.
 
 Biological brains possess a significant amount of structure, with neuroanatomical constraints that differ considerably between functional areas. %~\citep[][pp.~207--227]{kandel2000principles}.
 We interpret this observation pragmatically, as a call to: (1)~incorporate prior knowledge of a desired set of tasks into the network's construction, and (2)~constrain a network's function using available models of the underlying biophysical mechanisms.
@@ -654,7 +654,7 @@ The balanced SNN approach of \citet{boerlin2011spike, boerlin2013predictive} req
 These methods are closer to the NEF in that they begin with a model of the desired dynamics, and then map that system onto a latent representation within an SNN using factored weight matrices.
 These methods do not rely on randomized feedback, nor explicit simulation of the network over time to train its parameters.
 Rather, they derive a closed-form solution for the parameters.
-These parameters, in effect, deterministically control the spike-timing of each neuron, in such a way that the population collaboratively keeps any deviations from its ideal state bounded above by the peak magnitude of a single filtered and weighted spike, $h(0) \left( \tau n \right)^{-1} = n^{-1}$ (see equation~\ref{eq:lowpass-impulse}).
+These parameters, in effect, deterministically control the spike-timing of each neuron, in such a way that the population collaboratively keeps any deviations from its ideal state bounded above by the peak magnitude of a single filtered and weighted spike, $n^{-1}$.
 In particular, each neuron's spike signals a constant deviation from the ideal, which causes all neurons to instantly update their local state to track the global error.
 The outcome is precision that scales as $\bigoh{n}$, that is, linearly in the number of neurons, or the total number of spikes~\citep{boahen2017neuromorph}. 
 However, this scheme applies only to \emph{linear} dynamical systems, relies on near-instantaneous communication between all neurons with a sufficiently small time-step, and requires linear neurons with relatively minimal leakage and no refractory period~\citep{boerlin2013predictive}.\footnote{
@@ -665,7 +665,7 @@ The work has been extended to support more biologically-plausible mechanisms, bu
 In general, it is unclear how far these assumptions can be relaxed before scaling regresses to $\bigoh{\sqrt{n}}$, which is of relevance when considering our targets of modelling biological systems and compiling onto neuromorphic hardware -- both of these targets regularly violate the above assumptions.
 As we show, the NEF can account for and remain robust to non-idealities, such as discrete time-steps, higher-order synapses, and detailed neural dynamics.
 We find that some of the remaining differences between the statistics of spike-trains, and the number of spikes required to achieve some level of precision, can be made up for in the NEF by delaying spikes a variable length of time that is sensitive to the global error~(unpublished) -- but we cannot currently offer a biologically plausible explanation to learn such a mechanism.
-Nevertheless, we believe further investigation into these areas of research are of utmost importance for determining the computationally-theoretic limits of SNN precision with respect to some target set of dynamical primitives, and for maximizing the efficiency of information transmission per spike~\citep[][pp.~92--127]{eliasmith2003a}.
+Nevertheless, we believe further investigation into these areas of research are of utmost importance for determining the computationally-theoretic limits of SNN precision with respect to some target set of dynamical primitives, and for maximizing the efficiency of information transmitted per spike~\citep[][pp.~92--127]{eliasmith2003a}.
 
 Returning to the literature on RNNs and backpropagation, there exists a range of methods designed to convert a conventionally-trained deep network, that uses static non-spiking (i.e.,~rate-based) nonlinearities, into an equivalent SNN~\citep[][and various methods mentioned in section~\ref{sec:bptt}]{cao2015spiking, rueckauer2017conversion, yousefzadehconversion2019}.
 This comes with some minor loss in precision due to spike-variability.
