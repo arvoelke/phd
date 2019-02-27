@@ -4,21 +4,36 @@
 We have discussed a number of theoretical and practical results involving the synthesis of dynamical systems, spiking neural networks, and neuromorphic hardware.
 We now summarize our main contributions in order.
 
-First, section~\ref{sec:sub-principles} observed a number of computational ``sub-principles'' that follow from the adoption of the NEF's three principles.
-Arbitrary network topologies reduce to a single recurrently connected layer with sparse encoders and decoders with block structure isomorphic to the original graph structure.
+First, section~\ref{sec:sub-principles} observes a number of computational ``sub-principles'' that follow from the adoption of the NEF's three principles.
+Arbitrary network topologies reduce to a single recurrently connected layer with sparse encoders, decoders with block structure isomorphic to the original graph structure, and a partitioning of time-constants.
 Heterogeneous dynamical primitives form the basis for neural computation, and may be expressed within a unified language to facilitate mathematical analyses that leverage the interchangeability and composibility of such primitives.
 Chaotic strange attractors emerge from even the simplest spiking implementations of such dynamical systems.
 The NEF represents state-vectors by linearly projecting them onto the postsynaptic currents of neurons,  independent of any considerations of what it means to use a ``rate code'' or a ``spike-time code''.
 Likewise, these state-vectors represent frequency content that grows linearly with the relative amount of energy required to drive the synapses of each postsynaptic neuron, for a fixed level of precision.
 
-Second, section~\ref{sec:nef-suitability} addressed the suitability of NEF as a framework for compiling SNNs onto neuromorphic hardware.
-Correctness is guaranteed by Theorem~\ref{thm:correctness}, which provides a novel proof of the scaling of the NEF's precision, conditioned upon a specific criteria characterizing the distribution of neural states.
-Scalability is guaranteed by the previous theorem, in conjunction with a number of prior observations made about time, space, and energy requirements (Table~\ref{tab:scalability}).
-Completeness is provisioned by the Turing-completeness of dynamical systems, which justifies the use of spiking neural networks---trained using the NEF to approximate the same dynamics---as powerful models of computation.
-Robustness is ensured by a volume of prior work, together with our novel observation that NEF is robust to neural attractor dynamics.
-Extensibility is demonstrated by a large number of Nengo backends demonstrating NEF networks functioning on a variety of seemingly disparate architectures, in addition to the extensions summarizes below.
+Second, section~\ref{sec:nef-suitability} addresses the suitability of NEF as a framework for compiling SNNs onto neuromorphic hardware.
+Correctness is guaranteed by Theorem~\ref{thm:correctness}, which provides a novel proof of the scaling in NEF precision, conditioned upon a specific criteria that characterizes the distribution of neural states.
+Scalability is guaranteed by the previous theorem, in conjunction with a number of prior observations made about time, space, and energy requirements that carefully consider the physical dimensions of relevant quantities (Table~\ref{tab:scalability}).
+Completeness is provisioned by the Turing-completeness of dynamical systems, which justifies our assertion that spiking neural networks---trained with the NEF to obey some dynamics---represent powerful models of computation.
+Robustness is ensured by a volume of prior work, together with our observation that the NEF is robust to white noise bounded by the diameter of its neural basin of attraction.
+Extensibility is demonstrated by a large number of Nengo backends supporting a variety of seemingly disparate architectures, in addition to the extensions summarized in point four below.
 
-Third, section~\ref{sec:dynamics-language} provided a number of novel perspectives on computations that are not normally viewed from a dynamical systems-based perspective.
+Third, section~\ref{sec:dynamics-language} provides a number of novel perspectives on various algorithms realized by dynamical systems, in contexts that do not traditionally take a dynamical systems-based approach at the state-space level.
+In particular, winner-take-all networks may be given their inputs sequentially, in which case its solution reduces to that of a dynamical system -- as does the case when all inputs are provided simultaneously.
+Unsupervised learning of encoders is a dynamical system, local to each synapse, that can be used to learn fixed-points memorizing its encoded vectors. 
+Supervised learning of decoders is likewise a dynamical system, that can be unified with system-level dynamics, and subsequently exploited to implement higher-order transfer functions with only a single spiking neuron (see Lemma~\ref{lemma:pes-dynamics} and Theorem~\ref{thm:pes-filtered}).
+Lastly, we observe that a large variety of important routines in linear algebra and gradient-based optimization problems may be cast as dynamical systems that resolve the correct solution over time.
+
+Fourth, section~\ref{sec:synaptic-extensions} exposes several theoretical extensions to the third principle of the Neural Engineering Framework, enabling spiking networks to leverage the computations of higher-order synapses.
+We thoroughly characterize linear dynamical systems using the transfer function representation, which allows for axonal spike-delays, such as those in Loihi, to be harnessed, while appealing to Lemma~\ref{lemma:coord-transform} to prove the most general case in Theorem~\ref{thm:general-linear}.
+Nonlinear extensions are supported by Theorems~\ref{thm:p3cont-nonlinear} and~\ref{thm:p3disc-nonlinear}, and culminate in an application that exploits hetereogeneous mixed-signal synapses in Braindrop.
+We then demonstrate that heterogeneous dynamical primitives may in principle be exploited to accurately classify surface textures using a tactile robotic fingertip.
+And finally we extend the NEF's optimization problem to simultaneously solve for decoding weights and the optimal linear filter in the context of Principle~3.
+
+Fifth, section~\ref{sec:neurons} considers extensions of the NEF to various neuron model.
+In particular, the role of adaptive neurons and biophysical neurons are characterized as decomposing a transfer function into increasingly-sophisticated model representations, and we provide a conceptual roadmap for how progress can be made within the NEF.
+Poisson-spiking models are compared to regular-spiking and adaptive neuron models in the context of Principle~1 providing results consistent with Theorem~\ref{thm:correctness} -- namely, that uniform neural states guarantee the scaling of precision, even at arbitrarily high representational frequencies.
+This validates our theory, and recommends that Nengo should consider the role of neural-state distributions very carefully in its abstractions.
 
 
 
