@@ -11,15 +11,15 @@ The number of neurons were scaled linearly in the number of associations.}
 At its largest instantiation of \numprint{100000} neurons, the SpiNNaker simulation was more than $150$ times faster than a CPU, due to the massive parallelism afforded by the architecture.
 This demonstration is encouraging to see, as it illustrates the potential for these methods to scale up and take full advantage of the distributed nature of spiking computation, while leveraging the power of dynamical systems to learn synaptic weights with both unsupervised (section~\ref{sec:unsupervised}) and supervised (section~\ref{sec:supervised}) learning rules.
 
-However, there are very few examples of functional large-scale models running on neuromorphic hardware, with \citet{mundy2016real} being the only one that we are aware of to utilize on the order of millions of neurons to do something functionally ``useful''.\footnote{%
-Recall this is still five orders of magnitude removed from that of the human brain.}
-We believe that this surprising lack of scale---in a field that was essentially created to solve a problem in scaling---is primarily due to a lack of NEF-like frameworks for supporting the translation of computations specified in some high-level language (e.g.,~coupled differential equations), onto distributed networks of physically coupled devices.
+However, there are very few examples of functional large-scale models running on neuromorphic hardware.
+We believe that this surprising lack of scale---in a field that was essentially created to solve a problem in scaling---is primarily due to a lack of NEF-like frameworks being co-designed alongside the hardware.
 These frameworks must be correct, scalable, complete, robust, extensible, and finally realized on the physical hardware itself, in order to be ultimately useful (section~\ref{sec:nef-suitability}).
 In the case of the NEF, this criteria has been validated by many of the extensions and analyses throughout this thesis, as well as by past work compiling networks onto
 Neurogrid~\citep{dethier2011brain},
 SpiNNaker~\citep{mundy2015},
 TrueNorth~\citep{fischl2018},
 and many other architectures~\citep{naylor2013managing, bekolay2014, corradi2014, wang2014compact, berzish2016, wang2017neuromorphic, rasmussen2018nengodl, blouw2018a}.
+% support the translation of computations specified in some high-level language (e.g.,~coupled differential equations), onto distributed networks of physically coupled devices.
 
 However, at time of writing, the Nengo \emph{backends} for Braindrop~\citep{braindrop2019} and Loihi~\citep{nengoloihi} are brand new---as are the chips themselves~\citep{neckar2018braindrop, davies2018loihi}---and thus currently fall short of their promise to realize \emph{large-scale} functional SNNs in neuromorphic hardware.
 For the case of Braindrop, its shortcoming is mainly by design: the chip is $0.65$\,mm${}^2$ and implements $\numprint{4096}$ neurons.

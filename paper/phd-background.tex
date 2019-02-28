@@ -723,8 +723,8 @@ Secondary goals include providing a balance between power, cost, and programmabi
 The basic building block of SpiNNaker is a chip multiprocessor~(CMP) containing 18 ARM968 cores and 128\,MB SDRAM~\citep{painkras2013spinnaker, furber2013overview}.
 Each core was prescribed to simulate \numprint{e3} spiking neurons and \numprint{e6} synapses, although Nengo's integration doubled this target by achieving \numprint{2000} neurons per core through the use of factorized weight matrices~\citep{mundy2015}.
 Each CMP is fully digital, locally synchronous, clocked at some frequency (e.g.,~$200$\,MHz), and allotted some amount of wall time (e.g.,~$1$\,ms) to complete each time-step.
-Thus, both neural and synaptic elements are virtualized (i.e.,~reusing the same shared silicon) by time-multiplexing as many computations as possible within each core given the allotted wall time.
-Although the limiting factor in scaling each core is predominantly the amount of available SDRAM split between cores, and the volume of spike traffic transmitted between CMPs.
+Thus, both neural and synaptic elements are virtualized (i.e.,~reusing the same shared silicon) by simulating as many of them as possible within each core given the allotted wall time.
+The limiting factor in scaling each core is predominantly the amount of available SDRAM split between cores, and the volume of spike traffic transmitted between CMPs.
 The architecture scales up to $2^{16}$ CMPs---over \numprint{e9}~neurons and \numprint{e12}~synapses---asynchronously connected to one another through a 2D triangular toroidal mesh.
 An instantiation that realizes their initial target of 1\% of the human brain, using \numprint{e6} cores, was finally reached as of 2018.
 
@@ -738,10 +738,8 @@ Similarly, \citet{knight2018gpus} found that GPUs improved both the simulation t
 Meanwhile, \citet{sugiarto2016high} estimated that both SpiNNaker and an FPGA provide a $\numprint{e2}$--$\numprint{e3}$-fold improvement over both CPUs and GPUs, on an image processing task. 
 Clearly it matters what one is actually scaling towards.
 
-\TODO{Was Spaun actually run on SpiNNaker in real time?}
-
-Nengo has been ported to SpiNNaker~\citep{galluppi2012real, mundy2015} and used to run the full Spaun brain model in real-time~\citep{mundy2016real}.
-This goal represented a \numprint{e4}-fold speedup over a conventional X86 CPU implementation~\citep{stewart2014large}.
+Nengo has been ported to SpiNNaker~\citep{galluppi2012real, mundy2015} and used to run the major components of the Spaun brain model in real-time~\citep{mundy2016real}.
+This goal represents a \numprint{e4}-fold speedup over a conventional X86 CPU implementation~\citep{stewart2014large}.
 This implementation required significant work by \citet{mundy2016real} to leverage the flexibility of the SpiNNaker architecture, and so we do not go into detail here.
 General support has also been added for both supervised learning~\citep{davies2013} and unsupervised learning~\citep{knight2016} to learn human-scale vocabularies online using Nengo.
 Meanwhile, Nengo has also been deployed on a prototype autonomous robot equipped with a SpiNNaker board to sense and act in real-time~\citep{galluppi2014}.
