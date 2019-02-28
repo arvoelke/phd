@@ -681,24 +681,26 @@ We now discuss these experimental results.
 
 \subsubsection{Memory capacity}
 
-In our first set of experiments,
-we use an off-the-shelf implementation of a stacked LSTM~\citep[Keras;][]{gulli2017deep}
-to construct $k=3$ layers with $n=50$ cells each.
+Our first set of experiments are designed to evaluate the memory capacity of stacked LSTMs relative to stacked Delay Networks of equivalent resource suage.
+For this, we use an off-the-shelf implementation of a stacked LSTM~\citep[Keras;][]{gulli2017deep}, and construct $k=3$ layers with $n=50$ cells each.
 Each layer is fully-connected to the next, and uses all of the default settings (e.g.,~$\tanh$ activations).
 The final layer likewise consists of a $\tanh$ activation unit for each output.
-The input data is white noise, band-limited to $30$\,Hz, starting at $0$, and normalized to an absolute range of $[-1, 1]$.
+
+To evaluate the continuous-time memory capacity, the input data is white noise, band-limited to $30$\,Hz, starting at $0$, and normalized to an absolute range of $[-1, 1]$.
 The output data is a $50$-dimensional vector representing a uniform arrangement of delayed inputs between $0$--$0.2$\,s.\footnote{%
 Therefore, the highest frequency component oscillates at most six times, within any given delay interval.
 }
 The data set consists of $256$ samples, each $1$\,s long.
 This data is randomly partitioned into $50$\% training and $50$\% testing.
-The training data is further partitioned into a different random $25$\% sample used for validation at every epoch.
+The training data is further partitioned into a separate random $25$\% sample used to report validation accuracy during training.
 Backpropagation through time is carried out using the Adam optimizer~\citep{kingma2014adam} with respect to the MSE loss function.
 Training is parallelized using Keras and TensorFlow~\citep{abadi2016tensorflow} across four Nvidia Titan Xp GPUs (12\,GB each).\footnote{%
 This took approximately 14 hours in our largest experiment, in stark contrast to the sub-second time that it takes to train a spiking delay network using Nengo.}
 
-We found that for time-steps ($\dt{}$) on the order of a couple milliseconds or more, backpropagation could find adequate parameters to solve this task -- that is, the LSTM could in fact represent the entire delay interval consisting of about $100$ time-steps (not shown).
-However, after decreasing the time-step, by an order of magnitude, to $\dt{} = 200$\,$\mu$s---while increasing the length of data by the same factor so that the data still represents the exact same signals---the performance collapses; accuracy exponentially decays as a function of delay length across the $\numprint{1000}$ time-step window (see Figure~\ref{fig:lstm-capacity}~(b)).
+\TODO{Show shorter delay experiment.}
+
+We found that, for a time-step of $\dt{} = 2$\,ms, backpropagation could find adequate parameters to solve this task -- that is, the LSTM could in fact accurately represent the entire delay interval consisting of $\bar{\theta} = 100$ time-steps with an NRMSE of about 10\% (not shown).
+However, after decreasing the time-step, by an order of magnitude, to $\dt{} = 200$\,$\mu$s---while increasing the length of data by the same factor so that the data still represents the exact same $1$\,s signals---the performance collapses; accuracy exponentially decays as a function of delay length across the $\bar{\theta} = \numprint{1000}$ time-step window (see Figure~\ref{fig:lstm-capacity}~(b)).
 
 \TODO{Run again with linear units on the output layer. Move the tanh in the DN cell to the input rather than output.}
 
@@ -732,13 +734,13 @@ Backpropagation then refines the values of $\bar{\theta}$ and learns to mix weig
     \includegraphics[width=\linewidth]{lstm-capacity-testing}
     \caption{Testing}
   \end{subfigure}
-  \caption[Memory capacity of stacked LSTMs versus Delay Network.]{
+  \caption[Memory capacity of a stacked LSTM versus Delay Network.]{\label{fig:lstm-capacity}
     Performance of a stacked LSTM versus a stacked Delay Network~(DN) on a delay task.
     (a)~Training and validation rapidly converge for the DN but not for the LSTM.
     (b)~Testing NRMSE is nearly uniform across the delay interval for the DN, 
-    but grows exponentially for LSTMs (linear on a log-scale) up to a maximum $100$\% error.
+    but grows exponentially for LSTMs (linear on a log-scale) up to a maximum of $100$\% error.
     See text for details.
-  }\label{fig:lstm-capacity}
+  }
 \end{figure}
 
 \TODO{Show experiment with longer time-step.}
@@ -751,16 +753,66 @@ Figure~\ref{fig:lstm-capacity}~(a) demonstrates nearly three orders of magnitude
 Figure~\ref{fig:lstm-capacity}~(b) displays the NRMSE on the test data as a function of delay length (unit of time-steps).
 We see that the DN architecture achieves nearly uniform accuracy across the delay interval, while the equivalently-sized LSTM cell archictecture approaches $100$\% error rates towards the end of the window.
 This illustrates that the stacked LSTM struggles to memorize low-frequency signals (relative to the time-step) across long intervals of time.
-On the other hand, this task is natural for the stacked DN, as its state represents a $q$-degree polynomial expansion of input history (see Figure~\ref{fig:basis-functions}).
-We now proceed to demonstrate that backpropagation enables the stacked DN cells to outperform the stacked LSTM even on tasks that are not readily supported by the initial configuration of the network.
+In contrast, this task is natural for the stacked DN, as its state represents a $q$-degree polynomial expansion of input history (see Figure~\ref{fig:basis-functions}).
+We now proceed to demonstrate that backpropagation enables the stacked DN cells to outperform the stacked LSTMs even on tasks that are not readily supported by the initial configuration of the network.
 
 \subsubsection{Predicting chaotic time-series}
 
+\fig{mackey-glass-example}{1}{Example test case from the Mackey-Glass dataset.}{
+    Example test case from the Mackey-Glass~(MG) dataset ($\bar{\tau} = 17$).
+    $x$ is the input. $y$ is the correct prediction $15$ time-steps into the future. We plot $x$ versus the difference between the required prediction and the input, $y - x$, which also shows a two-dimensional delay-embedding of the attractor. 
+    The signal consists of $\numprint{5000}$ time-steps ($0$ is lightest, $\numprint{4999}$ is darkest), with a line connecting adjacent time-points.
+}
 
+To asses the performance of each network on a continuous-time prediction task, we consider a synthetic dataset called Mackey-Glass~\citep[MG;][]{mackey1977oscillation}: a chaotic time-series described by a nonlinear delay-differential equation.\footnote{%
+Our code was adapted from the 2015 Deep Learning Summer School: \url{https://github.com/mila-iqia/summerschool2015/blob/master/rnn\_tutorial/synthetic.py}.
+}
+The MG data is generated using a discrete time-delay of $\bar{\tau} = 17$ (each time-step is $1$ unit of time).
+The desired output is a look-ahead (prediction) of $15$ time-steps in advance (see Figure~\ref{fig:mackey-glass-example}).
+We simulate this for $\numprint{5000}$ time-steps after removing the first $100$ step transient.
+We repeat this $128$ times, each time starting from initial random conditions.
+The entire dataset is then centered to have a global mean of zero.
+Next, the dataset is randomly split into $32$ training examples, $32$ validation examples, and $64$ testing examples.
 
+We use the same networks from the previous experiment, but with $k = 4$ layers of $n = 100$ cells each.
+For the DN cells, we make all parameters trainable (including the $A$, $B$ matrices shared across cells within the same layer).
+We set $q=6$ and initialized $\bar{\theta} \in \mathcal{U}[25, 50]$ to account for the shorter time-scale of this dataset.
+We initialize the remaining weights using standard Keras weight initializers.
 
+To successfully solve this problem, the RNN must implicitly do two things.
+First, it must model the dynamics of the state-trajectory to infer the underlying state from a one-dimensional observation.
+A theorem due to \citet{takens1981detecting} states that this is made possible by delaying the input some constant number of times (dependent on $\bar{\tau}$) and then finding the correct static nonlinear transformation of this ``delay embedding.''
+Second, it must predict the future state of this trajectory using its estimate of the current state.
+The last step is generally infeasible due to the chaotic nature of the MG system; any error in the state estimate is exponentially magnified over time (the butterfly effect; also see section~\ref{sec:chaos}).
+This makes a look-ahead of $15$ steps particulary challenging for a relatively small network, as its reconstruction of the chaotic manifold must become exponentially more precise to see linear payoffs in accuracy.
 
-%This motivates the discovery of a new cell that we derive using . An accurate spiking implementation of this cell in Nengo displays a striking resemblance to time cells in the cortex. Applying backpropagation through time enables an equivalently-sized network to store longer windows of time, train faster, and outperform a stacked LSTM on the Mackey-Glass dataset.
+This insight motivates the inclusion of a third ``hybrid'' method that interleaves the two previous methods. Specifically as in `\texttt{2121}`, where `\texttt{2}' is the DN cell and `\texttt{1}' is the LSTM cell.
+The total resource requirements are still roughly the same.
+All three methods are trained across $500$ epochs using the Adam optimizer.
+In this case, to minimize overfitting, we keep only the model from the epoch that has the highest validation score. 
+
+Test performance and training times are summarized in Table~\ref{tab:mackey-glass}.
+We see that the DN outperforms the LSTM in accuracy and training time.
+We suspect that this is because the DN more readily supports a delay-embedding within its $6$-dimensional state.
+However, the hybrid method outperforms both in accuracy and the LSTM in training time.
+Thus, the LSTM cell affords some dynamical primitive that may be leveraged by networks of DN cells (and vice-versa).
+This suggests that LSTMs and DNs may have complementary functions as building blocks within deep RNNs.
+And, as shown in our first experiment, the DN provides improved scaling through time with respect to lower frequencies across longer continuous time-intervals.
+
+\begin{table}
+\centering
+  \begin{tabular}{@{}lrr@{}} \toprule
+    Method & NRMSE & \pbox{20cm}{Training Time \\ ($s$ / epoch)} \\
+    \midrule
+LSTM & 7.084\% & 50.0 \\
+DN & 6.783\% & 30.5 \\
+Hybrid & 6.097\% & 40.5 \\
+    \bottomrule
+  \end{tabular}
+  \caption[Prediction accuracy of a stacked LSTM versus Delay Network.]{ \label{tab:mackey-glass}
+    Test accuracy and training time for various RNNs on the Mackey-Glass~(MG) dataset.
+  }
+\end{table}
 
 \subsection{Detecting patterns}
 \label{sec:periodicity}
