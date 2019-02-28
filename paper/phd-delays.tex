@@ -5,7 +5,7 @@ This chapter has been adapted from, while significantly extending, the work of \
 
 A particularly important dynamical system that has not been discussed before in the NEF literature is the pure \emph{continuous-time delay} line.
 In order to implement such a system, one must represent a \emph{rolling window} of input history, or, in other words, one must \emph{buffer} the input signal into a memory that continuously slides alongside the current input.
-In this chapter, we provide a novel derivation of an optimal low-dimensional linear approximation to a continuous-time delay, and then realize this \emph{delay network} using the NEF in a recurrent spiking network.
+In this chapter, we provide a novel derivation of an optimal low-dimensional linear approximation to a continuous-time delay, and then realize this \emph{Delay Network}~(DN) using the NEF in a recurrent spiking network.
 We then investigate its computational properties, proving that the resulting network implements a well-defined nonlinear encoding of its input across the delay interval -- isomorphic to a high-dimensional projection of the Legendre polynomials.
 This network uses a scale-invariant representation, with a level of accuracy that depends on the input frequency, chosen dimensionality (i.e.,~the order of the approximation), and particular synapse model.
 To our knowledge, this work is the first to demonstrate that such a temporal code may be accurately implemented using a spiking dynamical network.
@@ -15,14 +15,14 @@ However, since these networks use randomly chosen feedback weights, we show in s
 Such networks instead represent a random variety of nonlinear memory traces~\citep{lukovsevicius2012reservoir}.
 Discrete approaches to short-term memory, such as those taken by \citet{white2004short} and \citet{ganguli2008memory}, while optimal in an information-theoretic sense, rely fundamentally on single time-step delays between rate-based neurons.
 In contrast, the method that we propose here works independently of the simulation time-step, and is optimal assuming the population of spiking neurons---coupled with some model of the synapse---accurately represents a low-dimensional, low-frequency, vector space.
-Furthermore, our framework is extended to account for arbitrary linear synapses, which improves our understanding of the relationship between synapse models and network-level computation.
+Furthermore, we use our extensions from section~\ref{sec:synaptic-extensions}, which improves our understanding of the relationship between synapse models and network-level computations.
 
-We also find that the delay-line is a difficult function for FORCE networks (section~\ref{sec:force-comparison}), as re-encoding the delayed output as a teaching signal ends up ``confusing'' the network.
+We also find that the delay-line is a difficult function for FORCE networks to learn (section~\ref{sec:force-comparison}); re-encoding the delayed output as a teaching signal ends up ``confusing'' the network.
 Furthermore, we find that our network, when expressed as an RNN cell (without spikes), outperforms equivalently-sized stacked LSTMs on computing long delays, and predicting the Mackey-Glass dataset---a difficult chaotic time-series benchmark---in training time, inference time, and test accuracy.
-Next, we reveal some connections between the neural responses within our delay network, and ``time cells'' in the neuroscience literature.
+We then reveal some connections between the neural responses within our delay network, and ``time cells'' in the neuroscience literature.
 Lastly, we discuss a number of theoretical applications that are directly supported by, and extend, the computations of the delay network.
 
-Now consider a continuous-time delay line of $\theta$ seconds:
+To begin, consider a continuous-time delay line of $\theta$ seconds:
 \begin{align} \label{eq:time-delay}
 y(t) = (u \ast \delta_{\theta})(t) = u(t - \theta)\text{,} \quad \theta > 0 \text{,}
 \end{align}
@@ -44,13 +44,13 @@ Many learning algorithms also tend to rely on sliding windows of input history.
 For instance, \citet{leng2013online} and \citet{izzeldin2011online} improved their neural networks' accuracy by incorporating sliding windows into their learning rules -- but they did not offer any neural implementation for the component that performs the required buffering.
 Similarly, \citet{ferreira2009online} found sliding windows to be beneficial for the online learning of process models, in which the parameters of a nonlinear time-varying system are identified.
 
-The computational power of delays is explained much more broadly by Takens' embedding theorem~\citep{takens1981detecting, noakes1991takens}.\footnote{%
+The computational power of delays is explained more abstractly by Takens' embedding theorem~\citep{takens1981detecting, noakes1991takens}.\footnote{%
 We thank Peter Suma for pointing out this connection.
 }
 This theorem provides a very deep connection between delays and dynamical systems, specifically: any chaotic attractor, with finite box counting dimension, $k$, can be reconstructed by a static nonlinear projection of $2k$ different delays of just \emph{one} of its internal state variables.
 In other words, a basis of delays, when applied to just a single observed variable, provides enough information to infer its entire unobserved state.
 These insights have practical applications to time-series forecasting in the natural sciences~\citep{sugihara2012detecting}.
-And in particular, this provides theoretical grounding for why delays might be computationally useful in biological systems; their dynamics support the inference of high-dimensional states from low-dimensional observations over time.
+And, in particular, this provides theoretical grounding for why delays might be computationally useful in biological systems; their dynamics support the inference of high-dimensional states from low-dimensional observations over time.
 
 Our delay network is also somewhat analogous to an autoencoder~\citep{gulli2017deep} from machine learning.
 However, rather than compressing the input into a low-dimensional space that allows for it to be reconstructed spatially, we do this \emph{temporally}.
@@ -430,7 +430,7 @@ This has numerous consequences that are intertwined: (1) the relationship betwee
 Taking neural constraints into consideration, we do need to separate out $\theta s$ into its dimensional quantities.
 As shown in section~\ref{sec:poisson-spiking}, the frequency of the state-vector being represented can matter.
 This concern is resolved by the use of Poisson spiking, integrate-and-fire neurons, or any other solution to state discrepancy (section~\ref{sec:spike-coding}).
-On the other hand, longer values of $\theta$ are more susceptible to the integration of spiking noise, in the form of ``drift''.
+As well, longer values of $\theta$ are more susceptible to the integration of spiking noise, in the form of ``drift''.
 Lastly, when using a balanced realization, larger values of $q$ require denser interconnectivity ($q \times q$ transform matrices) between all $q$ dimensions, leading to $\bigoh{q^2}$ increase in time and memory requirements.
 Such considerations are addressed in section~\ref{sec:deep-delay-networks} by stacking multiple DNs together to form a Deep Delay Network~(DDN).
 
@@ -616,7 +616,7 @@ In addition, trials took on average $5.10$\,s for the sigmoid DN, $6.44$\,s for 
 This difference is a consequence of not simulating the DN for training, and from using factorized weight matrices (i.e.,~encoders and decoders) to simulate the DN.
 These results are consistent with that of the linear benchmark, except for the additional observation that here the spiking DN outperforms the rate ESN.
 This is because, as explained previously, the ESN's memory capacity requires linear tuning, which is at odds with the nonlinearities required by functions such as autocorrelation.
-LSMs were again unable to perform.
+LSMs were again unable to perform the task.
 
 \TODO{We should be able to dramatically improve this spiking result...}
 
@@ -625,9 +625,9 @@ LSMs were again unable to perform.
 
 We also compared our NEF solution to both FORCE~\citep{sussillo2009generating} and full-FORCE~\citep{depasquale2018full} networks (also see sections~\ref{sec:engineered-approaches} and~\ref{sec:relationships}).
 FORCE networks take the same essential ingredient of RC networks, namely the inclusion of high-dimensional random feedback, except they make an important addition to the model: the target output is learned---online via RLS---to be simultaneously re-encoded back into the network (see Figure~\ref{fig:architectures}).
-Full-FORCE takes this a step further, by using the postsynaptic currents from the previous FORCE network as a training signal for a separate ``full-FORCE'' network. 
+Full-FORCE takes this a step further, by using the (pre-filtered) currents from from the previous FORCE network as a training signal for a separate ``full-FORCE'' network. 
 In the first step, the FORCE network does not do any online learning, but instead receives the exact ideal teaching signal.
-The second step then allows for additional degrees of freedom to be optimized, to find the \emph{full weights} that reconstruct the ideal PSCs from the first network -- again, online using RLS.
+The second step then allows for additional degrees of freedom to be optimized, to find the \emph{full weights} that reconstruct the ideal currents from the first network -- again, online using RLS.
 This is similar in many ways to \citet{tripp2006neural}, but maintains the same idea as in FORCE, in particular the re-encoding of the target state.
 The main difference from FORCE is that instead of learning a low-rank (one-dimensional) decode-encode of the target, full-FORCE learns a full-rank approximation to an encoding of that same target.
 
@@ -644,14 +644,14 @@ We refer to this last method as ``no-FORCE''.
 
 We now compare all three of these to an idealized NEF implementation of the DN~(equation~\ref{eq:ss-delay}), consisting of just $n = 6$ linear units, coupled to one another by the discretized mapping of equation~\ref{eq:discrete-p3}, as summarized by equation~\ref{eq:delay-compiled} ($q = 6$).
 In this scenario, the only error that remains is that of equation~\ref{eq:pade-delay-error} arising from the use of Pad\'e approximants to render the delay line finite-dimensional.
-On the other hand, each FORCE network consists of $n = 500$ neurons (and $\bigoh{n^2}$ weights).
+Each FORCE network consists of $n = 500$ neurons (and $\bigoh{n^2}$ weights).
 The network is given $10$\,s of training data per trial.
 In all cases, the training and test signals are randomly sampled $1$\,Hz band-limited white noise signals, with $5$\,s of test data per trial.
 We compare all four networks by sweeping $\theta$ across $0.01$--$1$\,s, with $10$ trials at each value of $\theta$ (boostrapped 95\% confidence intervals).
 
 \fig{force-comparison}{0.7}{Memory capacity of FORCE versus the NEF.}{
     Comparison of several FORCE learning methods versus the NEF on a delay task.
-    Network are trained to delay a time-varying input by $\theta$ seconds.
+    Networks are trained to delay a time-varying input by $\theta$ seconds.
     Each FORCE network consists of $500$ $\tanh$ neurons, while the NEF network is $6$ linear neurons.
     See text for details.
 }
@@ -818,7 +818,7 @@ Hybrid & 6.097\% & 40.5 \\
 \label{sec:periodicity}
 
 We now demonstrate an application of our theory of temporal representation in the delay network (section~\ref{sec:temporal-representation}).
-Specifically, we show that the delay network can mathematically detect the existence of repeating patterns in its stimulus.
+Specifically, we show that the delay network can detect the existence of repeating patterns in its stimulus.
 Given an arbitrary scalar signal, $u(t)$, we define a measure of \emph{$k$-periodicity} for natural $k \in \mathbb{N}_{\ge 1}$, with respect to some finite interval length $\theta > 0$, and sub-interval length $\gamma = \theta k^{-1}$, as follows:
 \begin{equation} \label{eq:periodicity}
 p_k(t) = \sqrt{ \frac{1}{\gamma} \int_{\tau=0}^{\gamma} \left( \frac{1}{k} \sum_{i=0}^{k-1} u \left( t - \theta + i \gamma + \tau \right) \right)^2 d\tau } \text{.}
@@ -1017,7 +1017,7 @@ More to the point, we can analyze the delay network's frequency response
 %\footnote{%
 %The frequency response is the transfer function evaluated at various input frequencies.
 %}
-when using a delayed continuous lowpass synapse (equation~\ref{eq:delayed-lowpass}) instead of the canonical lowpass (equation~\ref{eq:lowpass}) as the dynamical primitive.
+when using a continuous lowpass synapse and an axonal delay of $\lambda$ (equation~\ref{eq:delayed-lowpass}) instead of the canonical lowpass (equation~\ref{eq:lowpass}) as the dynamical primitive.
 This provides a direct measure of the possible improvement gains when using the extension.
 Figure~\ref{fig:principle3fail}~(Right) compares the use of Principle~3 (which accounts for $\tau$ but ignores $\lambda)$, to our extension (which fully accounts for both; see equation~\ref{eq:lambert-delay}) when $\lambda = \tau$.
 The figure reveals that increasing the dimensionality improves the accuracy of our extension, while magnifying the error from Principle~3.

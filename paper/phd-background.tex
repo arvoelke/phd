@@ -174,7 +174,7 @@ This transparency enables theoretical insights into neural computation, and, as 
 In section~\ref{sec:nef} we provide a detailed account of the NEF, and in section~\ref{sec:relationships} we draw architectural comparisons to both RC and FORCE.
 Its extension, full-FORCE~\citep{depasquale2018full}, may be viewed as an instance of the NEF with full-rank weight matrices~\citep{tripp2006neural}, where training is performed online rather than offline, and randomized feedback is thrown in to serve the same purposes as in RC.
 The crucial difference is that FORCE networks assert that recurrently connecting the estimate of the target variable back into the network during both training and inference will improve performance. 
-The methods of \citet{thalmeier2016learning} provide a means of realizing full-FORCE networks in biologically-plausible spiking networks using a precise spike-time coding mechanism, similar to ~\citet{boerlin2013predictive}, supported by nonlinearities in the synapses.
+The methods of \citet{thalmeier2016learning} may be viewed as a means of realizing full-FORCE networks in biologically-plausible spiking networks using a precise spike-time coding mechanism, that is similar to \citet{boerlin2013predictive}, but supported by nonlinearities in the synapses.
 Likewise, \citet{jaeger2014controlling} may be viewed as an extension of RC that is essentially an offline variant of FORCE, or a non-spiking NEF network~\citep{aubin2017}.
 In section~\ref{sec:force-comparison}, we find that the NEF % and RC
  outperforms FORCE on a continuous-time memory benchmark, suggesting that FORCE learning may be insufficient for a large class of memory-based tasks.
