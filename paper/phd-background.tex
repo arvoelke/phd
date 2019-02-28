@@ -568,9 +568,8 @@ In contrast, the reservoir is left untrained with dynamical properties that rema
 
 While RC solves the issue of training RNNs, the problem of efficient scaling remains. 
 Indeed, as noted by RC theorists, ``just simply creating a reservoir at random is unsatisfactory'' and ``setting up the reservoir such that a good state expansion emerges is an ill-understood challenge in many respects''~\citep{lukovsevicius2012reservoir}.
-Generally, the computational power of RC relies upon having a sufficiently large reservoir that represents a high-dimensional superset of the required dynamics, ultimately resulting in an inefficient use of resources for many systems.
+Generally, the computational power of RC relies upon having a sufficiently large reservoir that represents a high-dimensional superset of the required dynamics, ultimately resulting in an inefficient use of resources for many systems~\citep{wallace2013randomly}.
 This becomes problematic when considering the time and memory required to simulate RC networks, which scales as $\bigoh{ n^2 }$, thus making large-scale simulations of the brain computationally prohibitive.
-\TODO{Cite memory limits on random networks.}
 In section~\ref{sec:delay-rc} we show that rate-based reservoirs (ESNs) can be outperformed in accuracy, time, and memory, by \emph{spiking} NEF networks of the same size.
 %We use the example of a delay line to highlight these limitations.
 
