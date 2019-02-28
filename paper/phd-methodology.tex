@@ -73,7 +73,7 @@ Specifically, we take a scattered sample from the hypercube, and then apply the 
 This supports the use of any number of quasi-MC methods for sampling from the cube, although we have implemented the most promising ones: Sobol sequence and $R_2$~\citep{Sobol1967, quasimc}.
 
 We find that quasi-MC sampling the encoders also improves the representation at low numbers of neurons on average, by ensuring a better tiling or coverage of the encoded space.
-For efficient coding in higher dimensions, methods of randomly sampling points from the Leech lattice---a 24-dimensional Lattice built from \numprint{196560} unit-length vectors, with beautiful mathematical properties regarding their similarity in relation to efficient sphere-packing and error-correction codes~\citep{Conway1999}---used by \citet{knight2016} are also available in software.
+For efficient coding in higher dimensions, methods of randomly sampling points from the Leech lattice---a 24-dimensional Lattice built from \numprint{196560} unit-length vectors, with beautiful mathematical properties regarding their similarity in relation to efficient sphere-packing and error-correction codes~\citep{Conway1999}---used by \citet{knight2016} are also available in NengoLib.
 
 % \subsubsection{Vector Oja Learning Rule}
 
@@ -221,7 +221,7 @@ Prescribed Error Sensitivity~\citep[PES;][]{bekolay2013} is a biologically-plaus
 PES modifies the connection weights between populations of neurons to minimize an external (i.e.,~supervised) error signal.
 It is equivalent in function to a single-layer application of gradient descent, applied online (i.e.,~stochastically) to its current input and supervised output.
 This learning rule has been used to model episodic memory~\citep{trujillo2014}, hierarchical reinforcement learning~\citep{rasmussen2017}, adaptive motor control~\citep{komer2015, dewolf2016}, and many other tasks~\citep{aubin2018, choo2018}.
-We note that the PES learning rule is also supported by Loihi~[personal communication].
+The PES learning rule is also partially supported by Loihi~[personal communication].
 
 We solve the discrete dynamical system for the case of constant inputs and no noise, to show that the decoding vectors given by the NEF have a simple closed-form expression in terms of the number of simulation timesteps. Moreover, with $\gamma = (1 - \kappa \|\V{a}\|^2) < 1$, where $\kappa$ is the learning rate and $\V{a}$ is the vector of firing rates, the error at timestep $k$ is the initial error times $\gamma^k$. Thus, $\gamma > - 1$ implies exponential convergence to a unique stable solution, $\gamma < 0 $ results in oscillatory weight changes, and $\gamma \le -1$ implies instability.
 \begin{lemma}[Dynamics of discrete unfiltered supervised learning]
@@ -267,7 +267,7 @@ Finally, we conclude by discussing some implications for learning spiking dynami
   Reproduced from \citet[][Figure~1]{voelker2017c}.
 }
 
-Consider a network in Nengo, containing a population of $n$ spiking neurons, encoding the constant scalar input $x$.
+Consider a network containing a population of $n$ spiking neurons, encoding the constant scalar input $x$.
 Let $\V{a} \in \mathbb{R}^n$ be the average (i.e.,~rate) activity of each neuron in response to this encoding.\footnote{Here on, we assume that $\V{a} \ne \V{0}$, otherwise PES will have no effect.}
 This vector is determined by the first principle of the NEF, and remains fixed for constant $x$.
 The \emph{decoders} $\V{d}(t) \in \mathbb{R}^n$ determine the scalar output $y(t)$ via the dot-product:
