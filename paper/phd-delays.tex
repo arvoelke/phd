@@ -764,6 +764,7 @@ We now proceed to demonstrate that backpropagation enables the stacked DN cells 
     The signal consists of $\numprint{5000}$ time-steps ($0$ is lightest, $\numprint{4999}$ is darkest), with a line connecting adjacent time-points.
 }
 
+\noindent 
 To asses the performance of each network on a continuous-time prediction task, we consider a synthetic dataset called Mackey-Glass~\citep[MG;][]{mackey1977oscillation}: a chaotic time-series described by a nonlinear delay-differential equation.\footnote{%
 Our code was adapted from the 2015 Deep Learning Summer School: \url{https://github.com/mila-iqia/summerschool2015/blob/master/rnn\_tutorial/synthetic.py}.
 }
@@ -786,7 +787,7 @@ Second, it must predict the future state of this trajectory using its estimate o
 The last step is generally infeasible due to the chaotic nature of the MG system; any error in the state estimate is exponentially magnified over time (the butterfly effect; also see section~\ref{sec:chaos}).
 This makes a look-ahead of $15$ steps particulary challenging for a relatively small network, as its reconstruction of the chaotic manifold must become exponentially more precise to see linear payoffs in accuracy.
 
-This insight motivates the inclusion of a third ``hybrid'' method that interleaves the two previous methods. Specifically as in `\texttt{2121}`, where `\texttt{2}' is the DN cell and `\texttt{1}' is the LSTM cell.
+This insight motivates the inclusion of a third ``hybrid'' method that interleaves the two previous methods. Specifically as in `\texttt{2121}', where `\texttt{2}' is the DN cell and `\texttt{1}' is the LSTM cell.
 The total resource requirements are still roughly the same.
 All three methods are trained across $500$ epochs using the Adam optimizer.
 In this case, to minimize overfitting, we keep only the model from the epoch that has the highest validation score. 
