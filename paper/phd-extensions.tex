@@ -917,7 +917,7 @@ Although this may seem like a pointless exercise, as we have merely gone around 
 A crucial observation here is that a diagonal matrix cannot be factored any further (it is full rank).
 In the context of the NEF, this implies that the network-effect of adaptive LIF models is to expand the dimensionality of the dynamical state-space from $q$ to $n$, where the additional dimensions emerge from a sparse $(1/n)$-encoding with itself.
 This provides an explanation for the computational power of adaptive LIF neurons in the context of Principle~3, but only gets us so far due to the difficulty in analyzing an $n$-dimensional nonlinear dynamical system for large values of $n$.
-We have found, however, that this diagonal matrix can in many cases be factored into the product of two low-rank matrix---analagous to encoders and decoders---whose state-space essentially represents a projection of the population's adaptive state, without influencing the network-level dynamics.
+We have found, however, that this diagonal matrix can in many cases be approximated by the product of two low-rank matrices---analagous to encoders and decoders---whose state-space essentially represents a projection of the population's adaptive state, while maintaining essential properties of the network-level dynamics.
 This highlights a promising avenue for future research, namely the characterization of this additional state-vector and its subsequent harnessing for particular classes of dynamical systems.
 
 \subsection{Poisson models}
