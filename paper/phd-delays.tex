@@ -777,14 +777,14 @@ Next, the dataset is randomly split into $32$ training examples, $32$ validation
 
 We use the same networks from the previous experiment, but with $k = 4$ layers of $n = 100$ cells each.
 For the DN cells, we make all parameters trainable (including the $A$, $B$ matrices shared across cells within the same layer).
-We set $q=6$ and initialized $\bar{\theta} \in \mathcal{U}[25, 50]$ to account for the shorter time-scale of this dataset.
+We set $q=6$ and initialize $\bar{\theta} \in \mathcal{U}[25, 50]$ to account for the shorter time-scale of this dataset.
 We initialize the remaining weights using standard Keras weight initializers.
 
 To successfully solve this problem, the RNN must implicitly do two things.
 First, it must model the dynamics of the state-trajectory to infer the underlying state from a one-dimensional observation.
 A theorem due to \citet{takens1981detecting} states that this is made possible by delaying the input some constant number of times (dependent on $\bar{\tau}$) and then finding the correct static nonlinear transformation of this ``delay embedding.''
 Second, it must predict the future state of this trajectory using its estimate of the current state.
-The last step is generally infeasible due to the chaotic nature of the MG system; any error in the state estimate is exponentially magnified over time (the butterfly effect; also see section~\ref{sec:chaos}).
+The last step is generally infeasible due to the chaotic nature of the MG system; \emph{any} finite error in the state estimate is exponentially magnified over time (the ``butterfly effect''; also see section~\ref{sec:chaos}).
 This makes a look-ahead of $15$ steps particulary challenging for a relatively small network, as its reconstruction of the chaotic manifold must become exponentially more precise to see linear payoffs in accuracy.
 
 This insight motivates the inclusion of a third ``hybrid'' method that interleaves the two previous methods. Specifically as in `\texttt{2121}', where `\texttt{2}' is the DN cell and `\texttt{1}' is the LSTM cell.
