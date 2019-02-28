@@ -92,7 +92,7 @@ We run a large number of trials with random configurations of the network on the
 \end{figure}
 
 On Braindrop (see Figure~\ref{fig:integrator-neuromorphic}~(a), reproduced from \citet[][Figure~15]{braindrop2019}), we compensate for the distribution of synaptic time-constants, arising from transistor mismatch in the analog circuitry, using the methods of \citet{voelker2017iscas}, detailed in section~\ref{sec:nonlinear-extensions} and~\ref{sec:mismatch}.
-We do so by first measuring the time-constants, and then targetting them individually with the specific transform given by our extensions.
+We do so by first measuring the time-constants, and then targeting them individually with the specific transform given by our extensions.
 The chip is configured to maximize the synaptic time-constants; the empirically measured mean is $179.3$\,ms, with a standard deviation of $53.8$\,ms.
 To help account for temperature-induced variability---manifesting as slowly-changing shifts to the effective tuning curves~\citep{abrams2017}---we also retrain the weights every 10 simulations directly from the spike data, collected using a separate training signal.
 The rest of the mapping is handled by the Nengo-Braindrop backend~\citep{neckar2018optimizing, braindrop2019}.

@@ -23,7 +23,7 @@ Due to its black-box nature, neither domain expertise nor understanding of the n
 The basic recipe is conceptually simple: obtain one of the many popular off-the-shelf toolboxes for deep learning, pick your favourite network architecture, set its hyperparameters, and then throw as much training data at the network as your GPU(s) can handle.
 Deep learning excels at constructing static vector functions, that generalize to new examples, by automatically discovering the latent (i.e., hidden) low-dimensional representations that are most relevant to the task at hand.
 However, the opacity of its optimization procedure comes as a double-edged sword: while it is easy to apply deep learning to many problems with minimal hand-engineering, it is unclear even to experts what effect most hyperparameter changes will have in advance on overall performance~\citep{bergstra2012random}.
-For example, it has been observed that using a rectified linear~(ReLU) activiation unit for each nonlinearity can dramatically reduce the training time on a variety of benchmarks~\citep{glorot2011deep}, yet, as far as we know, this observation still does not have any theoretically-grounded framework that could assist in selecting nonlinearities or related hyperparameters for some given task.
+For example, it has been observed that using a rectified linear~(ReLU) activation unit for each nonlinearity can dramatically reduce the training time on a variety of benchmarks~\citep{glorot2011deep}, yet, as far as we know, this observation still does not have any theoretically-grounded framework that could assist in selecting nonlinearities or related hyperparameters for some given task.
 
 Despite its breakthroughs, the field is well-aware that a feed-forward architecture is incapable of learning relationships that span arbitrarily across the input data \emph{in time}, which is necessary for tasks involving video, speech, and language understanding with long-range temporal dependencies~\citep{bengio1994learning}.
 Regardless of the depth of the network, a feed-forward network will always have some finite input response, which leaves a finite ``memory'' of previous inputs within the state of the network.
@@ -64,7 +64,7 @@ Likewise, the human brain itself is a highly recurrent system~\citep{dayan2001th
 Assuming its mechanisms obey the laws of physics, it must also necessarily be a dynamical system~\citep{amit1989modeling, mckenna1994brain, port1995mind}.
 And unless the brain harnesses quantum physics---which seems to be irrelevant to cognitive function~\citep{litt2006brain}---is a ``hypercomputer'' or a ``super-Turing'' computer---which seems to require unphysical resources~\citep{broersma2018computability}---its dynamics must also be finite-dimensional.
 Causality follows from assuming the brain does not violate the second law of thermodynamics~\citep{evans1996causality}.
-In essense, we have good reason to believe that the brain is a physical ``machine'' with finite spatiotemporal resources and limited precision.
+In essence, we have good reason to believe that the brain is a physical ``machine'' with finite spatiotemporal resources and limited precision.
 % \footnote{The discrete-time nature of these equations is not of relevance to this discussion; as we are dealing with approximations of a physically-realizable system, a continuous-time version may be discretized with sufficiently small time-step to obtain a system in the form of equation~\ref{eq:discrete-dynamical-system}.}
 From this position, it follows that the class of computations made available by RNNs is at least as large as the class of computations that can be performed by the brain.
 Constraints on the physical devices leveraged by the brain (i.e.,~constraints on timing, connectivity, precision, and so forth) are likely to impose limitations that make RNNs strictly more powerful in theory.
@@ -215,7 +215,7 @@ We interpret this observation pragmatically, as a call to: (1)~incorporate prior
 However, the standard formulation of the NEF makes a number of simplifying assumptions regarding these mechanisms.
 For example, the NEF typically assumes an exponential model of the postsynaptic current~(PSC) evoked by an action potential, which has a biologically-implausible, instantaneous, rise-time.
 This model is also known as a first-order lowpass filter.
-In contrast, the synapse models in mixed-analog-digital neuromorphic chips are nonideal, featuring higher-order dynamics due to parasitic capacitances~\citep{voelker2017iscas}.
+In contrast, the synapse models in mixed-analog-digital neuromorphic chips are non-ideal, featuring higher-order dynamics due to parasitic capacitances~\citep{voelker2017iscas}.
 Similarly, the synapse models commonly used in biological models incorporate distinct rise- and fall-times due to separate time-scales of transmitter binding and unbinding, as well as axonal transmission delays due to the finite-velocity propagation of action potentials~\citep{roth2009modeling}.
 Chapter~\ref{chapt:nef-extensions} improves the scope of the NEF, by characterizing the network-level effects of these higher-order synapse models, and harnesses them to implement both discrete-time and continuous-time dynamical systems with improved accuracy.
 Chapter~\ref{chapt:delays} explores a novel theoretical system that equips any RNN---not just NEF-based---with an enhanced ability to compute nonlinear functions across windows of memory.
@@ -225,7 +225,7 @@ In this section, we provide the basic building blocks adapted from the original 
 In the context of RNNs, the NEF provides generic machinery for training the weights of a recurrent network of spiking (or non-spiking) neurons in order to implement some particular dynamical system~\citep{dynamicspatent}.
 This is made efficient through three important steps: (1)~weight matrices are factored into two $n \times q$ \emph{encoding} and \emph{decoding} matrices, where $q \in \bigoh{1}$ is the dimensionality of the dynamical state-vector, and $n$ is the number of neurons, (2)~the optimization problem is recast as a batched least-squares problem that can be solved offline without needing to explicitly simulate the network over time, and (3)~the dynamics of the synapse model are leveraged as a temporal basis for the overall system.
 These insights lead to procedures for training and simulation that are efficiently implemented---scaling as $\bigoh{n}$ in both time and space---by the Nengo software package~\citep{bekolay2014}.
-Backpropagation through time can be applied to further improve the performance of these networks, by use of the Nengo~DL extension~\citep{hunsberger2018, rasmussen2018nengodl, blouw2018a}, which bidirectionally integrates Nengo with Google's machine learning toolkit, Tensorflow~\citep{abadi2016tensorflow}.
+Backpropagation through time can be applied to further improve the performance of these networks, by use of the Nengo~DL extension~\citep{hunsberger2018, rasmussen2018nengodl, blouw2018a}, which bidirectionally integrates Nengo with Google's machine learning toolkit, TensorFlow~\citep{abadi2016tensorflow}.
 
 At the same time, this top-down approach provides considerable transparency into systematic relationships between neural nonlinearities, synapse models, time-constants, and network function.
 For instance, it becomes feasible to determine the class of functions that are most accurately supported by a population (i.e.,~layer) of neurons~\citep[][pp.~185--217]{eliasmith2003a}.
@@ -274,7 +274,7 @@ Then $\V{e}_i$ can be interpreted geometrically as a ``preferred direction'' vec
 The bias terms $\beta_i$ effectively determine the sparsity of representation (i.e.,~which neurons are active for a given $\V{x}(t)$), while the gain terms $\alpha_i$ determine the density of spikes relative to $\tau_\text{ref}$ (i.e.,~how many spikes are generated by an active neuron).
 These parameters can be randomly sampled from distributions constrained by the domain of $\V{x}(t)$ and the dynamic range of $G_i \left[ \cdot \right]$, fit from neuroanatomical data (e.g.,~known tuning curves, preferred directions, firing rates, sparsity, etc.; see for instance~\citet{voelker2016a}), predetermined using prior knowledge of the desired transformation~\citep{jgosmann2015}, or trained via backpropagation through time~\citep{rasmussen2018nengodl}.
 By default, we select these parameters such that the neural responses are uniformly distributed with respect to $\V{x}$ across the $q$-dimensional hyperball~\citep[][pp.~51--65]{gosmann2018}.
-In essense, equation~\ref{eq:encoding} defines a high-dimensional nonlinear projection of the vector $\V{x}(t)$, by taking its dot-product with an encoding matrix $E$, and injecting the result into $n$ heterogeneous spike-generators.
+In essence, equation~\ref{eq:encoding} defines a high-dimensional nonlinear projection of the vector $\V{x}(t)$, by taking its dot-product with an encoding matrix $E$, and injecting the result into $n$ heterogeneous spike-generators.
 
 Having defined an encoding, we introduce a postsynaptic filter, $h(t)$, which behaves as a model for the synapse by describing the dynamics of a receiving neuron's current.
 Specifically, this filter models the postsynaptic current~(PSC) triggered by action potentials arriving at the synaptic cleft.
@@ -369,7 +369,7 @@ Rather, we exploit the fact that filtering and weighting spikes across the \emph
 
 In section~\ref{sec:psc-coding}, we discuss how our adoption of equation~\ref{eq:rate-approximation} has lead many to mischaracterize the NEF as using a ``rate code'', which comes with significant baggage.
 We suggest that the NEF should instead by characterized as mapping latent state-variables onto postsynaptic currents, and to label this as a ``postsynaptic current code''; this code can exhibit repeatedly precise spike-times, facilitate rapid transmission of information, and does not demand excessive pool sizes or long time-constants, contrary to commonly-held beliefs that have carried over from rate-coding paradigms.
-In the NEF, individual neurons are free to spike much slower than ther ideal rate models, while remaining silent across intervals of time that far exceed the time-constant of the synapse.
+In the NEF, individual neurons are free to spike much slower than their ideal rate models, while remaining silent across intervals of time that far exceed the time-constant of the synapse.
 In section~\ref{sec:spike-coding}, we provide a novel proof that justifies the correctness of this technique much more generally.
 Perhaps surprisingly, this optimization procedure is mathematically correct for Poisson-spiking models and simple integrate-and-fire models, even as the frequency of the state-vector goes towards infinity, and as the time-constants of the filters approach zero (see Figure~\ref{fig:poisson-frequency-scaling}).
 % We also remark that one may use singular value decomposition~(SVD) to characterize the class of functions that can be accurately approximated by the chosen neural basis functions~\citep[][pp.~185--217]{eliasmith2003a}.
@@ -747,7 +747,7 @@ Several other applications of SpiNNaker are reviewed by \citet{rhodes2018spynnak
 
 The next generation of SpiNNaker, dubbed SpiNNaker~2, is currently in development with a prototype chip available for testing~\citep{liu2018memory}.
 The hardware promises to improve upon the speed- and power-efficiency of the first generation by use of improved fabrication processes, advanced per-core power management techniques, and specialized hardware acceleration for the exponential function.
-\citet{liu2018memory} deploys a deep neural network on the prototype SpiNNaker~2 test chip, realizing power improvements on the order of \numprint{e2} versus a traditional X86 CPU implementation.
+\citet{liu2018memory} deploys a deep neural network on the prototype SpiNNaker~2 test chip, realizing power improvements on the order of \numprint{2} versus a traditional X86 CPU implementation.
 Nengo support may be available at the same time as the actual chip~[personal communication].
 
 \subsection{Braindrop}
@@ -758,7 +758,7 @@ by building upon many of the tools and lessons learned from its predecessor, Neu
 
 Both Neurogrid and Braindrop take a dynamical systems-based approach~\citep{arthur2011silicon, gao2012dynamical} to realize network-level computation.
 In particular, the device-level physics of subthreshold analog circuits~\citep{andreou1991current}---emulating the behaviours of neurons and synapses---are leveraged by weighting the digital communication of spikes, to engineer dynamical systems~\citep{dethier2011brain}.
-It is argued that an appropriate mixture of analog computation for nonlinear encoding---sparsifying signals across both space and time---and digital communication for spike transmission, is responsible for the energy-efficiency of mamillian brains~\citep{boahen2017neuromorph}.
+It is argued that an appropriate mixture of analog computation for nonlinear encoding---sparsifying signals across both space and time---and digital communication for spike transmission, is responsible for the energy-efficiency of McMillan brains~\citep{boahen2017neuromorph}.
 This hypothesis makes such architectures a natural target for NEF networks, in particular due to its modelling of the dynamical primitives encoding signals into spikes, and its efficient procedures to solve for the weights in the communication fabric.
 
 The NEF has been deployed on Neurogrid primarily to implement control algorithms~\citep{dethier2011brain, choudhary2012silicon, menon2014controlling}.

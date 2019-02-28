@@ -11,7 +11,7 @@ This network uses a scale-invariant representation, with a level of accuracy tha
 To our knowledge, this work is the first to demonstrate that such a temporal code may be accurately implemented using a spiking dynamical network.
 
 Reservoir Computing approaches, such as Liquid State Machines~\citep{maass2002real} and Echo State Networks~\citep{jaeger2001echo}, may be used to approximate a delay line.
-However, since these networks use randomly chosen feedback weights, we show in section~\ref{sec:delay-rc} that they do so with relatively poor accuracy despite extensive hyperoptimization.
+However, since these networks use randomly chosen feedback weights, we show in section~\ref{sec:delay-rc} that they do so with relatively poor accuracy despite extensive hyper-optimization.
 Such networks instead represent a random variety of nonlinear memory traces~\citep{lukovsevicius2012reservoir}.
 Discrete approaches to short-term memory, such as those taken by \citet{white2004short} and \citet{ganguli2008memory}, while optimal in an information-theoretic sense, rely fundamentally on single time-step delays between rate-based neurons.
 In contrast, the method that we propose here works independently of the simulation time-step, and is optimal assuming the population of spiking neurons---coupled with some model of the synapse---accurately represents a low-dimensional, low-frequency, vector space.
@@ -57,7 +57,7 @@ However, rather than compressing the input into a low-dimensional space that all
 This leads to a number of applications that can, in effect, mentally travel back in time using just a handful of latent state-variables embedded within a spiking network.
 The resulting representations are fully interoperable with the semantic pointer architecture~\citep[SPA;][]{eliasmith2012}, and thus afford the same manipulations as semantic pointers in Spaun, namely: binding into working memory, compressing information from cortex, internally routing information, and driving motor actions~\citep{eliasmith2013build}.
 
-At a higher level, any physical realization of a delay must necessarilly be modelling the statistics of its input in some way.
+At a higher level, any physical realization of a delay must necessarily be modelling the statistics of its input in some way.
 This is because it is physically impossible to buffer arbitrary signals in continuous time (details in section~\ref{sec:nef-delay}), and thus some sacrifice must be made.
 In essence, this sacrifice amounts to a sparse coding mechanism, in which a low-dimensional representation is constructed that maps onto the infinite-dimensional time window~\citep{blumensath2009sampling}.
 Spikes in a neural network are akin to such a compression mechanism in time, as are decoders in space.
@@ -344,7 +344,7 @@ Repeating the equation for these polynomials (equation~\ref{eq:delay-readouts}),
 A set of polynomials $\{ \mathcal{P} \}_{i, q}$ are shown in Figure~\ref{fig:basis-functions}.
 This means the system is implicitly projecting its window of history onto a linear transformation of the shifted Legendre basis functions.
 In essence, equation~\ref{eq:basis-interpretation} determines a linear map from the $q$-dimensional state, $\V{x}(t)$, to the infinite-dimensional rolling window, $[ u(t - \theta') \,:\, 0 \le \theta' \le \theta ]$.
-In other words, equation~\ref{eq:basis-interpretation} is the optimal pseudoinverse of the linear compression defined by equation~\ref{eq:delay-system}.
+In other words, equation~\ref{eq:basis-interpretation} is the optimal pseudo-inverse of the linear compression defined by equation~\ref{eq:delay-system}.
 %The frequencies in $u(t)$ that may be accurately encoded by this approach scale inversely with $\theta$.
 %Likewise, higher values of $q$ allowed for higher frequencies to be encoded at the same level of precision.
 %We remark that each basis function is expressed in terms of the unitless quantity $\frac{\theta'}{\theta}$, and is therefore scale-invariant.
@@ -397,7 +397,7 @@ E_q(\theta s) = [q-1/q]e^{-\theta s} - e^{-\theta s} \text{,}
 where $[q-1/q]e^{-\theta s}$ is defined by equation~\ref{eq:pade} (see Figure~\ref{fig:pade-delay-error}).\footnote{%
 For example, $|E_{21}(2 \pi i \cdot 5)| \approx 0.003$ implies that a $21$-dimensional DN delays a $1$\,Hz signal for $5$\,s with $0.3\%$ error.}
 By linearity of the Laplace transform, it suffices to consider the error at individual frequencies $s$ in order to fully characterize the error of the entire system for any given input.
-More precisely, by the convolution theorem, we can interpret equation~\ref{eq:pade-delay-error} as a linear filter in the $s$-plane, to reveal how each input frequency is amplified, attentuated, or phase-shifted, to contribute to the spectrum of the overall error.\footnote{%
+More precisely, by the convolution theorem, we can interpret equation~\ref{eq:pade-delay-error} as a linear filter in the $s$-plane, to reveal how each input frequency is amplified, attenuated, or phase-shifted, to contribute to the spectrum of the overall error.\footnote{%
 Only frequencies that are present within the input can become present in the error.}
 
 Dimensional analysis quickly reveals an important property of this error: the dimensionless quantity, $\theta s$ (i.e., the product of time and frequency), fully determines the error (for fixed $q$).
@@ -647,7 +647,7 @@ In this scenario, the only error that remains is that of equation~\ref{eq:pade-d
 Each FORCE network consists of $n = 500$ neurons (and $\bigoh{n^2}$ weights).
 The network is given $10$\,s of training data per trial.
 In all cases, the training and test signals are randomly sampled $1$\,Hz band-limited white noise signals, with $5$\,s of test data per trial.
-We compare all four networks by sweeping $\theta$ across $0.01$--$1$\,s, with $10$ trials at each value of $\theta$ (boostrapped 95\% confidence intervals).
+We compare all four networks by sweeping $\theta$ across $0.01$--$1$\,s, with $10$ trials at each value of $\theta$ (bootstrapped 95\% confidence intervals).
 
 \fig{force-comparison}{0.7}{Memory capacity of FORCE versus the NEF.}{
     Comparison of several FORCE learning methods versus the NEF on a delay task.
@@ -681,7 +681,7 @@ We now discuss these experimental results.
 
 \subsubsection{Memory capacity}
 
-Our first set of experiments are designed to evaluate the memory capacity of stacked LSTMs relative to stacked Delay Networks of equivalent resource suage.
+Our first set of experiments are designed to evaluate the memory capacity of stacked LSTMs relative to stacked Delay Networks of equivalent resource usage.
 For this, we use an off-the-shelf implementation of a stacked LSTM~\citep[Keras;][]{gulli2017deep}, and construct $k=3$ layers with $n=50$ cells each.
 Each layer is fully-connected to the next, and uses all of the default settings (e.g.,~$\tanh$ activations).
 The final layer likewise consists of a $\tanh$ activation unit for each output.
@@ -751,7 +751,7 @@ We found that the stacked DN takes $52.5$\,s per epoch to train, compared to $10
 Furthermore, the DN outperforms the LSTM in every measure of accuracy.
 Figure~\ref{fig:lstm-capacity}~(a) demonstrates nearly three orders of magnitude reduction in MSE across both training and validation, while converging much more rapidly to the ideal solution.
 Figure~\ref{fig:lstm-capacity}~(b) displays the NRMSE on the test data as a function of delay length (unit of time-steps).
-We see that the DN architecture achieves nearly uniform accuracy across the delay interval, while the equivalently-sized LSTM cell archictecture approaches $100$\% error rates towards the end of the window.
+We see that the DN architecture achieves nearly uniform accuracy across the delay interval, while the equivalently-sized LSTM cell architecture approaches $100$\% error rates towards the end of the window.
 This illustrates that the stacked LSTM struggles to memorize low-frequency signals (relative to the time-step) across long intervals of time.
 In contrast, this task is natural for the stacked DN, as its state represents a $q$-degree polynomial expansion of input history (see Figure~\ref{fig:basis-functions}).
 We now proceed to demonstrate that backpropagation enables the stacked DN cells to outperform the stacked LSTMs even on tasks that are not readily supported by the initial configuration of the network.
@@ -785,7 +785,7 @@ First, it must model the dynamics of the state-trajectory to infer the underlyin
 A theorem due to \citet{takens1981detecting} states that this is made possible by delaying the input some constant number of times (dependent on $\bar{\tau}$) and then finding the correct static nonlinear transformation of this ``delay embedding.''
 Second, it must predict the future state of this trajectory using its estimate of the current state.
 The last step is generally infeasible due to the chaotic nature of the MG system; \emph{any} finite error in the state estimate is exponentially magnified over time (the ``butterfly effect''; also see section~\ref{sec:chaos}).
-This makes a look-ahead of $15$ steps particulary challenging for a relatively small network, as its reconstruction of the chaotic manifold must become exponentially more precise to see linear payoffs in accuracy.
+This makes a look-ahead of $15$ steps particularly challenging for a relatively small network, as its reconstruction of the chaotic manifold must become exponentially more precise to see linear payoffs in accuracy.
 
 This insight motivates the inclusion of a third ``hybrid'' method that interleaves the two previous methods. Specifically as in `\texttt{2121}', where `\texttt{2}' is the DN cell and `\texttt{1}' is the LSTM cell.
 The total resource requirements are still roughly the same.
@@ -846,7 +846,7 @@ and $Z_k \in \mathbb{R}^{q \times q}$ is a ``zooming matrix'' computed by:
 \begin{equation} \label{eq:zoom-matrix}
 Z_k = B(0, 1)^+ B(1-1/k, 1) \text{,} % = \left( \transpose{B(0, 1)} B(0, 1) \right)^{-1} \transpose{B(0, 1)} B(1-1/k, 1) \text{,}
 \end{equation}
-where $(\cdot)^+$ denotes the Moore-Penrose pseudoinverse, $B(\cdot, \cdot) \in \mathbb{R}^{m \times q}$ is a matrix corresponding to a slice of the realized basis functions (equation~\ref{eq:basis-functions}), sampled along $m$ points, as in:
+where $(\cdot)^+$ denotes the Moore-Penrose pseudo-inverse, $B(\cdot, \cdot) \in \mathbb{R}^{m \times q}$ is a matrix corresponding to a slice of the realized basis functions (equation~\ref{eq:basis-functions}), sampled along $m$ points, as in:
 \begin{equation}
 B(a, b) = \begin{pmatrix}
 \mathcal{P}_{q-1,q}(a) & \cdots & \mathcal{P}_{0,q}(a) \\
@@ -856,7 +856,7 @@ B(a, b) = \begin{pmatrix}
 \end{equation}
 and $T$ is the similarity transform for the balanced realization.
 A visualization of $Z_k$ is provided in Figure~\ref{fig:zoom-matrix}, using a diagonal transformation to reveal its checkerboard structure.
-Specifically, setting $k=5$, $q=20$, and with $T$ taken by a diagonal realization that normalizes the system's Hankel singular values, and the Moore-Penrose pseudoinverse taken while truncating the singular values below a cutoff ratio of 10\%.
+Specifically, setting $k=5$, $q=20$, and with $T$ taken by a diagonal realization that normalizes the system's Hankel singular values, and the Moore-Penrose pseudo-inverse taken while truncating the singular values below a cutoff ratio of 10\%.
 
 \fig{zoom-matrix}{0.4}{Zooming matrix for the Delay Network.}{
   Visualizing the ``zooming matrix'', $Z_5 \in \mathbb{R}^{20 \times 20}$ (see equation~\ref{eq:zoom-matrix}).
@@ -883,7 +883,7 @@ This same technique works without loss of generality to zoom in on any slice of 
 Moreover, by the scale-invariance of the delay network (see section~\ref{sec:delay-scalability}), all of the matrices (e.g., $Z_k$, $B(\cdot, \cdot)$, $P_k$) are independent of $\theta$. That is, these matrices only need to be precomputed once for some choice of $k$ and $q$, and applied to any $\theta$.
 
 The last fact that we need is that the balanced realization is approximately unitary, in the sense that $\| \V{x}(t) \|$ is proportional to the RMS of its corresponding window of history.
-This conveniently implies that it sufficies to take the L2-norm of the resulting state-vector, as in equation~\ref{eq:approx-periodicity}, in order to obtain a proportional estimate of the RMS, $p_k(t)$, from equation~\ref{eq:periodicity}.
+This conveniently implies that it suffices to take the L2-norm of the resulting state-vector, as in equation~\ref{eq:approx-periodicity}, in order to obtain a proportional estimate of the RMS, $p_k(t)$, from equation~\ref{eq:periodicity}.
 This completes our proof sketch.
 To summarize, since the superimposed-averaging computation is a linear transformation of the input window, it can be recast as a linear transformation of the state to provide a new state-vector corresponding to the averaged segment.
 And since the L2-norm of a balanced state reflects the RMS of its corresponding input signal, the former behaves as a proxy for the latter.

@@ -59,8 +59,8 @@ Although we still have a long ways to go, this thesis aims to highlight a promis
 
 When confronted with the ambitious goal of artificially reproducing human intelligence, computer scientists will most often point towards
 the popularity of deep learning~\citep{lecun2015deep} and its recent successes such as AlphaGo~\citep{gibney2016google}.
-First and foremost, we seek to embrace the methods of deep learning, by incorporating its architectures and training methodoligies into our toolbox.
-This is in fact the mandate of Nengo DL~\citep{rasmussen2018nengodl}, a Python package that combines Nengo and Tensorflow into a hybridized framework that automates backpropagation across spiking, non-spiking, and NEF-style recurrent neural networks -- broadly referred to as the class of Artificial Neural Networks~(ANNs).
+First and foremost, we seek to embrace the methods of deep learning, by incorporating its architectures and training methodologies into our toolbox.
+This is in fact the mandate of Nengo DL~\citep{rasmussen2018nengodl}, a Python package that combines Nengo and TensorFlow into a hybridized framework that automates backpropagation across spiking, non-spiking, and NEF-style recurrent neural networks -- broadly referred to as the class of Artificial Neural Networks~(ANNs).
 Deep learning methods have found enormous success, due in part to the black-box nature of the training procedure, which requires a programmer to have virtually no knowledge of the underlying problem being solved.
 However, we do not believe that deeper networks, better training heuristics, nor larger datasets, will be enough to achieve our aforementioned goal.
 Some concerns for conventional deep learning approaches include: the amount of power required to scale traditional ANNs to the size of the human brain~\citep{furber2012build}, the difficulties tuning hyperparameters at scale~\citep{bergstra2015hyperopt}, and the abundance of adversarial attacks on networks trained via backpropagation~\citep{su2019one}.
@@ -119,7 +119,7 @@ If our aim is to build artificial systems that are as useful, robust, capable, a
 The approach we take considers time as a fundamental starting point, and thus situates dynamics front-and-center; we bridge the time-scales of the entire system, down from the levels of spikes and postsynaptic currents, up to the levels of human reaction times and behaviours. 
 This involves developing an extensible theoretical framework that links together the mechanisms of an SNN, its parameters, and some desired class of computations.
 We validate this model of computation by deploying these SNNs on low-power neuromorphic hardware designed to emulate key biological principles.
-Based on these principles, we reveal a new recurrent architecture that can predict chaotic time-series with performance surpassing state-of-the-art recurent neural networks, including Long Short-Term Memory~(LSTM), Reservoir Computing~(RC), and ``FORCE'' networks.
+Based on these principles, we reveal a new recurrent architecture that can predict chaotic time-series with performance surpassing state-of-the-art recurrent neural networks, including Long Short-Term Memory~(LSTM), Reservoir Computing~(RC), and ``FORCE'' networks.
 % There is no arithmetic logic unit, random-access memory, or instruction set.
 
 %Another significant motivating factor for this work is the recent surge in neuromorphic computing architectures such as SpiNNaker~\citep{mundy2015efficient}, Neurogrid~\citep{choudhary2012silicon}, Brainstorm~\citep{brainstorm}, and IBM's TrueNorth~\citep{merolla2014million}.

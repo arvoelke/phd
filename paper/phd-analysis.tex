@@ -17,7 +17,7 @@ In doing so, we expose some new insights, including the chaotic nature of NEF ne
 \subsection{Reducibility to a single layer}
 
 In section~\ref{sec:nef}, we focused primarily on a single recurrently connected population of neurons.
-However, any multi-layer NEF network, where each layer may be recurrent, and feedforward connections and feedback connections may also be included between distant layers -- may be rewritten as a single recurrently connected population.
+However, any multi-layer NEF network, where each layer may be recurrent, and feed-forward connections and feedback connections may also be included between distant layers -- may be rewritten as a single recurrently connected population.
 Indeed, even for models as complex as Spaun~\citep{eliasmith2012, choo2018}, the Nengo builder strips away the model specification, and leaves only channels that transmit spikes, and transfer functions that operate on these spikes~\citep{bekolay2014, gosmann2017automatic}.
 The topology of the network encodes spatial and organizational structure (e.g.,~hierarchies), which may be used to constrain and inform the design of biological models, and to aid in understanding function.
 The mechanisms underneath are mere signals and operators, all coupled to one another to compute some dynamical system.
@@ -47,7 +47,7 @@ We make the observation that neurons~(equation~\ref{eq:lif-model}), synapses~(eq
 These dynamical systems, each of which can be thought of as a \emph{primitive} for use in some larger computation, all have distinct filtering properties, linear and nonlinear transfer functions, and internal states that evolve over time in response to some input in order to produce some output.
 
 A central insight from deep learning is that a variety\footnote{%
-The variety of nonlinear responses comes from the distribution of weights and biases, analogous to the hetereogeneity obtained in equation~\ref{eq:encoding} via encoding vectors, gains, and biases.}
+The variety of nonlinear responses comes from the distribution of weights and biases, analogous to the heterogeneity obtained in equation~\ref{eq:encoding} via encoding vectors, gains, and biases.}
 of static nonlinear functions, when structurally composed, enhance the \emph{spatial complexity} of network function.
 An analogous insight in the above context is that a variety of transfer functions, when temporally composed, enhance the \emph{dynamical complexity} of network function.
 In particular, the time-constants of synapses, neuron leakages, and recurrent network dynamics -- all act along different time-scales.
@@ -129,7 +129,7 @@ Now let:
 be the difference in representational state and neural state, respectively.
 We find that $\Delta$ remains bounded above by the accuracy of neural representation, as expected.
 However, $\delta$ diverges exponentially over time, indicating that the neural states are within a strange attractor (the Lyapunov exponent $\lambda \approx 8.9$\,s${}^{-1}$ gives the exponential rate of divergence); the voltage vectors are tracing out a fractal manifold embedded within an $n$-dimensional space that cannot be predicted beyond a time-horizon on the order of $\bigoh{\lambda^{-1}} \approx 0.1$\,s.
-Despite this, the NEF is capable of taming the chaos at the neural level and providing a robust estimate at the population level, due to the correspondance between each strange attractor and a stable point in representational space~\citep[][p.~237]{eliasmith2003a}.
+Despite this, the NEF is capable of taming the chaos at the neural level and providing a robust estimate at the population level, due to the correspondence between each strange attractor and a stable point in representational space~\citep[][p.~237]{eliasmith2003a}.
 In section~\ref{sec:nef-robustness}, we remark that this leads to the NEF being robust to a distinctly different type of error.
 
 At a high level, the NEF may be used to implement arbitrary algorithms encoded as dynamical systems (see section~\ref{sec:nef-turing}), which implies that it is not exempt from computability theory. 
@@ -148,7 +148,7 @@ It is also important to consider both for neuromorphic hardware.
 \label{sec:psc-coding}
 
 A long-standing debate in neuroscience has traditionally revolved around the question of whether biological neurons transmit information using a ``rate code'' in which the information is encoded by the firing rates of individual neurons~\citep{adrian1928basis}, or a ``spike-timing code'' in which information is encoded by the precise temporal patterns of spike trains~\citep{rieke1999spikes} or likewise their temporal order in relation to one another~\citep{thorpe1998rank}.
-However, there is historically little consensus between neuroscientists as to what exactly consistutes a rate code~\citep[][pp.~89--91]{eliasmith2003a}.
+However, there is historically little consensus between neuroscientists as to what exactly constitutes a rate code~\citep[][pp.~89--91]{eliasmith2003a}.
 
 \citet{gerstner1999spiking} observes that there are at least three different ways to define a rate code, and that in many important ways they are consistent with that of a timing-based code.
 \citet{fairhall2001efficiency} examines the adaptive dynamics of neurons in a fly's visual system and concludes that the principles of its code depend on the time-scales of interest.
@@ -166,7 +166,7 @@ However, there is historically little consensus between neuroscientists as to wh
 
 Nevertheless, many have mislabelled the NEF as employing a rate-coding scheme [personal communication], including \citet{lagorce2015stick} and~\citet{frady2019robust} for two recent examples -- we refer to these two below, to illustrate why this accusation constitutes a damaging use of semantics.
 % On one hand, we understand that this is due to the way in which the optimization procedure is most often simplified using equation~\ref{eq:rate-approximation}.
-Specifically, this micharacterization has lead to the misapplication of many criticisms~\citep{gautrais1998rate} that stem from the original proposal of \citet{adrian1928basis}, namely the need to average spike rates over long windows of time.
+Specifically, this mischaracterization has lead to the misapplication of many criticisms~\citep{gautrais1998rate} that stem from the original proposal of \citet{adrian1928basis}, namely the need to average spike rates over long windows of time.
 We find this important to clarify because it leads to imprudent conclusions or ``myths'' about the NEF such as those claimed by \citet{lagorce2015stick} and \citet{frady2019robust}:
 \begin{enumerate}
 \item The NEF does not exhibit precise sequences of action-potentials.
@@ -188,7 +188,7 @@ When comparing the spike-trains between two separate oscillations at the same ph
 
 \paragraph{2. The NEF readily supports high speed neural information processing.}
 
-In our example, neurons respond quickly to encode the rapidly-fluctuating oscillatory state, and do so without any system-level ``delay'' or undersired filtering.\footnote{%
+In our example, neurons respond quickly to encode the rapidly-fluctuating oscillatory state, and do so without any system-level ``delay'' or undesired filtering.\footnote{%
 The postsynaptic filter that is applied is leveraged to participate in the required computation (see Principle~3; section~\ref{sec:principle3}).
 There is no unwanted phase-shift.
 }
@@ -231,7 +231,7 @@ This is summarized by taking the encoding equation~\ref{eq:encoding} and decodin
 \alpha_i \left\langle \V{e}_i\text{,}\, \V{x}(t) \right\rangle + \beta_i \approx \sum_{j=1}^n \sum_m \omega_{ij} h \left( t - t_{j\text{,}m} \right) \text{.}
 \end{equation}
 In plain words, the represented state-vector is linearly projected onto the postsynaptic current of each neuron. 
-Nothing needs to change about our exposition of the NEF in order to accomodate this viewpoint of how it codes information.
+Nothing needs to change about our exposition of the NEF in order to accommodate this viewpoint of how it codes information.
 How this works in light of equation~\ref{eq:rate-approximation} requires careful proof~(Theorem~\ref{thm:correctness}), and the subtleties surrounding why this can matter are challenging to grasp.
 But as our example illustrates, the NEF cannot be adhering to any single definition of rate or timing code.
 Rather, it is representing desired transformations by mapping latent state-variables onto postsynaptic currents.  %, with precision that scales as $\bigoh{\tau \sqrt{n}}$.
@@ -239,7 +239,7 @@ Rather, it is representing desired transformations by mapping latent state-varia
 % Later, we participate in further attempts to rectify these misunderstandings using detailed proofs and simulation results in order to
 In the following sections, we tease apart the NEF's coding principles, sources of error, and scaling properties.
 
-If one is still unconvinced, then, as mentioned in section~\ref{sec:relationships} when comparing the NEF to RC and FORCE, one may forego equation~\ref{eq:rate-approximation} and perform the optimization directly in the spiking time-domain~\citep{voelker2016a, duggins2017incorporating}, or even apply backpropagation through time~\citep{rasmussen2018nengodl}.
+If one is still unconvinced, then, as mentioned in section~\ref{sec:relationships} when comparing the NEF to RC and FORCE, one may forgo equation~\ref{eq:rate-approximation} and perform the optimization directly in the spiking time-domain~\citep{voelker2016a, duggins2017incorporating}, or even apply backpropagation through time~\citep{rasmussen2018nengodl}.
 But the fact of the matter is that this becomes unnecessary (and inefficient) for a large class of interesting systems and models that we wish to explore.
 % We further step outside this paradigm for conductance-based synapses, and adaptive LIF neurons.
 
@@ -362,7 +362,7 @@ We now describe each source of error in greater detail.
 \subsubsection{Static distortion}
 
 The optimization problem described by equation~\ref{eq:decoder_solution} can be understood as fitting $n$ non-orthogonal static basis functions, $r_i$, to some desired static function, $f$~\citep{broomhead1988radial}.
-Assuming relatively weak conditions on each $r_i$, namely monotonicity and continuity, any contintuous $f$ may be approximated arbitrarily well by a linear combination of these basis functions~\citep{hornik1989multilayer}, as in equation~\ref{eq:trans-decode}.
+Assuming relatively weak conditions on each $r_i$, namely monotonicity and continuity, any continuous $f$ may be approximated arbitrarily well by a linear combination of these basis functions~\citep{hornik1989multilayer}, as in equation~\ref{eq:trans-decode}.
 
 Specifically, for a given $f$, a linear increase in the number of basis functions will reduce the root-mean-squared error~(RMSE) of the fit by the same factor.
 This particular RMSE is named \emph{static distortion}, since it corresponds to the difference between the two static (i.e.,~non-temporal) functions.
@@ -628,7 +628,7 @@ section~\ref{sec:poisson-spiking}:
 \item The state of the system is initialized such that $g_i$ is uniform.
 For the case of the LIF model, one can invert equation~\ref{eq:lif-isip} and solve for $(v_i, \rho_i)$ from a uniform sample, and then use this to initialize the state of each neuron.
 We do so in many of our experiments (including Figure~\ref{fig:frequency-ks-test}) in order to remove the initial transient that would otherwise be a statistical anomaly~(see Figure~\ref{fig:nef-error-types}~(d)).
-Given a constant representation, the neural states naturally remain mixed due to hetereogeneity in the encoding.
+Given a constant representation, the neural states naturally remain mixed due to heterogeneity in the encoding.
 However, this does not guarantee invariance over time for time-varying stimuli; leakage in the model as well as rapid inhibition can skew the ISIPs back towards zero.
 
 \item The neuron model is replaced by a spiking rectified linear (ReLU) unit, also known as a (non-leaky) integrate-and-fire neuron that rectifies its input current, such that its state can only evolve in one direction.
@@ -695,7 +695,7 @@ In theory, this means these trade-offs can be applied to any time-scale, althoug
 \TODO{Discuss all of the scaling.}
 We usually set $n$ to about $50 \times q$, as this has been found to provide tolerable performance in practice~\citep{braindrop2019}. 
 More neurons may be required depending on the difficulty of the function and the frequency of the inputs.
-For a fixed amount of noise in a represention implemented by an ensemble of $n$ neurons, the current best-known lower-bound predicts the dimensionality $d$ scales as $\Omega \left( n^{\frac{2}{3}} \right)$ for $n$ neurons~citep[][p.~60]{jgosmann2018}.
+For a fixed amount of noise in a representation implemented by an ensemble of $n$ neurons, the current best-known lower-bound predicts the dimensionality $d$ scales as $\Omega \left( n^{\frac{2}{3}} \right)$ for $n$ neurons~citep[][p.~60]{jgosmann2018}.
 Although we don't know the upper-bound, we conjecture that it is $\bigoh{n}$.
 That is, the dimensionality should not be able to scale faster than the neuron count.
 If it could, then each neuron would represent $\omega(1)$ dimensions, which seems physically implausible given access to only $\bigoh{1}$ state variables.

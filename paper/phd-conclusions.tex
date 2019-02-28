@@ -6,7 +6,7 @@ We now summarize our main contributions.
 
 First, section~\ref{sec:sub-principles} observes a number of computational ``sub-principles'' that follow from the adoption of the NEF's three principles.
 Arbitrary network topologies reduce to a single recurrently connected layer with sparse encoders, decoders with block structure isomorphic to the original graph structure, and a partitioning of time-constants.
-Heterogeneous dynamical primitives form the basis for neural computation, and may be expressed within a unified language to facilitate mathematical analyses that leverage the interchangeability and composibility of such primitives.
+Heterogeneous dynamical primitives form the basis for neural computation, and may be expressed within a unified language to facilitate mathematical analyses that leverage the interchangeability and composability of such primitives.
 Chaotic strange attractors emerge from even the simplest spiking implementations of such dynamical systems.
 The NEF represents state-vectors by linearly projecting them onto the postsynaptic currents of neurons,  independent of any considerations of what it means to use a ``rate code'' or a ``spike-time code''.
 Likewise, these state-vectors represent frequency content that grows linearly with the relative amount of energy required to drive the synapses of each postsynaptic neuron, for a fixed level of precision.
@@ -27,13 +27,13 @@ Lastly, we observe that a large variety of important routines in linear algebra 
 
 Fourth, section~\ref{sec:synaptic-extensions} exposes several theoretical extensions to the third principle of the Neural Engineering Framework, thus enabling spiking networks to leverage the computations of higher-order synapses.
 We thoroughly characterize linear dynamical systems using the transfer function representation, which allows for axonal spike-delays, such as those in Loihi, to be harnessed, while appealing to Lemma~\ref{lemma:coord-transform} to prove the most general case in Theorem~\ref{thm:general-linear}.
-Nonlinear extensions are supported by Theorems~\ref{thm:p3cont-nonlinear} and~\ref{thm:p3disc-nonlinear}, and culminate in an application that exploits hetereogeneous mixed-signal synapses in Braindrop.
+Nonlinear extensions are supported by Theorems~\ref{thm:p3cont-nonlinear} and~\ref{thm:p3disc-nonlinear}, and culminate in an application that exploits heterogeneous mixed-signal synapses in Braindrop.
 We then demonstrate that heterogeneous dynamical primitives may in principle be exploited to accurately classify surface textures using a tactile robotic fingertip.
 And finally we extend the NEF's optimization problem to simultaneously solve for decoding weights and the optimal linear filter in the context of Principle~3.
 
 Fifth, section~\ref{sec:neurons} considers the challenges in extending the NEF to various neuron models, while reviewing the work done thus far.
 In particular, the role of adaptive neurons and biophysical neurons may be characterized as decomposing a nonlinear transfer function into increasingly-sophisticated model representations.
-In doing so, we observe that adaptative LIF neurons are isomorphic to an $n$-dimensional expansion of the dynamical state vector, and provide a conceptual roadmap for how we believe that progress can be made analytically within the NEF.
+In doing so, we observe that adaptive LIF neurons are isomorphic to an $n$-dimensional expansion of the dynamical state vector, and provide a conceptual roadmap for how we believe that progress can be made analytically within the NEF.
 Poisson-spiking models are compared to regular-spiking and adaptive neuron models in the context of Principle~1, which proves results consistent with Theorem~\ref{thm:correctness} -- namely, that uniform neural states guarantee the scaling of precision, even at arbitrarily high representational frequencies.
 This validates our theory, and recommends that Nengo should consider the role of neural-state distributions very carefully in its abstractions.
 
@@ -41,7 +41,7 @@ Sixth, section~\ref{sec:derivations} derives a solution to a difficult task for 
 We derive from first-principles an optimal low-frequency approximation of dimension $q$ to a continuous-time delay, and realize this efficiently using a spiking neural network.
 This solution is called the Delay Network~(DN).
 We show that the DN supports a decoding of the entire window, with weights given by a linear transformation of the shifted Legendre polynomials up to order $q$.
-Next, the neural encoding implements a nonlinear kernel convolution of the time window, thus enabling the populaton of neurons within the delay network to compute arbitrary nonlinear functions across the input's $q$-degree projection over time.
+Next, the neural encoding implements a nonlinear kernel convolution of the time window, thus enabling the population of neurons within the delay network to compute arbitrary nonlinear functions across the input's $q$-degree projection over time.
 This leads into a discussion on the scalability of the network, in particular highlighting the importance of the relationship between physical quantities: time and frequency.
 
 Seventh, section~\ref{sec:delay-applications} exploits the DN in a number of very different contexts.

@@ -21,7 +21,7 @@ This leads to several high-level results that exploit their higher-order dynamic
 We build a comprehensive theory, adapted from \citet{voelker2018}, for including arbitrary linear synapse models in the neural architecture.
 This is applied to the case of implementing linear systems, but many of these same techniques also carry over to later sections in the case of nonlinear systems. % the case of nonlinear dynamical systems with heterogeneous synapses~\citep{voelker2017iscas, voelker2017neuromorphic}.
 
-Consider the linear time-inviant~(LTI) system (repeating equation~\ref{eq:lti}, for clarity):
+Consider the linear time-invariant~(LTI) system (repeating equation~\ref{eq:lti}, for clarity):
 \begin{equation} \label{eq:lti-repeated}
 \begin{split}
 \dot{\V{x}}(t) &= A\V{x}(t) + B\V{u}(t) \\
@@ -198,7 +198,7 @@ This same model has been proposed by \citet[][equation~6.2]{roth2009modeling} as
 By commutativity of convolution, modeling the delay in the synapse (as in equation \ref{eq:delayed-lowpass}) is equivalent to modeling the delay in spike propagation.
 Equation~\ref{eq:delayed-lowpass} may also be used to account for feedback delays within some broader setting (e.g.,~when the feedback term is computed via some delayed system).
 
-In the mammallian cortex, $\lambda$ is known to range between $0.1$--$44$\,ms while being precise and reproducible~\citep{lagorce2015stick}.
+In the mammalian cortex, $\lambda$ is known to range between $0.1$--$44$\,ms while being precise and reproducible~\citep{lagorce2015stick}.
 In analog circuitry, $\lambda$ grows in proportion to the square of the wire length, and is necessarily introduced by the pulse-extension of digital-to-analog circuits~\citep{voelker2017iscas}.
 This delay term may also be configured on digital architectures such as Loihi~\citep{davies2018loihi}.
 
@@ -512,7 +512,7 @@ Another way to avoid needing the derivatives is to work out a different approxim
 Here we use an example discussed in \citet{dynamicspatent} and explore some consequences.
 This method is very similar to that of the delayed lowpass example in section~\ref{sec:linear-extensions}.
 
-Considereding the alpha synapse:
+Considering the alpha synapse:
 $$H(s) = \frac{1}{(\tau s + 1)^2} = \frac{1}{\tau^2 s^2 + 2\tau s + 1}$$
 we can observe that:
 $$F^H \left( H(s)^{-1} \right) = F(s) \quad \iff \quad F^H(s) = F \left( \frac{\sqrt{s} - 1}{\tau} \right) \text{.}$$
@@ -749,7 +749,7 @@ Since Braindrop supports an efficient way of structuring the linear operations b
 \subsection{Harnessing temporal heterogeneity}
 \label{sec:temporal-heterogeneity}
 
-The methods in the previous section esssentially ``tame away'' the heterogeneity in synaptic time-constants by correcting for the individual scaling factors, and in effect encoding the same state-vector across all synapses.
+The methods in the previous section essentially ``tame away'' the heterogeneity in synaptic time-constants by correcting for the individual scaling factors, and in effect encoding the same state-vector across all synapses.
 However, we may also consider leveraging this temporal heterogeneity as a basis for dynamical computation.
 The intuition is as follows: a variety of encoding vectors in the NEF afford heterogeneity across space, while a variety of encoding \emph{filters} afford heterogeneity across time.
 
@@ -826,7 +826,7 @@ We find through cross-validation that the network performs best when it contains
   \draw [->] (integ) -- node [name=fanout] {${x}(t)$} (output);
   \draw [->] (decoded) -| node[pos=0.98] {$+$} node [near end] {} (sum);
 \end{tikzpicture}
-\caption[Sovling for the optimal filters and decoders simultaneously.]{\label{fig:decoding-filter} Architecture used to formulate the optimization problem that simultaneously solves for the decoding weights and the optimal linear filter.}
+\caption[Solving for the optimal filters and decoders simultaneously.]{\label{fig:decoding-filter} Architecture used to formulate the optimization problem that simultaneously solves for the decoding weights and the optimal linear filter.}
 \end{figure}
 
 Now we consider the problem of analytically solving for the optimal linear filter, together with the optimal linear decoders, within the \emph{same} least-squares optimization problem.
@@ -918,7 +918,7 @@ Although this may seem like a pointless exercise, as we have merely gone around 
 A crucial observation here is that a diagonal matrix cannot be factored any further (it is full rank).
 In the context of the NEF, this implies that the network-effect of adaptive LIF models is to expand the dimensionality of the dynamical state-space from $q$ to $n$, where the additional dimensions emerge from a sparse $(1/n)$-encoding with itself.
 This provides an explanation for the computational power of adaptive LIF neurons in the context of Principle~3, but only gets us so far due to the difficulty in analyzing an $n$-dimensional nonlinear dynamical system for large values of $n$.
-We have found, however, that this diagonal matrix can in many cases be approximated by the product of two low-rank matrices---analagous to encoders and decoders---whose state-space essentially represents a projection of the population's adaptive state, while maintaining essential properties of the network-level dynamics.
+We have found, however, that this diagonal matrix can in many cases be approximated by the product of two low-rank matrices---analogous to encoders and decoders---whose state-space essentially represents a projection of the population's adaptive state, while maintaining essential properties of the network-level dynamics.
 This highlights a promising avenue for future research, namely the characterization of this additional state-vector and its subsequent harnessing for particular classes of dynamical systems.
 
 \subsection{Poisson models}
