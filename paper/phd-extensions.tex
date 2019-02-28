@@ -241,7 +241,7 @@ Let $\V{f}(t)$ and $\V{g}(t)$ be infinitely time-differentiable signals, that ar
 \begin{equation} \label{eq:f}
 \V{f} = \sum_{i=0}^\infty c_i \V{g}^{(i)} \text{,}
 \end{equation}
-for some coordinates $\coords{c}{i}$. Then this dynamical system is equivalent to:
+for some coordinates $\coords{c}{i}$, $c_0 \ne 0$. Then this dynamical system is equivalent to:
 \begin{equation} \label{eq:g}
 \V{g} = \sum_{i=0}^\infty b_i \V{f}^{(i)} \text{,}
 \end{equation}
@@ -262,7 +262,7 @@ Let: $$H_c(s) = \frac{1}{\sum_{i=0}^\infty c_i s^i}, \quad H_b(s) = \frac{1}{\su
 \begin{equation} \label{eq:inv}
 H_c(s) H_b(s) = 1 \text{,}
 \end{equation}
-hence $H_c(s)$ and $H_b(s)$ are eachother's reciprocals. Furthermore, the coordinate transformation equation~\ref{eq:b} is its own inverse.
+hence $H_c(s)$ and $H_b(s)$ are each other's reciprocals. Furthermore, the coordinate transformation equation~\ref{eq:b} is its own inverse.
 \end{corollary}
 
 \begin{proof}
@@ -291,13 +291,13 @@ Putting this all together, we get $\tilde{b}_k = \sum_{j=0}^{k-1} -c_0^{-1} c_{k
 The coordinate transformation equation~\ref{eq:b} is equivalent to taking the Pad\'e approximants~\citep{Pade1892} for the special case of when the numerator is $p = 0$.
 To be precise,
 $$
-\sum_{i=0}^{q} c_i x^i \approx \frac{1}{\sum_{i=0}^q b_i x^i}
+\sum_{i=0}^{q} c_i s^i \approx \frac{1}{\sum_{i=0}^q b_i s^i}
 $$
 has the same optimal approximation from equation~\ref{eq:b} as taking the $[0/q]$~Pad\'e approximants:
 $$
-\coords{b}{i=0 \ldots q} = \left[ 0 / q \right] \sum_{i=0}^{q} c_i x^i \text{.}
+\coords{b}{i=0 \ldots q} = \left[ 0 / q \right] \sum_{i=0}^{q} c_i s^i \text{.}
 $$
-This can be seen through equation~\ref{eq:inv} and verified by comparing the algorithm for the extended Euclidean algorithm for the polynomial GCD, in this special case, to the algorithm equation~\ref{eq:b}. That is, they both implement long division.
+This can be seen through equation~\ref{eq:inv} and verified by comparing the algorithm for the extended Euclidean algorithm for the polynomial GCD, in this special case, to the algorithm for equation~\ref{eq:b}. That is, they both implement long division.
 We remark that the coordinate transformation equation~\ref{eq:b}---that is, the algorithm for finding the Pad\'e approximants when $p = 0$---is its own inverse. That is, we may convert back and forth using the same transformation without any loss of information.
 
 We may also interpret equation~\ref{eq:b} as a discrete dynamical system by realizing that $b$ is the discrete convolution of itself with $c$. With some work, we can show that this is the same as stating that $\ztrans{b}\ztrans{c} = 1$, or equivalently in the time-domain, $\coords{b}{i=0\ldots q}$ is the impulse-response of the following discrete transfer function:
@@ -306,7 +306,7 @@ H^q_{c \rightarrow b}(z) = \frac{z^{q}}{\sum_{i=0}^q c_i z^{q - i}} \text{,}
 $$
 and likewise, $H^q_{b \rightarrow c}(z)$ has the impulse-response $\coords{c}{i=0\ldots q}$.
 Furthermore, $$\lim_{q \rightarrow \infty} H^q_{c \rightarrow b}(z) H^q_{b \rightarrow c}(z) = 1,$$ analogously to equation~\ref{eq:inv}.
-Lastly, we note that the above Lemma and Corollary also apply to the case where differentials are replaced by discrete time-shifts and the Laplace transform is replaced by the $\mathcal{Z}$-transform.
+Lastly, we note that the above Lemma and Corollary also apply to the case where derivatives are replaced by discrete time-shifts and the Laplace transform is replaced by the $\mathcal{Z}$-transform.
 
 \subsubsection{General linear synapse}
 
@@ -444,7 +444,7 @@ Furthermore, as one should hope, the ZOH assumption recovers the correct result,
 
 In the previous section, we discovered that higher-order synapses must be driven with higher-order derivatives of the state-vector, in order to cancel out the additional rounds of integration and successfully encode $\V{x}$. 
 These computations could be facilitated by adaptive mechanisms in more biologically-realistic neuron models~\citep{lundstrom2008fractional}, approximated at the population level~\citep{tripp2010}, computed using models of the system's Jacobian, modelled from the input's dynamics, or obtained directly from sensors that represent such derivatives.
-If none of these cases are possible, we resort to the following analysis of what can be done at a theoretical level. 
+If none of these cases are possible, we resort to the following analysis of what can be done. 
 
 \subsubsection{Zero-order assumption}
 
@@ -760,17 +760,17 @@ h_{ij}(t) = (h^e_i \ast h^d_j)(t) \text{.}
 \end{equation}
 If, for example, $h^e_i$ and $h^d_j$ are lowpass filters, then $h_{ij}$ will be the double-exponential synapse. If further  they are identical, then this becomes the alpha synapse.
 
-This can be interpreted as a generalization of Principle~2 from the NEF, which normally supposes $h_{ij}(t) = h(t)$ for all $i$ and $j$ within the same ensemble.
-Furthermore equation~\ref{eq:syn-factored} can be interpreted as a \emph{factorization} of the individual synapses, analogous to the factorization of connection weights \mbox{$\omega_{ij} = \V{e}_i \, \cdot \, \V{d}_j$}.
+This can be interpreted as a generalization of the NEF, which normally supposes $h_{ij}(t) = h(t)$ for all $i$ and $j$ within the same ensemble.
+Furthermore equation~\ref{eq:syn-factored} can be interpreted as a \emph{factorization} of the individual synapses, analogous to the factorization of connection weights \mbox{$\omega_{ij} = \left\langle \V{e}_i \text{,}\, \V{d}_j \right \rangle$}.
 In other words, we are supposing that the filters across all of the synapses may be factored (with rank one, but this can be generalized further to each spatial dimension), as is the case for the connection weights themselves.
 %We thus use the term `filter' throughout to distinguish the abstract factors of the synapse from their correspondingly realized synapse.
 %We will also interpret the tuple $(\V{e}_i, h^e_i)$ as the neuron's `temporal encoder', and $(\V{d}_i, h^d_i)$ as the `temporal decoder'.
 To be clear, the input current to the $i^\text{th}$ neuron (equation~\ref{eq:encoding}) is now:
 \begin{align}
-s_i(t) &= \alpha_i \left( \left[ \V{e}_i \cdot \left( \sum_j ( a_j \ast h^d_j) \, \V{d}_j \right) \right] \ast h^e_i \right)(t) + \beta_i \label{eq:factored} \\
+s_i(t) &= \alpha_i \left( \left[ \transpose{\V{e}_i} \left( \sum_j ( a_j \ast h^d_j) \, \V{d}_j \right) \right] \ast h^e_i \right)(t) + \beta_i \label{eq:factored} \\
        &= \alpha_i \sum_j \omega_{ij} (a_j \ast h_{ij})(t) + \beta_i . \label{eq:unfactored}
 \end{align}
-Although equation~\ref{eq:factored} is more space- and time-efficient to implement than equation~\ref{eq:unfactored} for low-dimensional encoders and decoders, since the inner summation (which is also the decoded vector being represented) does not depend on $i$.
+However, equation~\ref{eq:factored} is more space- and time-efficient to implement than equation~\ref{eq:unfactored} for low-dimensional encoders and decoders, since the inner summation (which is also the decoded vector being represented) does not depend on $i$.
 
 %We model this architecture as approximating functions of the form:
 %\begin{equation} \label{eq:temporal-function}
@@ -785,10 +785,10 @@ This simulation involves encoding $\V{x}(t)$ through the encoding filters $h_i^e
 In \citet{voelker2016a}, we use this technique to train a neuromorphic touch sensor to classify 18 metal surface textures scanned online.
 The architecture of the network is depicted in Figure~\ref{fig:touch-network}.
 Encoding and decoding filters are employed throughout multiple levels of the network to improve performance.
-First, the input is encoded by a nonlinear second-order differential filter, whose parameters are optimized to closely fit that of mechanoreceptor responses collected from human subjects~\citep{kim2010predicting}.
+First, the input is encoded by nonlinear second-order differential filters, whose distribution of parameters are optimized to closely fit that of mechanoreceptor responses collected from human subjects~\citep{kim2010predicting}.
 We also use adaptive neurons to improve the efficiency of this code.
-Second, a hidden layer uses a bank of decaying oscillators (i.e.,~bandpass filters) to extract a high-dimensional frequency representation from the previous layer.
-The decoding weights are optimized from the data using a support vector machine~(SVM) to solve the least-squares problem as a classification problem.
+Second, a hidden layer uses a heterogeneous bank of decaying oscillators (i.e.,~bandpass filters) to extract a high-dimensional frequency representation from the previous layer.
+The decoding weights are optimized from the data using a support vector machine~(SVM) to solve the least-squares problem as a classification problem instead.
 We find through cross-validation that the network performs best when it contains a wide variety of filters facilitating a rich feature expansion in time.
 
 \fig{touch-network}{0.5}{Architectures of a robotic surface texture classifier.}{
@@ -858,12 +858,13 @@ Furthermore, if we substitute this target with the desired postsynaptic current,
 This can be used to fully leverage hardware where synapses are configurable at the postsynaptic neuron level, in order to improve overall accuracy.
 
 Since our $A$ matrix contains spikes, we should regularize the system by filtering the columns of both $A$ and $Y$ by some filter (e.g.,~lowpass).
-Improved accuracy for sparse datasets may be achieved via generalized Tikhonov regularization, by mapping some Bayesian prior over the poles of $H(s)$\footnote{%
-The time-constants of $h(t)$ are equal to $-p_i^{-1}$ where $p_i$ is the $i^\text{th}$ pole of $H(s)$.} to some corresponding distribution over $c_i$ ($1 \le i \le k$).
+Improved accuracy for sparse datasets may be achieved via generalized Tikhonov regularization.
+For example, by choosing some Bayesian prior over the poles of $H(s)$\footnote{%
+The time-constants of $h(t)$ are equal to $-p_i^{-1}$ where $p_i$ is the $i^\text{th}$ pole of $H(s)$.} and mapping this to its corresponding distribution over $c_i$ ($1 \le i \le k$).
 This results in a regularization matrix with block-structure, with one block imposing the usual diagonal L2-regularization on the entries corresponding to the $d_i$ parameters, and the other imposing some correlation structure on the $c_i$ parameters given the chosen prior on the unknown time-constants of $h(t)$.
 
 This same method also applies to the discrete-time domain to solve for the optimal digital filter (not shown).
-In general, this provides a way of rolling an unknown set of synapse models, $H(s)$ or $H(z)$, into the NEF's least-squares optimization problem -- rather than assuming just a single synapse is fixed apriori.
+In general, this provides a way of rolling an unknown set of synapse models, $H(s)$ or $H(z)$, into the NEF's least-squares optimization problem -- rather than assuming just a single synapse is fixed \emph{apriori}.
 
 
 \section{Neurons}
@@ -874,7 +875,7 @@ we acknowledge the importance of embracing intrinsic neural dynamics as a useful
 On the one hand, \citet[][appendix~F.1]{eliasmith2003a} argue that synaptic dynamics dominate that of LIF dynamics at the network level.
 But on the other hand, there is significant evidence that intracellular dynamics in more sophisticated neuron models play an important functional role in reducing signal-to-noise~\citep[][chapter~4]{eliasmith2003a} and in supporting network-level computations~\citep{izhikevich2007dynamical}.
 As stated in section~\ref{sec:relationships}, and demonstrated in section~\ref{sec:temporal-heterogeneity}, one can explicitly simulate the spike-generation and solve for the decoders over time, thus allowing the optimization to exploit any relevant correlation structures in spike-timing across neurons and any information carried by the individual spike-timing of each neuron.
-However, such black box approaches do not assist the modeller, apriori, in picking the optimal neuron model for some useful function, configuring its parameters, and so forth.
+However, such black box approaches do not assist the modeller, \emph{apriori}, in picking the optimal neuron model for some useful function, configuring its parameters, and so forth.
 Rather, it becomes something of an art; making intuitive judgements about which neurons are doing what, and sweeping over various combinations of models and parameter settings with evolutionary search algorithms or similar.
 Work that considers the use of teaching signals to train recurrent networks of biophysically-detailed neurons to implement integration, is a topic of active exploration~\citep{duggins2017incorporating, duggins2017b}.
 Making progress within a mathematical framework proves to be challenging, due to the intractability of nonlinear dynamical systems in general.
@@ -901,7 +902,7 @@ For more complicated model representations, such as PDM, we are less certain abo
 Essentially, this is about meeting in the middle, between what we know how to describe, and what we know how to exploit.
 The question then becomes: how complicated may the models in the first step become, before the second step too becomes intractable?
 We conjecture that this problem---assuming it is well-defined---is generally undecidable.
-Still, we view this as the penultimate goal of the NEF, and find it hopeful to pursue in specific cases.
+Still, we view this as the penultimate goal of the NEF, and find it fruitful to pursue in specific cases.
 
 Returning to the case of adaptive neurons, we can still say more.
 Consider the model used by Nengo~\citep{camera2004minimal}.
@@ -924,7 +925,7 @@ This highlights a promising avenue for future research, namely the characterizat
 \label{sec:poisson-spiking}
 
 Recalling our analysis from section~\ref{sec:spike-coding}, the NEF must cope with three sources of error in the neural representation: (1) ``static distortion'' arising from the use of decoders, (2)~``spike noise'' arising from the use of discontinuous spikes, and (3)~``state discrepancy'' arising from the substitution of a stateless model with a stateful model.
-The first two issues are resolved by scaling up the neuron count or total number of spikes, but the third is not unfortunately.
+The first two issues are resolved by scaling up the neuron count or total number of spikes, but the third is not, unfortunately.
 For the latter issue, the intuitive goal is for our neurons to be ``uniformly ready to spike'' at every given moment in time.
 We formalized this with our definitions of ISIP and state discrepancy (definition~\ref{def:state-discrepancy}), and then proceeded to prove that the error converges to zero if the ISIPs are uniformly distributed (Theorem~\ref{thm:correctness}).
 The issue with LIF neurons is that, for non-constant inputs, this requirement is systematically violated (see Figure~\ref{fig:frequency-ks-test}).
@@ -935,7 +936,7 @@ This observation goes well beyond the scope of the LIF model, to any neuron mode
 This discussion motivates the search for a ``memoryless'' spiking neuron model -- one that cannot be biased towards a non-uniform probability of being ready to spike by its prior inputs or absence thereof.
 The exponential distribution is the only such continuous-time probability distribution.
 This distribution describes the arrival time between Poisson events.
-Therefore, a Poisson-spiking model is the only probabilistic neuron model that satisfies our criteria for eliminating this source of error.
+Therefore, a Poisson-spiking model is the only \emph{probabilistic} type of neuron model that satisfies our criteria for eliminating this source of error.
 We thus consider Poisson-spiking neurons where the number of spikes within a given time-step follows a Poisson distribution with a rate given by some desired static response curve (here, equation~\ref{eq:lif-rate}) evaluated at the input current.
 
 Poisson-spiking models have numerous benefits:
@@ -963,7 +964,7 @@ Due to the memoryless property of the Poisson process, and the uniformity of ReL
 \vspace{1em}
 
 \includegraphics[width=0.9\textwidth]{poisson-neuron-scaling}
-\caption[Spiking neuron performance with neuron count.]{\label{fig:poisson-neuron-scaling} Scaling of LIF performance with neuron count, for each type: Poisson-spiking, non-leaky (i.e.,~integrate-and-fire), adaptive, and regular-spiking.
+\caption[Spiking neuron performance with neuron count.]{\label{fig:poisson-neuron-scaling} Scaling of LIF performance with neuron count ($f = 10$\,Hz), for each type: Poisson-spiking, non-leaky (i.e.,~integrate-and-fire), adaptive, and regular-spiking.
 %The input signal is a sinusoid with frequency $10$\,Hz, and the maximum firing rates are uniformly distributed over $20-40$\,Hz.
 Regular-spiking LIF plateaus in performance for large numbers of neurons, due to the state discrepancy (definition~\ref{def:state-discrepancy}).
 The precision of integrate-and-fire and Poisson-spiking both scale as ${\sqrt{n}}$ as $n \rightarrow \infty$ (Theorem~\ref{thm:correctness}), since each neuron is always ready to spike with the ideal probability. 
@@ -982,8 +983,10 @@ However, performance remains constant at higher frequencies.
 
 In Figure~\ref{fig:poisson-neuron-scaling}, we demonstrate that the precision continues to scale as $\bigoh{\tau \sqrt{n}}$ for both Poisson-spiking and non-leaky neurons, but not for the other two.
 For this, we fix $f = 10$\,Hz, $\tau = 1$\,ms, and $\dt{} = 0.1$\,ms, as we scale the neuron count.
-This demonstrates that Posson spiking models (and ReLU) solve the state discrepancy problem, and thus continue to scale in accuracy with neuron count at increasingly-greater signal frequencies relative to the individual firing rates.
+This demonstrates that Poisson spiking models (and ReLU) solve the state discrepancy problem, and thus continue to scale in accuracy with neuron count at increasingly-greater signal frequencies relative to the individual firing rates.
 The properties of the Poisson neuron model make it particularly appealing for neuromorphic architectures such as SpiNNaker~2.
 Specifically, SpiNNaker~2 has specialized hardware for computing exponentials~\citep{partzsch2017fixed} and uniform samples~\citep{liu2018memory}, and the architecture benefits enormously from the reduction of memory requirements and spike-traffic~\citep{stromatias2013power, mundy2015}.
 Since the Poisson spike generator can be applied to any desired static response curve, this method can be applied to whatever is cheap to compute while still providing a suitable nonlinear basis for the desired transformation.
 
+Despite the poor performance of the adaptive LIF model in these experiments, this could be an artifact of the particular adaptive mechanism (\emph{subtracting} from its input current) combined with the statistics of the input signal (pure sinusoid).
+Adaptive neurons may still play an important role in efficient neural coding and the NEF, in particular by the complementary means of: (1)~expanding the dimensionality of the dynamics, (2)~providing higher-order encoding filters, (3)~adjusting the static nonlinearities over time, and (4)~maintaining the invariance of the ISIP criteria with respect to the statistics of the input signal using fewer spikes.
