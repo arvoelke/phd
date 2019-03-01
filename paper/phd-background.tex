@@ -118,8 +118,8 @@ Rather than a static nonlinearity, the basic computational element is an LSTM ``
 Multiplicative gating controls whether the input should be integrated, whether the memory is to decay with some leakage, and whether to output the contents of the memory~\citep{gers1999learning}.
 Importantly, all of these mechanisms are differentiable, and so BPTT can be applied to automatically learn all of the gating parameters.
 Thus, the LSTM may be viewed as a particular way of configuring and initializing an RNN in a manner that assists BPTT, by biasing it towards latching onto values and persisting them for long, yet controlled, periods of time.
+This alleviates the vanishing and exploding gradient problems, described by \citet{bengio1994learning}, by restructuring the gradient that is involved when integrating over time.
 
-The LSTM reduces the vanishing and exploding gradient problems, described in \citet{bengio1994learning}, by restructuring the gradient that is involved when integrating over time.
 The standard practice is to create layers of LSTM cells, and then stack several of these layers on top of one another, using weight matrices to fully connect each layer to the next~\citep{graves2013speech}.
 This enhances the temporal complexity of the network's dynamics through a composition of time-scales, analogous to the manner in which deep feed-forward networks provide richer internal representations via composition of spatial scales.
 Recently, this has found success in sequence learning, machine translation, and speech~\citep{graves2013speech, sutskever2014sequence, cho2014learning, bahdanau2014neural}, leading to a widespread adoption of LSTM networks as the RNN of choice~\citep{lecun2015deep}.
