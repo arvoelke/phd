@@ -25,7 +25,7 @@ Supervised learning of decoders is likewise a dynamical system, that can be unif
 Both dynamical systems are simultaneously realized in a SpiNNaker simulation to learn a heteroassociative memory in a network of $\numprint{100000}$ neurons, while running $150$ times faster than a CPU.
 Lastly, we observe that a large variety of important routines in linear algebra and gradient-based optimization problems may be cast as dynamical systems that resolve the correct solution over time.
 
-Fourth, section~\ref{sec:synaptic-extensions} exposes several theoretical extensions to the third principle of the Neural Engineering Framework, thus enabling spiking networks to leverage the computations of higher-order synapses.
+Fourth, section~\ref{sec:synaptic-extensions} exposes several theoretical extensions to the third principle of the Neural Engineering Framework, thus enabling spiking networks to leverage the computations of higher-order synapses in both continuous- and discrete-time domains.
 We thoroughly characterize linear dynamical systems using the transfer function representation, which allows for axonal spike-delays, such as those in Loihi, to be harnessed, while appealing to Lemma~\ref{lemma:coord-transform} to prove the most general case in Theorem~\ref{thm:general-linear}.
 Nonlinear extensions are supported by Theorems~\ref{thm:p3cont-nonlinear} and~\ref{thm:p3disc-nonlinear}, and culminate in an application that exploits heterogeneous mixed-signal synapses in Braindrop.
 We then demonstrate that heterogeneous dynamical primitives may in principle be exploited to accurately classify surface textures using a tactile robotic fingertip.

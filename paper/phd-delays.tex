@@ -792,14 +792,6 @@ The total resource requirements are still roughly the same.
 All three methods are trained across $500$ epochs using the Adam optimizer.
 In this case, to minimize overfitting, we keep only the model from the epoch that has the highest validation score. 
 
-Test performance and training times are summarized in Table~\ref{tab:mackey-glass}.
-We see that the DN outperforms the LSTM in accuracy and training time.
-We suspect that this is because the DN more readily supports a delay-embedding within its $6$-dimensional state.
-However, the hybrid method outperforms both in accuracy and the LSTM in training time.
-Thus, the LSTM cell affords some dynamical primitive that may be leveraged by networks of DN cells (and vice-versa).
-This suggests that LSTMs and DNs may have complementary functions as building blocks within deep RNNs.
-And, as shown in our first experiment, the DN provides improved scaling through time with respect to lower frequencies across longer continuous time-intervals.
-
 \begin{table}
 \centering
   \begin{tabular}{@{}lrr@{}} \toprule
@@ -814,6 +806,14 @@ Hybrid & 6.097\% & 40.5 \\
     Test accuracy and training time for various RNNs on the Mackey-Glass~(MG) dataset.
   }
 \end{table}
+
+Test performance and training times are summarized in Table~\ref{tab:mackey-glass}.
+We see that the DN outperforms the LSTM in accuracy and training time.
+We suspect that this is because the DN more readily supports a delay-embedding within its $6$-dimensional state.
+However, the hybrid method outperforms both in accuracy and the LSTM in training time.
+Thus, the LSTM cell affords some dynamical primitive that may be leveraged by networks of DN cells (and vice-versa).
+This suggests that LSTMs and DNs may have complementary functions as building blocks within deep RNNs.
+And, as shown in our first experiment, the DN provides improved scaling through time with respect to lower frequencies across longer continuous time-intervals.
 
 \subsection{Detecting patterns}
 \label{sec:periodicity}
@@ -860,7 +860,7 @@ Specifically, setting $k=5$, $q=20$, and with $T$ taken by a diagonal realizatio
 
 \fig{zoom-matrix}{0.4}{Zooming matrix for the Delay Network.}{
   Visualizing the ``zooming matrix'', $Z_5 \in \mathbb{R}^{20 \times 20}$ (see equation~\ref{eq:zoom-matrix}).
-  This matrix linearly transforms the state-space of the Delay Network to ``zoom in'' on the oldest segment of input history partitioned into $k$ segments.
+  This matrix linearly transforms the state-space of the Delay Network~(DN) to ``zoom in'' on the oldest segment of input history partitioned into $k = 5$ segments.
 }
 
 We sketch a constructive proof of this claim.
