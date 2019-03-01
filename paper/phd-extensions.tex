@@ -682,7 +682,7 @@ This model is summarized by~\citet[][equation~8]{voelker2017iscas}:
 \begin{equation} \label{eq:braindrop-synapse}
 H(s) = \frac{ \gamma \left(1 - e^{-\epsilon s} \right) s^{-1}}{ \left( \tau_1 s + 1 \right) \left( \tau_2 s + 1 \right) }
 \end{equation}
-Now we apply lemma~\ref{lemma:coord-transform} in the following context:
+Now we apply Lemma~\ref{lemma:coord-transform} in the following context:
 $$
 \V{f} = (\epsilon \gamma)^{-1} \left( \V{x} + (\tau_1 + \tau_2) \dot{\V{x}} + \tau_1 \tau_2 \ddot{\V{x}} \right) \text{,}
 $$
@@ -699,11 +699,11 @@ $$
 b_0 = 1, \quad b_1 = \frac{\epsilon}{2}, \quad b_2 = \frac{\epsilon^2}{4} - \frac{\epsilon^2}{6} = \frac{\epsilon^2}{12}, \quad b_3 = \frac{\epsilon^3}{24} - \frac{\epsilon^3}{12} + \frac{\epsilon^3}{24} = 0 \text{,}
 $$
 and so:
-\begin{align*}
-\V{g} &= \sum_{i=0}^\infty b_i \V{f}^{(i)} \\
-        &= \V{f}^{(0)} + \frac{\epsilon}{2} \V{f}^{(1)} + \frac{\epsilon^2}{12} \V{f}^{(2)} + \ldots \\
+\begin{align} \label{eq:pulse-extended-double-exp}
+\V{g} &= \sum_{i=0}^\infty b_i \V{f}^{(i)} \nonumber \\
+        &= \V{f}^{(0)} + \frac{\epsilon}{2} \V{f}^{(1)} + \frac{\epsilon^2}{12} \V{f}^{(2)} + \ldots \nonumber \\
         &= (\epsilon \gamma)^{-1} \left( \V{x} + (\tau_1 + \tau_2 + \epsilon / 2) \dot{\V{x}} + (\tau_1 \tau_2 + (\epsilon / 2 ) (\tau_1 + \tau_2) + \epsilon^2 / 12) \ddot{\V{x}} \right) + \ldots
-\end{align*}
+\end{align}
 which is a refined version of, and alternate derivation for, \citet[][equation~11]{voelker2017iscas}.
 
 \subsection{Accounting for mismatch}
