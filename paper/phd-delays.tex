@@ -788,18 +788,18 @@ The last step is generally infeasible due to the chaotic nature of the MG system
 This makes a look-ahead of $15$ steps particularly challenging for a relatively small network, as its reconstruction of the chaotic manifold must become exponentially more precise to see linear payoffs in accuracy.
 
 This insight motivates the inclusion of a third ``hybrid'' method that interleaves the two previous methods. Specifically as in `\texttt{2121}', where `\texttt{2}' is the DN cell and `\texttt{1}' is the LSTM cell.
-The total resource requirements are still roughly the same.
+% The total resource requirements and parameter counts are very similar.
 All three methods are trained across $500$ epochs using the Adam optimizer.
 In this case, to minimize overfitting, we keep only the model from the epoch that has the highest validation score. 
 
 \begin{table}
 \centering
-  \begin{tabular}{@{}lrr@{}} \toprule
-    Method & NRMSE & \pbox{20cm}{Training Time \\ ($s$ / epoch)} \\
+  \begin{tabular}{@{}lrrr@{}} \toprule
+    Method & NRMSE & Parameters & \pbox{20cm}{Training time \\ ($s$ / epoch)} \\
     \midrule
-LSTM & 7.084\% & 50.0 \\
-DN & 6.783\% & 30.5 \\
-Hybrid & 6.097\% & 40.5 \\
+LSTM & 7.084\% & \numprint{282101} & 50.0 \\
+DN & 6.783\% & \numprint{270769} & 30.5 \\
+Hybrid & 6.097\% & \numprint{291285} & 40.5 \\
     \bottomrule
   \end{tabular}
   \caption[Prediction accuracy of a stacked LSTM versus Delay Network.]{ \label{tab:mackey-glass}
