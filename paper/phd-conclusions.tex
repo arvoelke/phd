@@ -12,7 +12,7 @@ The NEF represents state-vectors by linearly projecting them onto the postsynapt
 Likewise, these state-vectors represent frequency content that grows linearly with the relative amount of energy required to drive the synapses of each postsynaptic neuron, for a fixed level of precision.
 
 Second, section~\ref{sec:nef-suitability} addresses the suitability of NEF as a framework for compiling SNNs onto neuromorphic hardware.
-Correctness is guaranteed by Theorem~\ref{thm:correctness}, which teases apart three sources of error in the NEF, and provides a novel proof the NEF's precision, conditioned upon a specific criteria that characterizes the distribution of neural states.
+Correctness is guaranteed by Theorem~\ref{thm:correctness}, which teases apart three sources of error in the NEF, and provides a novel proof of the NEF's precision, conditioned upon a specific criteria that characterizes the distribution of neural states.
 Scalability is guaranteed by the previous theorem, in conjunction with a number of prior observations made about time, space, and energy requirements that carefully consider the physical dimensions of relevant quantities (Table~\ref{tab:scalability}).
 Completeness is provisioned by the Turing-completeness of dynamical systems, which justifies our assertion that spiking neural networks---trained with the NEF to obey some dynamics---represent powerful models of computation.
 Robustness is ensured by a volume of prior work, together with our observation that the NEF is robust to white noise bounded by the diameter of its neural basin of attraction.
