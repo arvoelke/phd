@@ -386,7 +386,7 @@ For example, Figure~\ref{fig:delay-autocorrelation} visualizes $f$ within the sp
   Visualizing the error in the Delay Network, $|E_q(2 \pi i f \cdot \theta)|$ (see equation~\ref{eq:pade-delay-error}), while varying the dimensionless quantity $f \cdot \theta$ (input frequency multiplied by delay length), and the order of approximation, $q$.
 } 
 
-In this section we address several fundamental questions regarding the scalability, or memory ``capacity'', of the Delay Network~(DN) with respect to $q$, $\theta$, and the complex frequency of the input signal, $s = 2 \pi i f$, for some real frequency, $f$.
+In this section we address several fundamental questions regarding the scalability, or \emph{memory capacity}, of the Delay Network~(DN) with respect to $q$, $\theta$, and the complex frequency of the input signal, $s = 2 \pi i f$, for some real frequency, $f$.
 For the time being, we disregard the error arising from neural representation by assuming we can make $n$ sufficiently large (see section~\ref{sec:scalability}).
 This means we match the model description precisely, even when considering more elaborate models of the synapse (see chapter~\ref{sec:synaptic-extensions}).
 The only source of error remaining is our use of Pad\'e approximants to render equation~\ref{eq:tf-delay} finite-dimensional.
