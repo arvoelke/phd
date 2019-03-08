@@ -162,7 +162,7 @@ In either case, $A$ and $B$ depend on the delay length solely by the scalar fact
 For this reason, and to keep quantities dimensionless, we often make the substitution $\V{x}(t) \leftarrow \theta\V{x}(t)$ to express the system in an alternative form~\citep{braindrop2019}:
 \begin{equation} \label{eq:delay-system}
   \theta \dot{\V{x}}(t) = A\V{x}(t) + Bu(t) \text{,} \quad
-  A = \begin{pmatrix} -v_0 & -v_0 & \cdots & -v_0 \\ v_1 & 0 & \cdots & 0 \\ 0 & \ddots & \ddots & \vdots \\ 0 & 0 & v_{d-1} & 0\end{pmatrix} \text{,} \quad 
+  A = \begin{pmatrix} -v_0 & -v_0 & \cdots & -v_0 \\ v_1 & 0 & \cdots & 0 \\ 0 & \ddots & \ddots & \vdots \\ 0 & 0 & v_{q-1} & 0\end{pmatrix} \text{,} \quad 
   B = \transpose{\begin{pmatrix} v_0 & 0 & \cdots & 0\end{pmatrix}} \text{,} 
 \end{equation}
 where $v_i := (q+i)(q-i)(i+1)^{-1}$ no longer depends on $\theta$. %and $w_i := (-1)^{d - 1 - i} \left( \frac{i+1}{d} \right)$
@@ -322,7 +322,7 @@ However, by virtue of encoding the delay network's state-vector into a heterogen
 Recall that a continuous-time rolling window of length $\theta > 0$, which here we denote as $\left[ u(t - \theta') \,:\, 0 \le \theta' \le \theta \right]$, $u(\cdot) \in \mathbb{R}$, may be \emph{temporally compressed} into a low-dimensional state $\V{x}(t) \in \mathbb{R}^q$, by the following linear time-invariant dynamical system that approximately delays an input signal by $\theta$ seconds (repeating equation~\ref{eq:delay-system}, for clarity):
 \begin{equation*}
   \theta \dot{\V{x}}(t) = A\V{x}(t) + Bu(t) \text{,} \quad
-  A = \begin{pmatrix} -v_0 & -v_0 & \cdots & -v_0 \\ v_1 & 0 & \cdots & 0 \\ 0 & \ddots & \ddots & \vdots \\ 0 & 0 & v_{d-1} & 0\end{pmatrix} \text{,} \quad 
+  A = \begin{pmatrix} -v_0 & -v_0 & \cdots & -v_0 \\ v_1 & 0 & \cdots & 0 \\ 0 & \ddots & \ddots & \vdots \\ 0 & 0 & v_{q-1} & 0\end{pmatrix} \text{,} \quad 
   B = \transpose{\begin{pmatrix} v_0 & 0 & \cdots & 0\end{pmatrix}} \text{,} 
 \end{equation*}
 where $v_i := (q+i)(q-i)(i+1)^{-1}$, %and $w_i := (-1)^{d - 1 - i} \left( \frac{i+1}{d} \right)$
