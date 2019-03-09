@@ -320,6 +320,47 @@ We elaborate on these properties in section~\ref{sec:delay-scalability}, and dem
 \citep{legendre1787recherches}
 \citep{Pade1892}
 
+\begin{equation}
+\theta \dot{\V{x}}(t) = A\V{x}(t) + Bu(t) 
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+A = \left[ a \right]_{ij} \in \mathbb{R}^{q \times q} \text{,} \quad
+a_{ij} &= \left(2i + 1\right)
+\begin{dcases} 
+  -1 & i < j \\
+  (-1)^{i-j+1} & i \ge j
+\end{dcases} \\
+B = \left[ b \right]_i \in \mathbb{R}^{q \times 1} \text{,} \quad
+b_i &= (2i + 1) (-1)^i
+    %Q = np.arange(q, dtype=np.float64)
+    %R = (2*Q + 1)[:, None] / theta
+    %j, i = np.meshgrid(Q, Q)
+    %A = np.where(i < j, -1, (-1.)**(i-j+1)) * R
+    %B = (-1.)**Q[:, None] * R
+    %C = np.ones((1, q))
+    %D = np.zeros((1,))
+\end{aligned}
+\end{equation}
+$i, j \in [0, q-1]$.
+
+\begin{equation}
+A = \begin{pmatrix*}[r]
+ -1 & -1 & -1 & -1 & -1 & -1 \\
+  3 & -3 & -3 & -3 & -3 & -3 \\
+ -5 &  5 & -5 & -5 & -5 & -5 \\
+  7 & -7 &  7 & -7 & -7 & -7 \\
+ -9 &  9 & -9 &  9 & -9 & -9 \\
+ 11 &-11 & 11 &-11 & 11 & -11
+\end{pmatrix*} \text{,} \quad
+B = \begin{pmatrix*}[r] 1 \\ -3 \\ 5 \\ -7 \\ 9 \\ -11\end{pmatrix*} 
+% C = \begin{pmatrix} 1 & 1 & 1 & 1 & 1 & 1 \end{pmatrix} 
+\end{equation}
+
+\begin{equation}
+\tilde{\mathcal{P}}_i(r) = (-1)^i \sum_{j=0}^i \begin{pmatrix}i \\ j\end{pmatrix} \begin{pmatrix}i + j \\ j\end{pmatrix} \left( -r \right)^j = \mathcal{P}\left( 2 r - 1\right) \text{,} \quad r = \frac{\theta'}{\theta}
+\end{equation}
 
 \subsection{Nonlinear characterization}
 \label{sec:delay-nonlinear}
@@ -651,7 +692,7 @@ We refer to this last method as ``no-FORCE''.
 
 We now compare all three of these to an idealized NEF implementation of the DN~(equation~\ref{eq:ss-delay}), consisting of just $n = 6$ linear units, coupled to one another by the discretized mapping of equation~\ref{eq:discrete-p3}, as summarized by equation~\ref{eq:delay-compiled} ($q = 6$).
 In this scenario, the only error that remains is that of equation~\ref{eq:pade-delay-error} arising from the use of Pad\'e approximants to render the delay line finite-dimensional.
-Each FORCE network consists of $n = 500$ neurons (and $\bigoh{n^2}$ weights).
+Each FORCE network consists of $n = 500$ non-spiking tanh neurons (and $\bigoh{n^2}$ weights).
 The network is given $10$\,s of training data per trial.
 In all cases, the training and test signals are randomly sampled $1$\,Hz band-limited white noise signals, with $5$\,s of test data per trial.
 We compare all four networks by sweeping $\theta$ across $0.01$--$1$\,s, with $10$ trials at each value of $\theta$ (bootstrapped 95\% confidence intervals).
