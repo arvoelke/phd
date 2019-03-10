@@ -272,7 +272,7 @@ Thus the network projects its input onto the Legendre basis over time.
   \centering
   \includegraphics[width=\textwidth]{pade-basis}
   \caption[Temporal representation of the Delay Network.]{ \label{fig:basis-functions}
-    Temporal basis functions of the Delay Network ($q = 12$).
+    Temporal basis functions for the Delay Network ($q = 12$).
     Each line corresponds to the basis function of a single dimension~($i$) ranging from $0$~(darkest) to $q - 1$~(lightest).
     The $i^\text{th}$ basis function is a polynomial over $\theta' \theta^{-1}$ with degree $i$ (see equation~\ref{eq:delay-readouts}). % ($0 \le \theta' \le \theta$).
     The state-vector of the Delay Network takes a linear combination of these $q$ basis functions in order to represent a rolling window of length $\theta$.
@@ -324,13 +324,13 @@ Specifically, the Pad\'e approximants of the delay have an elegant state-space r
 \end{equation}
 where $\mathcal{P}_i(r)$ is the $i^\text{th}$ Legendre polynomial~\citep{rodrigues1816attraction}.
 These classical polynomials, shown in Figure~\ref{fig:legendre-basis}, are \emph{uniquely} defined as the set of orthogonal polynomials over the domain $0 \le r \le 1$ scaled such that $\tilde{\mathcal{P}}_i(1) = 1$.
-The Legendre polynomials have numerous applications in the physical sciences, for example in the solution to Schr{\"o}dinger's equation for the hydrogen atom~\citep{hermann1988split}, and in describing the function basis of a population of LIF tuning curves~\citep[][p.~202]{eliasmith2003a}.
+The Legendre polynomials have numerous applications in the physical sciences, for example in the solution to Schr{\"o}dinger's equation for the hydrogen atom~\citep{hermann1988split}, and in describing the function basis for a population of LIF tuning curves~\citep[][p.~202]{eliasmith2003a}.
 
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{legendre-basis}
   \caption[Legendre basis realization of the Delay Network.]{ \label{fig:legendre-basis}
-    Temporal basis functions of the Legendre state-space realization of the Delay Network ($q = 12$).
+    Temporal basis functions for the Legendre state-space realization of the Delay Network ($q = 12$).
     Each line corresponds to the basis function of a single dimension~($i$) ranging from $0$~(darkest) to $q - 1$~(lightest).
     The $i^\text{th}$ basis function is the shifted Legendre polynomial over $\theta' \theta^{-1}$ with degree $i$ (see equation~\ref{eq:shifted-legendre}).
     The state-vector of the Delay Network takes a linear combination of these $q$ basis functions in order to represent a rolling window of length $\theta$.
@@ -383,9 +383,9 @@ In general, the crucial result is that the state-space of this LTI system optima
 \begin{equation} 
 \boxed{ u(t - \theta') \approx \sum_{i=0}^{q-1} \tilde{\mathcal{P}}_{i} \left(\frac{\theta'}{\theta} \right) \, x_{i}(t) \text{,} \quad 0 \le \theta' \le \theta \text{.} }
 \end{equation}
-This is proven by applying the same state-space transformation to the polynomials of equation~\ref{eq:delay-readouts}.\footnote{%
+This is proven by applying a state-space transformation to the polynomials of equation~\ref{eq:delay-readouts}.\footnote{%
 \emph{``Cuius rei demonstrationem mirabilem sane detexi hanc marginis exiguitas non caperet.''}~\textasciitilde~Pierre de Fermat}
-In summary, equation~\ref{eq:legendre-delay} has an identical transfer function to that of equation~\ref{eq:ss-delay}---namely, the Pad\'e approximants of a pure delay---while providing a state-space that represents the previous $\theta$ seconds of input via the Legendre polynomials.
+In summary, equation~\ref{eq:legendre-delay} has an identical transfer function to that of equation~\ref{eq:ss-delay}---namely, the Pad\'e approximants of a pure delay---while providing a state-space that reconstructs the previous $\theta$ seconds of input via the Legendre polynomials up to order $q$.
 
 \subsection{Nonlinear characterization}
 \label{sec:delay-nonlinear}
@@ -415,27 +415,27 @@ Repeating the equation for these polynomials (equation~\ref{eq:delay-readouts}),
 \mathcal{P}_{i,q}(r) = \begin{pmatrix}q \\ i\end{pmatrix}^{-1} \sum_{j=0}^i \begin{pmatrix}q \\ j\end{pmatrix} \begin{pmatrix}2q - 1 - j \\ i - j\end{pmatrix} \left( -r \right)^{i - j} \text{.} %\text{,}\quad 0 \le r \le 1 \text{,}\quad i = 0 \ldots d - 1
 \end{equation}
 A set of polynomials $\{ \mathcal{P} \}_{i, q}$ are shown in Figure~\ref{fig:basis-functions}.
-This means the system implicitly projects its window of history onto a linear transformation of polynomials up to some chosen order.
-In essence, equation~\ref{eq:basis-interpretation} determines a linear map from the $q$-dimensional state, $\V{x}(t)$, to the infinite-dimensional rolling window, $[ u(t - \theta') \,:\, 0 \le \theta' \le \theta ]$.
-In other words, equation~\ref{eq:basis-interpretation} is the optimal pseudo-inverse of the linear compression defined by equation~\ref{eq:delay-system}.
+This system implicitly projects its window of history onto a linear transformation of polynomials up to some chosen order.
+In summary, equation~\ref{eq:basis-interpretation} determines a linear map from the $q$-dimensional state, $\V{x}(t)$, to the infinite-dimensional rolling window, $[ u(t - \theta') \,:\, 0 \le \theta' \le \theta ]$, such that equation~\ref{eq:basis-interpretation} is the optimal pseudo-inverse of the linear compression defined by equation~\ref{eq:delay-system}.
 %The frequencies in $u(t)$ that may be accurately encoded by this approach scale inversely with $\theta$.
 %Likewise, higher values of $q$ allowed for higher frequencies to be encoded at the same level of precision.
 %We remark that each basis function is expressed in terms of the unitless quantity $\frac{\theta'}{\theta}$, and is therefore scale-invariant.
 %We may also transform the state by any invertible matrix (e.g.,~ to orthogonalize the basis functions) without loss of generality.
 %Analysis of the approximation error, and some additional properties of this ``delay network'', may be found in \cite{voelker2018}.
 
-Moreover, every point along the window, along with its Taylor series expansion up to order $q-1$, as well as any other linear operations across the rolling window (e.g.,~Laplace transform), may be expressed using equation~\ref{eq:basis-interpretation} and equation~\ref{eq:basis-functions} as a fixed, known dot product with $\V{x}(t)$.
-To make this evident, let $k(\theta')$ ($0 \le \theta' \le \theta$) be any desired kernel (e.g.,~Fourier transform), then:
+Moreover, every point along the window, along with its Taylor series expansion up to order $q$, as well as any other integral transform across the rolling window (e.g.,~Laplace transform), may be expressed using equation~\ref{eq:basis-interpretation} and equation~\ref{eq:basis-functions} as a fixed dot product with $\V{x}(t)$.
+To solve for this, let $k(\theta')$ ($0 \le \theta' \le \theta$) be any desired kernel (e.g.,~Fourier transform), then:
 \begin{equation} \label{eq:delay-linear-transform}
 \begin{aligned}
 (u \ast k)(t) &= \int_{\theta'=0}^{\theta} u(t - \theta') k(\theta') \, d\theta' \\
-&\approx \sum_{i=0}^{q-1} \underbrace{\left( \int_{\theta'=0}^{\theta} k(\theta') \mathcal{P}_{i,q} \left(\frac{\theta'}{\theta} \right) d\theta' \right)}_{k_{q -1-i}} x_{q-1-i}(t) \\
+&\approx \sum_{i=0}^{q-1} \underbrace{\left( \int_{\theta'=0}^{\theta} k(\theta') \mathcal{P}_{q-i-1,q} \left(\frac{\theta'}{\theta} \right) d\theta' \right)}_{k_{i}} x_{i}(t) \\
 &= \left\langle \V{x}(t)\text{,}\, \V{k} \right\rangle \text{,}
 \end{aligned}
 \end{equation}
 where $\V{k} = \transpose{\left[ k_0\text{,}\, \ldots \text{,}\, k_{q-1} \right]} \in \mathbb{R}^q$ is defined above independently of time.
 Hence, any integral transform is simply a dot product with $\V{x}(t)$.
 Similarly, one may obtain Taylor expansions by taking dot products with vectors derived by repeatedly differentiating both sides of equation~\ref{eq:basis-interpretation} with respect to $\theta'$ (not shown).
+Analogous statements hold for the Legendre realization from the previous section, whose set of polynomials are shown in Figure~\ref{fig:legendre-basis}.
 Crucially, such dot products are precisely what the encoders $\V{e}_i$ compute in equation~\ref{eq:encoding}.
 This implies that the PSC of any neuron, by itself, necessarily represents a particular convolution across the window.\footnote{%
 There are infinitely many, since the system is overcomplete when working backwards from $\V{k} \mapsto k(\cdot)$, but we can enforce uniqueness by imposing L2-regularization, for instance.}
