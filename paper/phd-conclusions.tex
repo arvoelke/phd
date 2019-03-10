@@ -40,9 +40,9 @@ This validates our theory, and recommends that Nengo should consider the role of
 Sixth, section~\ref{sec:derivations} derives a solution to a difficult task for spiking neural networks: maintaining a sliding window of input history.
 We derive from first-principles an optimal low-frequency approximation of dimension $q$ to a continuous-time delay, and realize this efficiently using a spiking neural network.
 This solution is called the Delay Network~(DN).
-We show that the DN supports a decoding of the entire window, with weights given by a linear transformation of the shifted Legendre polynomials up to order $q$.
+We show that the DN supports a decoding of the entire window, with weights given by the shifted Legendre polynomials up to order $q$.
 Next, the neural encoding implements a nonlinear kernel convolution of the time window, thus enabling the population of neurons within the delay network to compute arbitrary nonlinear functions across the input's $q$-degree projection over time.
-This leads into a discussion on the scalability of the network, in particular highlighting the importance of the relationship between physical quantities: time and frequency.
+This leads into a discussion on the scalability of the network, in particular highlighting the importance of the relationship between each physical quantity: time and frequency.
 
 Seventh, section~\ref{sec:delay-applications} exploits the DN in a number of very different contexts.
 We find that none of Reservoir Computing, FORCE computing, or stacked LSTMs can match the performance of the Delay Network given a low-frequency signal relative to the time-step.
