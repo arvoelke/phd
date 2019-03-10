@@ -199,7 +199,7 @@ By commutativity of convolution, modeling the delay in the synapse (as in equati
 Equation~\ref{eq:delayed-lowpass} may also be used to account for feedback delays within some broader setting (e.g.,~when the feedback term is computed via some delayed system).
 
 In the mammalian cortex, $\lambda$ is known to range between $0.1$--$44$\,ms while being precise and reproducible~\citep{lagorce2015stick}.
-In analog circuitry, $\lambda$ grows in proportion to the square of the wire length, and is necessarily introduced by the pulse-extension of digital-to-analog circuits~\citep{voelker2017iscas}.
+In analog circuitry, $\lambda$ grows in proportion to the square of the wire length, and is necessarily introduced by the pulse-extension of digital-to-analog converters~\citep{voelker2017iscas}.
 This delay term may also be configured on digital architectures such as Loihi~\citep{davies2018loihi}.
 
 Letting $d := \frac{\lambda}{\tau}e^{\frac{\lambda}{\tau}}$, and $W_0(\cdot)$ denote the principal branch of the Lambert-$W$ function~\citep{corless1996lambertw}, we invert $y := H(s)^{-1}$ as follows:
@@ -986,7 +986,7 @@ For this, we fix $f = 10$\,Hz, $\tau = 1$\,ms, and $\dt{} = 0.1$\,ms, as we scal
 This demonstrates that Poisson spiking models (and ReLU) solve the state discrepancy problem, and thus continue to scale in accuracy with neuron count at increasingly-greater signal frequencies relative to the individual firing rates.
 The properties of the Poisson neuron model make it particularly appealing for neuromorphic architectures such as SpiNNaker~2.
 Specifically, SpiNNaker~2 has specialized hardware for computing exponentials~\citep{partzsch2017fixed} and uniform samples~\citep{liu2018memory}, and the architecture benefits enormously from the reduction of memory requirements and spike-traffic~\citep{stromatias2013power, mundy2015}.
-Since the Poisson spike generator can be applied to any desired static response curve, this method can be applied to whatever is cheap to compute while still providing a suitable nonlinear basis for the desired transformation.
+Since the Poisson spike-generator can be applied to any desired static response curve, this method can be applied to whatever is cheap to compute while still providing a suitable nonlinear basis for the desired transformation.
 
 Despite the poor performance of the adaptive LIF model in these experiments, this could be an artifact of the particular adaptive mechanism (\emph{subtracting} from its input current) combined with the statistics of the input signal (pure sinusoid).
 Adaptive neurons may still play an important role in efficient neural coding and the NEF, in particular by the complementary means of: (1)~expanding the dimensionality of the dynamics, (2)~providing higher-order encoding filters, (3)~adjusting the static nonlinearities over time, and (4)~maintaining the invariance of the ISIP criteria with respect to the statistics of the input signal using fewer spikes.

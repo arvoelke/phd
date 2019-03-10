@@ -276,7 +276,7 @@ Specifically, our dimensional analysis identifies the following asymptotic relat
 \begin{equation} \label{eq:psc-code-power}
 | G_i(s) | \approx \bigoh{ \left| \tau s \right| \| \laplace{ \V{x}(t) }(s) \|_2 } \text{,}
 \end{equation}
-where the Big~$\mathcal{O}$ constants involve the length of the encoder (typically unit-length) and the gains and biases (unitless).\footnote{
+where the Big~$\mathcal{O}$ constants involve the length of the encoder (typically unit-length) and the gains and biases (unitless).\footnote{%
 If a physical quantity is normalized to some constant range then it becomes unitless.
 }
 
@@ -771,5 +771,5 @@ This would not have been possible if not for the extensibility of the framework,
 Our work in this direction is the topic of chapter~\ref{chapt:nef-extensions}.
 Of particular focus are the higher-order synapses with variable time-constants on Braindrop, and the configurably-delayed axons on Loihi.
 Our extensions can successfully leverage both to improve network-level computation.
-The focus of chapter~\ref{chapt:results} is then to show case several recurrent SNNs deployed on both architectures, while using the same high-level model description for each network.
+The focus of chapter~\ref{chapt:results} is then to showcase several recurrent SNNs deployed on both architectures, while using the same high-level model description for each network.
 The machinery of the NEF and Nengo, together with the extensions in this thesis, take care of compiling the model description onto the hardware while respecting its constraints and leveraging the properties of its dynamical primitives~\citep{braindrop2019}.

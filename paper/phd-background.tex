@@ -51,7 +51,7 @@ That is,
 \V{y}\left[ t \right] &= \V{g}\left(\V{x}\left[ t \right] \right) \text{,}
 \end{aligned}
 \end{equation}
-where $\V{x} \in \mathbb{R}^d$ is a finite-dimensional ($d \in \mathbb{N}$) state-vector, $\V{u}$ is some input vector, and $\V{y}$ is some output vector -- all indexed at discrete units of time, $t$.\footnote{
+where $\V{x} \in \mathbb{R}^d$ is a finite-dimensional ($d \in \mathbb{N}$) state-vector, $\V{u}$ is some input vector, and $\V{y}$ is some output vector -- all indexed at discrete units of time, $t$.\footnote{%
 There are similar theorems for continuous time~\citep{funahashi1993approximation, bennett1995universal}.
 }
 The state updates according to a nonlinear mixing of itself with the input.
@@ -221,15 +221,16 @@ For example, the NEF typically assumes an exponential model of the postsynaptic 
 This model is also known as a first-order lowpass filter.
 In contrast, the synapse models in mixed-analog-digital neuromorphic chips are non-ideal, featuring higher-order dynamics due to parasitic capacitances~\citep{voelker2017iscas}.
 Similarly, the synapse models commonly used in biological models incorporate distinct rise- and fall-times due to separate time-scales of transmitter binding and unbinding, as well as axonal transmission delays due to the finite-velocity propagation of action potentials~\citep{roth2009modeling}.
-Chapter~\ref{chapt:nef-extensions} improves the scope of the NEF, by characterizing the network-level effects of these higher-order synapse models, and harnesses them to implement both discrete-time and continuous-time dynamical systems with improved accuracy.
+In digital hardware, spike-transmission delays are configurable~\citep{davies2018loihi} and necessary at the time-scale of the simulation time-step~\citep{bekolay2014}.
+Chapter~\ref{chapt:nef-extensions} improves the scope of the NEF, by characterizing the network-level effects of these higher-order synapse models and delays, and harnesses them to implement both discrete-time and continuous-time dynamical systems with improved accuracy.
 Chapter~\ref{chapt:delays} explores a novel theoretical system that equips any RNN---not just NEF-based---with an enhanced ability to compute nonlinear functions across windows of memory.
 We find some connections between this system's NEF implementation and the neural responses of ``time cells'' recorded in the rodent medial prefrontal cortex~(mPFC).
 In this section, we provide the basic building blocks adapted from the original proposal by \citet{eliasmith2003a}, before analyzing its theoretical merits in chapter~\ref{chapt:analysis}.
 
 In the context of RNNs, the NEF provides generic machinery for training the weights of a recurrent network of spiking (or non-spiking) neurons in order to implement some particular dynamical system~\citep{dynamicspatent}.
-This is made efficient through three important steps: (1)~weight matrices are factored into two $n \times q$ \emph{encoding} and \emph{decoding} matrices, where $q \in \bigoh{1}$ is the dimensionality of the dynamical state-vector, and $n$ is the number of neurons, (2)~the optimization problem is recast as a batched least-squares problem that can be solved offline without needing to explicitly simulate the network over time, and (3)~the dynamics of the synapse model are leveraged as a temporal basis for the overall system.
+This is made efficient through three important steps: (1)~weight matrices are factored into $n \times q$ \emph{encoding} and \emph{decoding} matrices, where $q \in \bigoh{1}$ is the dimensionality of the dynamical state-vector, and $n$ is the number of neurons, (2)~the optimization problem is recast as a batched least-squares problem that may be solved offline without needing to explicitly simulate the network over time, and (3)~the dynamics of the synapses are leveraged as temporal bases for the overall system.
 These insights lead to procedures for training and simulation that are efficiently implemented---scaling as $\bigoh{n}$ in both time and space---by the Nengo software package~\citep{bekolay2014}.
-Backpropagation through time can be applied to further improve the performance of these networks, by use of the Nengo~DL extension~\citep{hunsberger2018, rasmussen2018nengodl, blouw2018a}, which bidirectionally integrates Nengo with Google's machine learning toolkit, TensorFlow~\citep{abadi2016tensorflow}.
+Backpropagation through time can fine-tune the performance of these networks, by use of the Nengo~DL extension~\citep{hunsberger2018, rasmussen2018nengodl, blouw2018a}, which bidirectionally integrates Nengo with Google's machine learning toolkit, TensorFlow~\citep{abadi2016tensorflow}.
 
 At the same time, this top-down approach provides considerable transparency into systematic relationships between neural nonlinearities, synapse models, time-constants, and network function.
 For instance, it becomes feasible to determine the class of functions that are most accurately supported by a population (i.e.,~layer) of neurons~\citep[][pp.~185--217]{eliasmith2003a}.
@@ -261,20 +262,20 @@ $a_i(t)$ is the neural activity generated by the $i^{\text{th}}$ neuron encoding
 $\delta(\cdot)$ is the Dirac delta, and $\left\{ t \right\}_{i\text{,}m}$ is the sequence of spike-times generated by the neuron model in response to the input current.
 
 A common choice of neuron model for $G_i\left[ \cdot \right]$ is the leaky integrate-and-fire~(LIF) neuron model~\citep{koch1998methods}.
-This model maintains a one-dimensional voltage trace, $v_i(t)$, that continuously integrates the current-source $s_i(t)$ over time, with some leakage governed by the time-constant\footnote{A time-constant is a physical quantity with a unit of time (e.g.,~seconds). It is \emph{not} a dimensionless constant.} $\tau_\text{RC}$ -- functionally equivalent to a resistor-capacitor~(RC) circuit, a first-order lowpass filter, or a convolution with an exponentially decaying impulse response.
-An action-potential, or ``spike'', is generated when the voltage reaches a threshold, in which event the voltage is reset to its resting potential, where it remains clamped for the duration of some refractory period, $\tau_\text{ref}$.
+This model maintains a one-dimensional voltage trace, $v_i(t)$, by continuously integrating a current-source $s_i(t)$ over time, with some leakage governed by the time-constant\footnote{A time-constant is a physical quantity with a unit of time (e.g.,~seconds). It is \emph{not} a dimensionless constant.} $\tau_\text{RC}$ -- functionally equivalent to a resistor-capacitor~(RC) circuit, a first-order lowpass filter, or a convolution with an exponentially decaying impulse response.
+An action-potential, or ``spike,'' is generated when the voltage reaches a threshold, in which event the voltage is reset to its resting potential, where it remains clamped for the duration of some refractory period, $\tau_\text{ref}$.
 After normalizing the range of $v_i(t)$ to the interval $[0, 1]$, the subthreshold dynamics of the LIF neurons are described by the continuous-time dynamical system:
 \begin{equation} \label{eq:lif-model}
 \tau_\text{RC} \dot{v}_i(t) + v_i(t) = s_i(t) \text{,} \quad 0 \le v_i(t) < 1 \text{,}
 \end{equation}
-where $v_i(t) = 1$ generates a spike at time $t$, followed by a reset to $v_i(t) = 0$ that lasts $\tau_\text{ref}$ seconds.
+where $v_i(t) \rightarrow 1$ generates a spike at time $t$, followed by a reset to $0 \rightarrow v_i(t)$ that lasts $\tau_\text{ref}$ seconds.
 This model is considered to strike a convenient balance between simplicity and biological realism~\citep[][pp.~81--82,~88--89]{eliasmith2003a}, although the NEF does not eliminate the possibility of considering significantly more biologically-detailed neuron models~\citep{duggins2017incorporating}.
 Likewise, neurons driven by nonlinear conductances, rather than pure current-sources, can be leveraged by the NEF~\citep{stoeckel2018}.
 Nevertheless, a modelling competition centered around fitting biological recordings from real pyramidal neurons, using artificial models of action-potential generation, discovered that simpler models (e.g.,~non-leaky integration with an adaptive threshold) are often the most successful at reproducing precisely-timed spike-trains~\citep{gerstner2009good}.
 
-The heterogeneous parameters that define the encoding, $(\V{e}_i, \alpha_i, \beta_i)$, determine the variety of nonlinear responses from the population.
+The heterogeneous parameters that define the encoding, $\left\{ \left(\V{e}_i, \alpha_i, \beta_i\right) \,:\, i = 1 \ldots n \right\}$, determine the variety of nonlinear responses from the population.
 Typically the length of each encoder, $\| \V{e}_i \|_2$, is fixed to $1$, while $\alpha_i > 0$ controls its length.
-Then $\V{e}_i$ can be interpreted geometrically as a ``preferred direction'' vector, such that its dot-product similarity with $\V{x}(t)$ determines the relative magnitude of $s_i(t)$.
+Then $\V{e}_i$ may be interpreted geometrically as a ``preferred direction'' vector, such that its dot-product similarity with $\V{x}(t)$ determines the relative magnitude of $s_i(t)$.
 The bias terms $\beta_i$ effectively determine the sparsity of representation (i.e.,~which neurons are active for a given $\V{x}(t)$), while the gain terms $\alpha_i$ determine the density of spikes relative to $\tau_\text{ref}$ (i.e.,~how many spikes are generated by an active neuron).
 These parameters can be randomly sampled from distributions constrained by the domain of $\V{x}(t)$ and the dynamic range of $G_i \left[ \cdot \right]$, fit from neuroanatomical data (e.g.,~known tuning curves, preferred directions, firing rates, sparsity, etc.; see for instance~\citet{voelker2016a}), predetermined using prior knowledge of the desired transformation~\citep{jgosmann2015}, or trained via backpropagation through time~\citep{rasmussen2018nengodl}.
 By default, we select these parameters such that the neural responses are uniformly distributed with respect to $\V{x}$ across the $q$-dimensional hyperball~\citep[][pp.~51--65]{gosmann2018}.
@@ -308,7 +309,7 @@ This optimization is identical for Principles~1 and~2, as discussed below.
 
 The second principle of the NEF addresses the issue of computing transformations of the represented signal.
 The encoding remains defined by equation~\ref{eq:encoding}.
-However, we now decode a filtered version of some function, $\V{f} : \mathbb{R}^q \rightarrow \mathbb{R}^q$,\footnote{
+However, we now decode a filtered version of some function, $\V{f} : \mathbb{R}^q \rightarrow \mathbb{R}^q$,\footnote{%
 We may also consider transformations where the range has a different dimension, but the described framework will suffice for our purposes.}
 by applying an alternate matrix of decoders to the same filtered spike trains:
 \begin{equation} \label{eq:trans-decode}
@@ -320,7 +321,7 @@ D^\V{f} &= \transpose{\left[ \V{d}^\V{f}_1\text{,}\, \ldots\text{,}\, \V{d}^\V{f
 \end{equation}
 Now we must solve for $D^\V{f}$. For both Principles~1 and~2, we optimize for $D^\V{f}$ over the domain of the signal, $S = \{\V{x}(t) : t \ge 0\}$, which is typically the unit $q$-ball $\{ \V{v} \in \mathbb{R}^q : \|\V{v}\|_2 \le 1\}$ or the unit $q$-cube $[-1\text{,}\, 1]^q$.
 This can be done, as is, by simulating the population over time and solving a least-squares problem.
-But, in order to do this as efficiently and scalably as possible, we also reformulate the problem to avoid needing to \emph{explicitly} simulate the spike generation.
+But, in order to do this as efficiently and scalably as possible, we also reformulate the problem to avoid needing to \emph{explicitly} simulate the spike-generation.
 We first let $r_i(\V{v})$ be the limiting average firing rate of the $i^{\text{th}}$ neuron under the constant input $\V{v} \in S$:
 \begin{equation} \label{eq:rates}
 r_i(\V{v}) = \lim_{t \rightarrow \infty} \frac{1}{t} \int_{0}^t a_i(t') \, dt' \text{.}
@@ -344,14 +345,14 @@ r_i(\V{v}) = \frac{1}{\tau_\text{ref} -\tau_\text{RC} \ln \left( 1 - \frac{1}{s_
 Equation~\ref{eq:lif-rate} is also known as the rate model for a LIF neuron, as it describes a static nonlinearity whose output is the LIF neuron's spike rate in response to the input.
 
 For adaptive neuron models, other definitions for $r_i(\V{v})$ may be considered, but we limit our discussion here to the (non-adaptive) spiking LIF model.
-To account for the variance introduced by neural spiking, and other sources of uncertainty, we introduce a white noise term $\eta \sim \mathcal{N}(0, \sigma^2)$.
-The solution to equation~\ref{eq:trans-decode} is therefore:
+To account for the variance introduced by neural spiking, and other sources of uncertainty, we introduce a white noise process $\eta \sim \mathcal{N}(0, \sigma^2)$.
+The solution to equation~\ref{eq:trans-decode} becomes:
 \begin{equation} \label{eq:decoder_solution}
 D^\V{f} = \argmin_{D \in \mathbb{R}^{n \times q}} \int_{S} \left\| \V{f}(\V{v}) - \sum_{i=1}^n \left( r_i(\V{v}) + \eta \right) \V{d}_i \right\|_2^2 \, d^q\V{v} \text{.}
 \end{equation}
 Note that this optimization only depends on $r_i(\V{v})$ for $\V{v} \in S$, as opposed to depending on the signal $\V{x}(t)$.
 In other words, the optimization is determined strictly by the distribution of the signal, and not according to its particular dynamics.
-Since we have replaced the optimization problem involving spikes (equation~\ref{eq:trans-decode}) with one involving rates, this side-steps the need to explicitly simulate the neurons over time when training.
+Since we have replaced the optimization problem involving spikes (equation~\ref{eq:trans-decode}) with one involving static nonlinearities, this sidesteps the need to explicitly simulate the neurons over time when training.
 Furthermore, this is a convex optimization problem, which may be solved by uniformly sampling $S$~\citep{voelker2017} and applying a standard regularized least-squares solver to the sampled data~\citep{bekolay2014}.
 In the context of machine learning, the samples of $S$ are the example inputs from training data.
 Nengo also supports alternative decoder solvers that optimize variants of equation~\ref{eq:decoder_solution}~\citep[e.g.,][]{voelker2016a, abrams2017}, and randomized singular-value-decomposition~(SVD) solvers that take $\bigoh{mn}$ time and space~\citep{halko2011finding} -- but we do not use them here.
@@ -366,12 +367,12 @@ The accuracy of this approach depends on the quality of the following approximat
 \begin{equation} \label{eq:rate-approximation}
 \V{x}(t) = \V{v} \quad \implies \quad \sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i \approx \sum_{i=1}^n \left( \left(r_i(\V{v}) + \eta \right) \ast h \right)(t) \V{d}^\V{f}_i \text{.}
 \end{equation}
-In plain words, this presupposes that substituting a filtered spike-train with its correspondingly filtered rates does not change the optimal set of decoders for a target set of postsynaptic currents.
+In plain words, this presupposes that substituting a filtered spike-train with its correspondingly filtered (but noisy) rates does not change the optimal set of decoders for a target set of postsynaptic currents.
 A subtle, yet critical, observation is that we \emph{do not} require the spike rates of \emph{individual} neurons to reflect their idealized instantaneous rates.
 Rather, we exploit the fact that filtering and weighting spikes across the \emph{entire} population will satisfy such an approximation~\citep[][pp.~132--136]{eliasmith2003a}.
 % This zeroth-order approximation clearly holds in the limit of constant $\V{x}(t)$, and turns out to be ideal in practice for low-frequency $\V{x}(t)$ relative to $\tau$ by a separation of time-scales~\citep[][appendix~F.1]{eliasmith2003a}.
 
-In section~\ref{sec:psc-coding}, we discuss how our adoption of equation~\ref{eq:rate-approximation} has lead many to mischaracterize the NEF as using a ``rate code'', which comes with significant baggage.
+In section~\ref{sec:psc-coding}, we discuss how our adoption of equation~\ref{eq:rate-approximation} has lead many to mischaracterize the NEF as using a ``rate code,'' which comes with significant baggage.
 We suggest that the NEF should instead by characterized as mapping latent state-variables onto postsynaptic currents, and to label this as a ``postsynaptic current code''; this code can exhibit repeatedly precise spike-times, facilitate rapid transmission of information, and does not demand excessive pool sizes or long time-constants, contrary to commonly-held beliefs that have carried over from rate-coding paradigms.
 In the NEF, individual neurons are free to spike much slower than their ideal rate models, while remaining silent across intervals of time that far exceed the time-constant of the synapse.
 In section~\ref{sec:spike-coding}, we provide a novel proof that justifies the correctness of this technique much more generally.
@@ -380,7 +381,7 @@ Perhaps surprisingly, this optimization procedure is mathematically correct for 
 
 It remains to map these encoding and decoding parameters onto a neural architecture.
 Equations~\ref{eq:encoding} and \ref{eq:trans-decode} are used to derive a connection weight matrix between layers that implicitly computes the desired function $\V{f}(\V{x})$ within the \emph{latent} state-space $\mathbb{R}^q$.
-Let $\omega_{ij}$ be the ``weight'', or coupling strength, between the $j^\text{th}$ presynaptic neuron and the $i^\text{th}$ postsynaptic neuron.
+Let $\omega_{ij}$ be the ``weight,'' or coupling strength, between the $j^\text{th}$ presynaptic neuron and the $i^\text{th}$ postsynaptic neuron.
 Specifically, the weight matrix $W = [\omega_{ij}] \in \mathbb{R}^{n \times n}$, which maps activities from the $j^{\text{th}}$ presynaptic neuron to the $i^{\text{th}}$ postsynaptic neuron (disregarding the gain and bias, for notational simplicity), is given by:
 \begin{equation} \label{eq:factored-weights}
 %\omega_{ij} = \left\langle \V{e}_i, \V{d}^\V{f}_j \right\rangle \text{.} % = \left( \transpose{E\left( D^\V{f} \right)} \right)_{ij}
@@ -395,7 +396,7 @@ Moreover, we remark that by linearity, the addition of multiple connections has 
 Although this assumes linear synapses, the computations of nonlinear conductance-based synapses may be exploited by the NEF to encode nonlinear functions of the decoded variables across multiple pre-populations~\citep{stoeckel2018}.
 
 This factorization has additional consequences for the computational efficiency of neural simulations.
-The crucial difference between the factorized and non-factorized forms is that it takes $\bigoh{q n}$ operations per simulation time-step to implement this dot-product in the factored form of equation~\ref{eq:factored-weights}, as opposed to $\bigoh{ n^2 }$ operations for a weight matrix.
+The crucial difference between the factorized and non-factorized forms is that it takes $\bigoh{q n}$ operations per simulation time-step to implement this dot-product in the factored form of equation~\ref{eq:factored-weights}, as opposed to $\bigoh{ n^2 }$ operations for a full weight matrix.
 Since $q$ is typically held constant, this yields a factor $\bigoh{ n }$ improvement in simulation time.
 Similarly, this factorizations yields an $\bigoh{ n }$ reduction in memory, which significantly improves the scaling of neuromorphics~\citep{mundy2015}.
 % including those in RC.
@@ -493,8 +494,8 @@ However, in the model that we consider (see Figure~\ref{fig:lti-system-mapped}),
 \begin{align} \label{eq:lowpass-laplace}
 h(t) = \frac{1}{\tau} e^{-\frac{t}{\tau}} = \invlaplace{ \frac{1}{\tau s + 1} } \text{,}
 \end{align}
-where $\mathcal{L}^{-1}\{ \cdot \}$ denotes the inverse Laplace transform, and the latter representation is referred to as a transfer function.\footnote{
-For comparison, the Laplace transform of the integrator is $\mathcal{L}\left\{ 1 \right\} = \frac{1}{s}$.}
+where $\mathcal{L}^{-1}\{ \cdot \}$ denotes the inverse Laplace transform, and the latter representation is referred to as a transfer function.\footnote{%
+For comparison, the transfer function of an integrator is $\mathcal{L}\left\{ 1 \right\} = \frac{1}{s}$.}
 Our approach is to represent the state-vector $\V{x}(t)$ in a population of spiking neurons (Principle~1;~equation~\ref{eq:encoding}), such that \emph{this same} vector is obtained by filtering an appropriate transformation with a leaky integrator (Principle~2;~equation~\ref{eq:trans-decode}).
 Thus, the goal of Principle~3 is to determine the transformations required to implement equation~\ref{eq:lti}, given that the required $\V{x}(t)$ is obtained by some convolution with a leaky integrator, rather than the perfect integrator depicted in Figure~\ref{fig:lti-system}.
 
@@ -512,8 +513,7 @@ We depict and compare this architecture to related work in the following section
 The correctness of this ``mapping'' procedure relies on three assumptions: (1)~the synapse model is equation~\ref{eq:lowpass-laplace}, (2)~the network is simulated in continuous time (or the discrete time-step is sufficiently small), and (3)~the necessary representations and transformations are sufficiently accurate, such that the approximation error from equation~\ref{eq:trans-decode} is negligible.
 In other words, assuming $n$ is sufficiently large, the system depicted in Figure~\ref{fig:lti-system} may be implemented by a continuous-time SNN that realizes the model of Figure~\ref{fig:lti-system-mapped}.
 In section~\ref{sec:synaptic-extensions}, we provide a novel proof of this fact, and extend Principle~3 to relax the first and second assumptions.
-% Methods of coping with the third assumption for small $n$ remain a currently active area of research.
-% In section~\ref{sec:results}, we demonstrate the success of this approach given low-frequency inputs in spiking networks.
+In section~\ref{sec:spike-coding}, we provide rigorous criteria for satisfying the third assumption.
 
 Principle~3 is useful for accurately implementing a wide class of dynamical systems---integrators, oscillators, attractor networks, controllers, and even continuous memories (see chapter~\ref{chapt:delays})---to solve specific problems that frequently arise in neural modelling~\citep[e.g.,][]{eliasmith2000b, singh2004, eliasmith2005b, singh2006}.
 We provide details on such examples in section~\ref{sec:dynamics-language}.
@@ -667,7 +667,7 @@ Rather, they derive a closed-form solution for the parameters.
 These parameters, in effect, deterministically control the spike-timing of each neuron, in such a way that the population collaboratively keeps any deviations from its ideal state bounded above by the peak magnitude of a single filtered and weighted spike, $n^{-1}$.
 In particular, each neuron's spike signals a constant deviation from the ideal, which causes all neurons to instantly update their local state to track the global error.
 The outcome is precision that scales as $\bigoh{n}$, that is, linearly in the number of neurons, or the total number of spikes~\citep{boahen2017neuromorph}. 
-However, this scheme applies only to \emph{linear} dynamical systems, relies on near-instantaneous communication between all neurons with a sufficiently small time-step, and requires linear neurons with relatively minimal leakage and no refractory period~\citep{boerlin2013predictive}.\footnote{
+However, this scheme applies only to \emph{linear} dynamical systems, relies on near-instantaneous communication between all neurons with a sufficiently small time-step, and requires linear neurons with relatively minimal leakage and no refractory period~\citep{boerlin2013predictive}.\footnote{%
 We thank Daniel Rasmussen for having implemented these methods in Nengo~(unpublished),
 which served to validate these criticisms and to inform this discussion through additional experimentation.}
 
@@ -698,7 +698,9 @@ Coming from a purely computational-theoretic perspective, there is nothing speci
 There is no logical nor physical reason to believe that neurons and synapses somehow enable new computations that were previously unable to be emulated using available technology.
 Instead, neuromorphic architectures aim to implement specific classes of algorithms, realized via massively-parallelized event-driven computations that are sparse in both space and time, using dramatically less power~\citep{tang2017sparse}.
 
-The human brain has been estimated to consume as little as $10$--$20$\,fJ on average per ``synaptic event''~\citep{cassidy2014real, boahen2017neuromorph}, totalling approximately $20$\,W across its {\textasciitilde{}}\numprint{e11}~neurons and {\textasciitilde{}}\numprint{e14}~synapses~\citep{koch2014}.
+The human brain has been estimated to consume as little as $10$--$20$\,fJ\footnote{%
+One femtojoule~(fJ) is equivalent to \numprint{e-15} joules~(J).}
+on average per ``synaptic event''~\citep{cassidy2014real, boahen2017neuromorph}, totalling approximately $20$\,W across its {\textasciitilde{}}\numprint{e11}~neurons and {\textasciitilde{}}\numprint{e14}~synapses~\citep{koch2014}.
 After more than $30$ years of work~\citep{cassidy2013design}, the state-of-the-art in neuromorphic computing is on the verge of reaching this level of performance, with Braindrop, Loihi, and TrueNorth~\citep{merolla2014million}, each coming within a factor of \numprint{e1}--\numprint{e3} for roughly equivalent measures of energy per synaptic operation and typical network configurations~\citep{braindrop2019}.
 Such potential energy savings are not only tremendous, but a prerequisite to reach the exascale (\numprint{e18}) level of computation achieved by the human brain -- unless one has access to a super-computing cluster powered by a nuclear power plant producing on the order of \numprint{e9}~watts~\citep{furber2012build, neurogrid2014}.
 However, such power measurements are not straight-forward to interpret, as there are many other factors such as the cost of scaling, flexibility of the hardware, and open questions surrounding whether the energy per synaptic event is the best metric for evaluating system performance, and how much speed, accuracy, and biological detail is necessary~\citep{eliasmith2013build} -- all of which make fair benchmarking an incredibly challenging problem~\citep{stewart2015closed}.
@@ -720,8 +722,8 @@ Applications running on neuromorphic hardware are provided in chapter~\ref{chapt
 
 \subsection{SpiNNaker}
 
-The SpiNNaker\footnote{SpiNNaker stands for ``Spiking Neural Network Architecture''.} project formally began in 2005 as a collaboration between several universities and industrial partners, housed at the University of Manchester, with the primary goals of simulating large-scale SNNs in real-time, and investigating new architectures which ``lead to fundamentally new and advantageous principles for energy-efficient massively-parallel computing''~\citep{spinnakerproject, furber2014spinnaker}.
-Secondary goals include providing a balance between power, cost, and programmability, in order to make SpiNNaker accessible to a wide range of researchers across neuroscience and cognitive modelling communities.
+The SpiNNaker\footnote{SpiNNaker stands for ``Spiking Neural Network Architecture.''} project formally began in 2005 as a collaboration between several universities and industrial partners, housed at the University of Manchester, with the primary goals of simulating large-scale SNNs in real-time, and investigating new architectures which ``lead to fundamentally new and advantageous principles for energy-efficient massively-parallel computing''~\citep{spinnakerproject, furber2014spinnaker}.
+Secondary goals include a balance between power, cost, and programmability, in order to make SpiNNaker accessible to a wide range of researchers spanning neuroscience and cognitive modelling communities.
 
 The basic building block of SpiNNaker is a chip multiprocessor~(CMP) containing 18 ARM968 cores and 128\,MB SDRAM~\citep{painkras2013spinnaker, furber2013overview}.
 Each core was prescribed to simulate \numprint{e3} spiking neurons and \numprint{e6} synapses, although Nengo's integration doubled this target by achieving \numprint{2000} neurons per core through the use of factorized weight matrices~\citep{mundy2015}.
@@ -731,10 +733,10 @@ The limiting factor in scaling each core is predominantly the amount of availabl
 The architecture scales up to $2^{16}$ CMPs---over \numprint{e9}~neurons and \numprint{e12}~synapses---asynchronously connected to one another through a 2D triangular toroidal mesh.
 An instantiation that realizes their initial target of 1\% of the human brain, using \numprint{e6} cores, was finally reached as of 2018.
 
-Studies involving power-usage are surprisingly scarce, but one such study demonstrated that scaling to one quarter of a million neurons required less than $30$\,W of power, in the worst-case~\citep{stromatias2013power}, or on the order of \numprint{e5}--\numprint{e6} times more power than a human brain of the same size.\footnote{
+Studies involving power-usage are surprisingly scarce, but one such study demonstrated that scaling to one quarter of a million neurons required less than $30$\,W of power, in the worst-case~\citep{stromatias2013power}, or on the order of \numprint{e5}--\numprint{e6} times more power than a human brain of the same size.\footnote{%
 The human brain has \numprint{400000} times as many neurons, and uses $20$\,W of power.}
 This is a significant improvement upon high-performance computing~(HPC) architectures, which devour at least \numprint{e8} times more power than a human brain~\citep{furber2012build}. 
-However, a more recent study by \citet{van2018performance} concluded much more conservatively that SpiNNaker is still a factor of $\numprint{e7}$--$\numprint{e9}$ away from the efficiency of the mammalian brain.\footnote{
+However, a more recent study by \citet{van2018performance} concluded much more conservatively that SpiNNaker is still a factor of $\numprint{e7}$--$\numprint{e9}$ away from the efficiency of the mammalian brain.\footnote{%
 The lower-bound on this estimate comes from a hypothetical extrapolation of their results. Furthermore, the range becomes \numprint{e8}--\numprint{e10} if using the estimate of $10$--$20$\,fJ per synaptic event for the brain.}
 In this scenario SpiNNaker was outperformed by NEST running on an HPC cluster, and likewise a smaller-scale implementation of an associative memory on SpiNNaker performed comparably to NEST on an Intel Core i7-4710MQ processor~\citep{stockel2017binary}.
 Similarly, \citet{knight2018gpus} found that GPUs improved both the simulation time and energy-to-solution for cortical circuit simulations, compared to SpiNNaker and CPU-based HPC hardware.
@@ -750,9 +752,9 @@ PyNN has also been ported over to SpiNNaker, further highlighting the flexibilit
 Several other applications of SpiNNaker are reviewed by \citet{rhodes2018spynnaker}, independently of Nengo.
 
 The next generation of SpiNNaker, dubbed SpiNNaker~2, is currently in development with a prototype chip available for testing~\citep{liu2018memory}.
-The hardware promises to improve upon the speed- and power-efficiency of the first generation by use of improved fabrication processes, advanced per-core power management techniques, and specialized hardware acceleration for the exponential function.
-\citet{liu2018memory} deploys a deep neural network on the prototype SpiNNaker~2 test chip, realizing power improvements on the order of \numprint{2} versus a traditional X86 CPU implementation.
-Nengo support may be available at the same time as the actual chip~[personal communication].
+The hardware promises to improve upon the speed- and power-efficiency of the first generation by use of improved fabrication processes, advanced per-core power management techniques, and specialized hardware acceleration for the exponential function~\citep{partzsch2017fixed}.
+\citet{liu2018memory} deploys a deep neural network on the prototype SpiNNaker~2 test chip, realizing power improvements on the order of \numprint{e2} versus a traditional X86 CPU implementation.
+Nengo may be supported at the same time as the actual chip~[personal communication].
 
 \subsection{Braindrop}
 
@@ -766,12 +768,11 @@ It is argued that an appropriate mixture of analog computation for nonlinear enc
 This hypothesis makes such architectures a natural target for NEF networks, in particular due to its modelling of the dynamical primitives encoding signals into spikes, and its efficient procedures to solve for the weights in the communication fabric.
 
 The NEF has been deployed on Neurogrid primarily to implement control algorithms~\citep{dethier2011brain, choudhary2012silicon, menon2014controlling}.
-However, the use of Neurogrid requires advanced calibration~\citep{kauderer2017calibrating} and temperature-compensation techniques~\citep{abrams2017} in order to tame the analog variability -- both of which contribute to it being difficult to use in practical applications.\footnote{
+However, the use of Neurogrid requires advanced calibration~\citep{kauderer2017calibrating} and temperature-compensation techniques~\citep{abrams2017} in order to tame the analog variability -- both of which contribute to it being difficult to use in practical applications.\footnote{%
 For example, a live demonstration that used Neurogrid to control a robotic arm, which had previously worked within an air-controlled climate, no longer functioned in the conference hall as it was bombarded by the warmth of onlookers~[personal communication].}
 
 Braindrop is designed explicitly with Nengo and the NEF in mind, by way of a novel mapping~\citep{voelker2017iscas, neckar2018optimizing}, accompanied by a number of inventive solutions including: temperature-invariance~\citep{abrams2017, reidpint2019, benjamintemp2019}, H-tree routing~\citep{fokserial2018}, sparse encoding by spatial convolution~\citep{feinstein1988hexagonal, braindrop2019}, and decoding by accumulative spike-thinning~\citep{fokthinning2019}.
-Of key notability is the fact that Braindrop, in essence, implements a factorization of the weight matrices akin to equation~\ref{eq:factored-weights}, which has cut down on area requirements for SRAM and permitted the sharing of synaptic circuitry across neurons, in turn leading to an estimate of 381~fJ\footnote{
-One femtojoule~(fJ) is equivalent to \numprint{e-15} joules~(J).}
+Of key notability is the fact that Braindrop, in essence, implements a factorization of the weight matrices akin to equation~\ref{eq:factored-weights}, which has cut down on area requirements for SRAM and permitted the sharing of synaptic circuitry across neurons, in turn leading to an estimate of 381~fJ
 per equivalent synaptic operation for network configurations typical in Spaun.
 A significant amount of detail addressing the design of the chip is available in \citet{neckar2018braindrop, fok2018communicating, braindrop2019}.
 The success of this project has prompted the formation of a start-up company, Femtosense, named after the mere femtojoules that synapses consume to sense and react~\citep{femtosense}. 
@@ -792,7 +793,7 @@ It consists of 128 ``neuromorphic cores'' operating asynchronously from one anot
 Each core time-multiplexes \numprint{1024} neural units---configurable as sets of trees of dendritic compartments to form neurons---in a pipelined manner.
 In contrast to SpiNNaker, barrier messages are by default transmitted between cores in order to keep the system synchronized to a global time-step.
 This has the advantage of provably guaranteeing globally deterministic behaviour, but the disadvantage of always waiting on the slowest core.
-Nevertheless, when compared to a globally-clocked system, this has the advantage of each time-step only taking as long as it needs.\footnote{
+Nevertheless, when compared to a globally-clocked system, this has the advantage of each time-step only taking as long as it needs.\footnote{%
 One algorithmic time-step may take longer than the next, if for example learning rules are applied irregularly, or depending on relative workloads.} 
 
 By virtue of being fully digital and barrier-synchronized, there exists far fewer challenges presented to its users when compared to solutions in the mixed-signal, purely analog, or fully asynchronous digital domains; in particular, the behaviour of the chip is guaranteed to be reliable and predictable.
@@ -803,8 +804,15 @@ In addition, software tools exist to map SNNs onto Loihi while optimizing for po
 Loihi supports a broad variety of features that make it accessible to a wide range of researchers experimenting with the synthesis of large-scale SNNs.
 For example, stochastic noise can be added to internal states, discrete delays may be introduced to spikes and PSCs, synapses can have higher-order dynamics, dendritic trees may be constructed by repurposing the neural units within each core, neuron models may include adaptive terms, learning rules are described using a general template, and finally there is support for several weight compression formats, spike multicast, and closed-loop control via embedded x86 cores~\citep{davies2018loihi}.
 
+The flexibility and digital nature of Loihi comes at the cost of increased power-consumption relative to fully analog or mixed-signal architectures. 
+Simulations from \citet[][Table~2]{davies2018loihi}, compared in \citet[][Table~3]{braindrop2019}, indicate that Loihi consumes on the order of \numprint{23.6}~pJ\footnote{%
+One picojoule~(pJ) is equivalent to \numprint{e-12}~J, or \numprint{e3}~fJ.}
+per synaptic operation -- or two orders-of-magnitude more than Braindrop's equivalent measure.
+Regardless, the analog variability intrinsic to Braindrop changes the scope of target applications, and moreover the first demonstration of Loihi represents a three orders-of-magnitude improvement over a comparable solution running on a CPU.
+We speculate that the power-efficiency of Loihi, relative to Braindrop, can be improved by supporting factored weight matrices, and refining the architecture according to the network topology and particular feature set leveraged by the example application.
+
 ABR has ported Nengo over to Loihi and used the NEF to simulate a nonlinear adaptive controller on a robotic arm~\citep[][and personal communication]{dewolf2016}.
-However, Loihi does not support the use of factored weight matrices at the hardware level, meaning that a substantial benefit of the NEF---namely, a linear reduction in the number of multiplies and memory accesses per time-step---is not leveraged at the hardware level.
+However, since Loihi does not support the use of factored weight matrices at the hardware level, a substantial benefit of the NEF---namely, a linear reduction in the number of multiplies and memory accesses per time-step---is not leveraged at the hardware level.
 As a way to resolve this at the software level, Nengo currently creates intermediate populations to represent latent variables explicitly in spikes, which has the adverse effects of amplifying representational error, increasing the number of neurons, and introducing additional rounds of filtering between layers.
 Alternatively, weight matrices can be left unfactored and fully-connected, but this misses out on potentially dramatic savings.
 \TODO{Cite nengo-loihi github and forward reference methodology section with more details (similar to braindrop).}
@@ -812,30 +820,23 @@ Alternatively, weight matrices can be left unfactored and fully-connected, but t
 Nengo~DL~\citep{rasmussen2018nengodl} has been used to implement a fully-connected deep network performing keyword spotting, on Loihi, while outperforming state-of-the-art hardware in energy cost per inference~\citep{blouw2018a}.
 After extensive review of the literature, we have found this to be the first, and currently only published example, outside of Intel's demonstration of sparse pattern representation~\citep{tang2017sparse, davies2018loihi}, to deploy an SNN on the actual chip.
 
-In sum, the flexibility and digital nature of Loihi comes at the cost of increased power-consumption relative to fully analog or mixed-signal architectures. 
-Simulations from \citet[][Table~2]{davies2018loihi}, compared in \citet[][Table~3]{braindrop2019}, indicate that Loihi consumes on the order of \numprint{23.6}~pJ\footnote{
-One picojoule~(pJ) is equivalent to \numprint{e-12}~J, or \numprint{e3}~fJ.}
-per synaptic operation -- or two orders-of-magnitude more than Braindrop's equivalent measure.
-Regardless, the analog variability intrinsic to Braindrop changes the scope of target applications, and moreover the results of Loihi still demonstrate a three orders-of-magnitude improvement over a comparable solution running on a CPU.
-We speculate that the power-efficiency of Loihi can be improved somewhat by supporting factored weight matrices, and refining the architecture according to the network topology and particular features leveraged by the example application.
-
 It is currently unclear how important or useful each of Loihi's features are relative to one another, and especially in the context of target applications.
 We believe that an important avenue of research, and the role of Nengo and the NEF in this context, is to facilitate such exploration, by systematically harnessing relevant features for useful computation, which can then feed back into the co-design of future iterations (as was the case for Neurogrid and Braindrop).
-More generally, specific classes of computations that leverage particular subsets of features will encounter distinct trade-offs when it comes to resource usage, precision, energy-to-solution, and time-to-solution; mathematical frameworks, such as the NEF, participate by providing a unified way of characterizing such trade-offs.
+Generally speaking, specific classes of computations that leverage particular subsets of features will encounter distinct trade-offs when it comes to resource usage, precision, energy-to-solution, and time-to-solution; mathematical frameworks, such as the NEF, participate by providing a unified way of characterizing such trade-offs.
 A primary focus of chapters~\ref{chapt:nef-extensions}--\ref{chapt:results} is to take a concrete step in these directions by explicitly incorporating some of Loihi's features into the NEF and demonstrating dynamical systems functioning on the physical hardware.
 
 \subsection{Others}
 \label{sec:neuromorphic-others}
 
 The literature on neuromorphic computing is extensive\footnote{%
-See \citet{schuman2017survey} for a review that references nearly \numprint{3000} other papers.}%
+See \citet{schuman2017survey} for a survey that references nearly \numprint{3000} other papers.}%
 , dating back to the late 80's and recently inspiring a renewed interest from many historically-separate communities.
 This has resulted in a number of architectures mentioned below, which were not made available to us, to be considered outside the scope of this thesis.
 A number of excellent review articles by experts widely regarded to have advanced the field, are made available by \citet{bartolozzi1999neuromorphic}, \citet{indiveri2011neuromorphic}, \citet{cassidy2013design}, \citet{cummings2018}, and \citet{rajendran2019low}.
-At a higher level, a review that considers the role of biomimicry---the emulation of nature's solutions in order to solve real-world problems---in the context of power-efficient SNNs and neuromorphic computing, is provided by \citet{krichmar2018making}.
+A review that considers the role of biomimicry---the emulation of nature's solutions in order to solve real-world problems---in the context of power-efficient SNNs and neuromorphic computing, is provided by \citet{krichmar2018making}.
 
 Some of the earliest examples of neuromorphic engineering date back to the work of \citet{sivilotti1985novel, mead1988silicon, boahen1989heteroassociative, mahowald1991silicon}.
-Many of these techniques have since been refined, extended, and scaled up to show case a large variety of analog, digital, and mixed-signal systems (excluding those mentioned thus far):
+Many of these techniques have since been refined, extended, and scaled up to showcase a large variety of analog, digital, and mixed-signal systems (excluding those mentioned thus far):
 Spikey~\citep{pfeil2013six},
 BrainScaleS~\citep{schemmel2010wafer, aamir2018mixed, aamir2018accelerated},
 DYNAPs~\citep{moradi2018scalable},
