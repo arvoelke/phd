@@ -378,7 +378,8 @@ A = \begin{pmatrix*}[r]
 B = \begin{pmatrix*}[r] 1 \\ -3 \\ 5 \\ -7 \\ 9 \\ -11\end{pmatrix*} \text{.}
 % C = \begin{pmatrix} 1 & 1 & 1 & 1 & 1 & 1 \end{pmatrix} 
 \end{equation}
-The crucial result is that the state-space of this LTI system optimally reconstructs its input history via the shifted Legendre polynomials:
+For the special case of $q = 1$, this reduces to the first-order lowpass $\theta \dot{x}(t) + x(t) = u(t)$, as in equation~\ref{eq:lowpass-laplace} ($\tau \leftarrow \theta$).
+In general, the crucial result is that the state-space of this LTI system optimally reconstructs its input history via the shifted Legendre polynomials:
 \begin{equation} 
 \boxed{ u(t - \theta') \approx \sum_{i=0}^{q-1} \tilde{\mathcal{P}}_{i} \left(\frac{\theta'}{\theta} \right) \, x_{i}(t) \text{,} \quad 0 \le \theta' \le \theta \text{.} }
 \end{equation}
