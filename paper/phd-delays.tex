@@ -541,9 +541,9 @@ As well, $95\%$ confidence intervals were bootstrapped and plotted using Seaborn
 We ported a Python implementation of the ESN from \cite{lukovsevivcius2009reservoir} to Nengo, and implemented it analogously to the DN.
 Nengo allows us to consider populations of either spiking LIF neurons or non-spiking neurons with various rate curves, without any additional changes to the model specification.
 In particular, LSMs were implemented by replacing the $\tanh$ units with LIF spiking neurons, making them comparable to our NEF networks but with full-rank weight matrices.
-The hyperparameters of each method were optimized using $200$ iterations of HyperOpt~\citep{bergstra2013making} with $3$ trials per iteration, to maximize the validation error for $200$\,ms delays (see Table~\ref{tab:hyperopt}).
+The hyperparameters of each method were optimized using $200$ iterations of Hyperopt~\citep{bergstra2013making} with $3$ trials per iteration, to maximize the validation error for $200$\,ms delays (see Table~\ref{tab:hyperopt}).
 Hyperparameters include an overall gain on the recurrent feedback matrix (gain), a normalization factor for the input (radius), time-constants on both the readout and recurrent filters ($\tau_\text{readout}$, $\tau_\text{recurrent}$), L2-regularization parameters for applicable least-squares problems ($\sigma^2_\text{readout}$, $\sigma^2_\text{recurrent}$), and the dimensionality of the delay network ($q$).\footnote{%
-HyperOpt was used to the benefit of LSMs and ESNs. All hyperparameters (apart from $q$) had minimal effect on the DN's performance compared to the usual defaults in Nengo.}
+Hyperopt was used to the benefit of LSMs and ESNs. All hyperparameters (apart from $q$) had minimal effect on the DN's performance compared to the usual defaults in Nengo.}
 %All data and figures may be reproduced by following the instructions at the following URL: \path{https://github.com/arvoelke/rc2017}.
 
 \begin{figure}
@@ -609,7 +609,7 @@ The final matrices $(\bar{A}^H\text{,}\, \bar{B}^H)$ determine the transformatio
 
 As shown in Figure~\ref{fig:rc-accuracy}, the NEF's performance is slightly better than ESNs for both LIF rate neurons and $\tanh$ rate neurons, and significantly better than LSMs for spiking LIF neurons.
 This demonstrates that, in terms of memory capacity, the DN as a low-dimensional reservoir not only outperforms RC in the rate-based case, but even performs comparably to ESNs when using spikes.
-The task is shown to be completely outside the grasp of LSMs (exceeding $90$\% error), due to the difficulty of the computation and the unreliability of randomized spiking feedback; HyperOpt minimizes both the gain and regularization hyperparameters of the LSM to keep its output close to zero, as this minimizes validation error.\footnote{%
+The task is shown to be completely outside the grasp of LSMs (exceeding $90$\% error), due to the difficulty of the computation and the unreliability of randomized spiking feedback; Hyperopt minimizes both the gain and regularization hyperparameters of the LSM to keep its output close to zero, as this minimizes validation error.\footnote{%
 As additional validation, lower input frequencies or shorter delay lengths were possible with the LSM.}
 The success of the DN should not be surprising given that we have mapped the ideal delay's dynamics onto the reservoir.
 Nevertheless, as we will show below, the readouts are capable of computing nonlinear functions across the delay interval, from the same reservoir.
@@ -647,14 +647,14 @@ $q$ & - & - & 20 & 26 & 23 \\
   \end{tabularx}
   
   \caption{ \label{tab:hyperopt}
-    HyperOpt parameters for the linear benchmark in section~\ref{sec:delay-rc}.
+    Hyperopt parameters for the linear benchmark in section~\ref{sec:delay-rc}.
   }
 \end{table}
 
 Another key finding is that, as shown in Table~\ref{tab:hyperopt}, 
-HyperOpt discovers that a radius of $\approx 24.3$ performs the best with the ESN.
+Hyperopt discovers that a radius of $\approx 24.3$ performs the best with the ESN.
 This has the effect of scaling the domain of the tanh curve from $[-1, 1]$ to $\approx [-0.04, 0.04]$, which importantly is well-approximated by a straight line, that is, $\tanh x \approx x$ across this domain.
-Thus, HyperOpt is indirectly leveraging the fact that the ESN's memory capacity is maximized when its neurons \emph{are linear}, consistent with \citet{dambre2012information}.
+Thus, Hyperopt is indirectly leveraging the fact that the ESN's memory capacity is maximized when its neurons \emph{are linear}, consistent with \citet{dambre2012information}.
 Crucially, this limits the ability of the ESN to perform nonlinear computations across the delay interval, as we now show.
 
 \subsubsection{Nonlinear benchmark}
@@ -676,7 +676,7 @@ To implement this system as a spiking (or non-spiking) recurrent neural network,
 The model architecture of this delay network is, again, depicted in Figure~\ref{fig:delay-architecture}, whose representation and transformations are realized using the NEF.
 For this experiment, we considered the use of both sigmoidal (non-spiking) neurons, and spiking LIF neurons.
 
-We again used HyperOpt~\citep{bergstra2015hyperopt} to explore the space of model hyperparameters (e.g.,~$q$, $\tau$, input gain, recurrent gain, L2-regularization) across $100$ iterations containing $10$ trials each.
+We again used Hyperopt~\citep{bergstra2015hyperopt} to explore the space of model hyperparameters (e.g.,~$q$, $\tau$, input gain, recurrent gain, L2-regularization) across $100$ iterations containing $10$ trials each.
 Each network consisted of $\numprint{1000}$ neurons, simulated with a time-step of $\dt{} = 1$\,ms.
 Each trial used a training signal of length $\numprint{10200}$, a testing signal of length $\numprint{2200}$, and the first $200$ outputs were discarded.
 We then cross-validated the best set of hyperparameters (in terms of mean NRMSE across all test signals) using another $25$ trials.
@@ -739,12 +739,13 @@ Focusing on this one dimension and letting the randomized feedback attempt to fi
 \label{sec:delay-lstm}
 
 Long Short-Term Memory~\citep[LSTM;][]{hochreiter1997long, gers1999learning} networks address the problem of storing information across long intervals of time by using an explicit memory unit to alleviate the vanishing and exploding gradient problems~\citep{bengio1994learning, bengio1994credit}.
-Each memory unit implements a small-scale dynamical system---similar \emph{in spirit} to equation~\ref{eq:delay-compiled}---referred to as an ``LSTM cell'', with a number of free parameters that control its nonlinear transfer function.
+Each memory unit implements a small-scale dynamical system---similar \emph{in spirit} to equation~\ref{eq:delay-compiled}---referred to as an ``LSTM cell,'' with a number of free parameters that control its nonlinear transfer function.
 This is replicated $n$ times to create a single layer.
-Each layer is then stacked $k$ times to form a ``stacked LSTM'', with each consecutive layer representing increasingly higher-order dynamical transformations of its previous inputs~\citep{graves2013speech}.
+Each layer is then stacked $k$ times to form a ``stacked LSTM,'' with each consecutive layer representing increasingly higher-order dynamical transformations of its previous inputs~\citep{graves2013speech}.
 
 Since all of these mechanisms are differentiable, backpropagation through time~(BPTT) may be applied end-to-end from raw data to optimize all of the parameters in a black-box manner (see section~\ref{sec:bptt}).
-Recently, this has found numerous successes in sequence learning, machine translation, and speech~\citep{graves2013speech, sutskever2014sequence, cho2014learning, bahdanau2014neural}, leading to a widespread adoption of LSTM networks as the RNN of choice~\citep{lecun2015deep}.
+There are many variants of LSTMs, but they support essentially the same class of computations~\citep{jozefowicz2015empirical}.
+Recently, they have found numerous successes in sequence learning, machine translation, and speech~\citep{graves2013speech, sutskever2014sequence, cho2014learning, bahdanau2014neural}, leading to a widespread adoption of LSTM networks as the RNN of choice~\citep{lecun2015deep}.
 
 However, we find that when given a continuous-time delay task, the performance of stacked LSTMs suffer catastrophically in the number of time-steps that roll through the memory.
 This motivates the substitution of each ``LSTM cell'' with our Delay Network~(DN)---explored extensively throughout this chapter---and its subsequent training via backpropagation in an equivalent manner.

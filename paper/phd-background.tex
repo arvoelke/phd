@@ -21,7 +21,7 @@ This insight, together with the stacking of deeper layers to compose increasingl
 Deep learning has undoubtedly brought about many rapid and impressive advances to the field of artificial intelligence.
 Due to its black-box nature, neither domain expertise nor understanding of the network's internal function are required in order to achieve state-of-the-art performance on a large number of important problems, including: image recognition, speech recognition, natural language understanding, question answering, and language translation~\citep{lecun2015deep}.
 The basic recipe is conceptually simple: obtain one of the many popular off-the-shelf toolboxes for deep learning, pick your favourite network architecture, set its hyperparameters, and then throw as much training data at the network as your GPU(s) can handle.
-Deep learning excels at constructing static vector functions, that generalize to new examples, by automatically discovering the latent (i.e., hidden) low-dimensional representations that are most relevant to the task at hand.
+Deep learning excels at constructing \emph{static} vector functions, that generalize to new examples, by automatically discovering the latent (i.e., hidden) representations that are most relevant to the task at hand.
 However, the opacity of its optimization procedure comes as a double-edged sword: while it is easy to apply deep learning to many problems with minimal hand-engineering, it is unclear even to experts what effect most hyperparameter changes will have in advance on overall performance~\citep{bergstra2012random}.
 For example, it has been observed that using a rectified linear~(ReLU) activation unit for each nonlinearity can dramatically reduce the training time on a variety of benchmarks~\citep{glorot2011deep}, yet, as far as we know, this observation still does not have any theoretically-grounded framework that could assist in selecting nonlinearities or related hyperparameters for some given task.
 
@@ -31,7 +31,7 @@ In other words, the functions that are computable with such a network cannot acc
 The most general solution to overcome this problem is to introduce recurrent connections into the network, which transmit current state information back to itself, thus allowing the network to capture information about previous inputs and reuse it in the future. 
 These networks are called Recurrent Neural Networks~(RNNs).
 
-We begin with a brief theoretical discussion of the computational power of RNNs, followed by an overview of many of the most popular architectural approaches and methods to building RNNs.
+We begin with a brief theoretical discussion on the computational power of RNNs, followed by an overview of many of the most popular architectural approaches and methods to building RNNs.
 This is not intended to provide a comprehensive record of all such findings, but rather to help situate the work in this thesis and shine a spotlight on many of the key ingredients that motivate our eventual approach.
 Reviews and references that provide more detailed accounts of these methods and its variants are included throughout.
 We then describe, in detail, the three principles of the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a} while contrasting this approach with those discussed thus far.
@@ -90,8 +90,9 @@ For more information we point the reader to a review by \citet{salehinejad2017re
 
 The traditional approach to build an RNN is to take a single-layer feed-forward network, and recurrently connect the output of each neuron to all other neurons in the same layer with a square weight matrix.
 To simulate the network, the weighted activations propagated by the recurrent feedback loop are delayed by a single time-step, and added to the weighted inputs on the next step.
-To train the network, we apply backpropagation through time~\citep[BPTT;][]{werbos1990backpropagation}.
+To train the network, one applies backpropagation through time~\citep[BPTT;][]{werbos1990backpropagation}.
 Intuitively, the idea is to ``unroll'' the network in time, and treat it as an infinitely-deep feed-forward network where the input at the $i^\text{th}$ time-step, together with the output from the $(i-1)^\text{th}$ layer, are supplied to the $i^\text{th}$ layer.
+Errors in the output of the RNN may then be backpropagated along the weights through time.
 This may optionally be stacked to form multiple layers, akin to a multi-layer feed-forward network where each layer is locally recurrent~\citep{pascanu2013construct}.
 
 This approach also extends to more biologically-plausible realizations of the RNN, in which the continuous (i.e.,~real-valued) neural activations are replaced by spiking neurons that encode signals into binary-valued (i.e.,~single-bit) events over time, and the weight matrices are replaced by synaptic filters that appropriately weight and exponentially decay incoming spikes over time.
@@ -104,9 +105,10 @@ Reviews that focus on feed-forward architectures are given by \citet{pfeiffer201
 It was also recently shown by \citet{chen2018neural} that both RNNs and backpropagation may be extended to continuous-time (i.e.,~taking the limit of infinitesimally small time-steps), consistent with the the NEF and Principle~3~(see section~\ref{sec:principle3}).
  
 While these approaches are theoretically sound, BPTT encounters many problems in practice~\citep{bengio1994learning}.
-Chief among these are the so-called ``vanishing and exploding gradient problems'', in which gradients shrink or grow unboundedly as they are propagated back in time.
-These problems are intimately related to the ``credit-assignment problem'', in which a learner witnesses a combinatorial explosion of points in time to assign credit to for the current error; in the case of storing a single bit of information over time, this causes the gradient to be inherently unstable~\citep{bengio1994credit}.
-Thus, a standard RNN trained by BPTT will often fail to learn tasks that require a longer term memory -- a serious problem for the use-cases that RNNs promise to address.
+Chief among these are the so-called ``vanishing and exploding gradient problems,'' in which gradients shrink or grow unboundedly as they are propagated backwards in time.
+These problems are intimately related to the ``credit-assignment problem,'' in which a learner witnesses a combinatorial explosion of points in time to assign credit to for the current error; in the case of storing a single bit of information over time, this causes the gradient to be inherently unstable~\citep{bengio1994credit}.
+This is further connected to the existence of nonlinear chaos in the dynamics of three (or more) recurrently coupled neurons; any correction to the trajectory of the network's state is exponentially magnified over time~\citep{strogatz2000nonlinear}.
+Thus, a standard RNN trained by BPTT will often fail to learn tasks that require a long-term memory -- a serious problem for the use-cases that RNNs promise to address.
 Solutions proposed by \citet{pascanu2013difficulty} that involve clipping and constraining the gradients alleviate these problems to some extent, but the issue still rears its head in toy tasks that are of relevance to theoretical neuroscience~\citep{depasquale2018full}.
 Alternatives to BPTT include extended Kalman filter-based learning, second-order Hessian-based optimization methods, Hessian-free optimization, and evolutionary algorithms~\citep{salehinejad2017recent} -- but none have been found to be as consistently useful in practice as backpropagation.
 To face the problem of learning across longer time-scales, architectural constraints are often imposed on the RNN, such as those in the following section.
@@ -124,15 +126,17 @@ The standard practice is to create layers of LSTM cells, and then stack several 
 This enhances the temporal complexity of the network's dynamics through a composition of time-scales, analogous to the manner in which deep feed-forward networks provide richer internal representations via composition of spatial scales.
 Recently, this has found success in sequence learning, machine translation, and speech~\citep{graves2013speech, sutskever2014sequence, cho2014learning, bahdanau2014neural}, leading to a widespread adoption of LSTM networks as the RNN of choice~\citep{lecun2015deep}.
 
-A spiking analog to LSTMs have also been proposed by \citet{bellec2018long}, in which adaptive neurons take on the functional role of LSTM cells.
+A spiking analog to LSTMs have also been proposed by \citet{bellec2018long}, in which adaptive neurons play the functional role of LSTM cells.
 The intuition behind why this works is that the adaptive state of the neuron is functionally similar to that of a controlled leaky integrator.
 When BPTT is applied to such an SNN, it has been shown to approach the performance of a non-spiking LSTM network.
-The structure of LSTM cells have also been compared to that of cortical microcircuits in biology, providing a post hoc explanation for the utility of LSTMs, and spiking implementations thereof~\citep{costa2017cortical, pozzi2018gating}.
+The structure of LSTM cells have also been compared to that of cortical microcircuits in biology, providing a \emph{post hoc} explanation for the utility of LSTMs, and spiking implementations thereof~\citep{costa2017cortical, pozzi2018gating}.
 
 This success has prompted many variants of LSTMs, including the bidirectional LSTM~\citep{graves2005framewise}, hierarchical S-LSTM~\citep{zhu2015long}, grid LSTM~\citep{kalchbrenner2015grid}, phased LSTM~\citep{neil2016phased}, and others~\citep{salehinejad2017recent}.
 At the same time, this has inspired several related architectures that augment an RNN with differentiable memory cells to facilitate long-range temporal interactions, including the gated recurrent unit~\citep[GRU;][]{cho2014properties, chung2014empirical}, neural Turing machine~\citep{graves2014neural}, memory network~\citep{weston2014memory}, and orthogonal GRU~\citep{jing2018gated}.
+The work of \citet{jozefowicz2015empirical} explored \numprint{10000} related architectures and \numprint{23000} hyperparameter configurations via evolutionary mutations to the LSTM's computational graph and found none to be consistently better than LSTMs.
 
 In section~\ref{sec:delay-lstm}, we propose a fundamentally new type of memory cell based on our work, the Delay Network~(DN), and compare its performance in terms of memory capacity to LSTMs.
+We find that stacked LSTMs are unable to compress continuous-time windows of history.
 Our results on a chaotic time-series prediction benchmark suggest that LSTMs, when interleaved with the DN, and trained via BPTT, acquire an improved ability to learn dynamical systems described by nonlinear delay-differential equations.
 
 \subsection{Randomized approaches}
@@ -140,7 +144,7 @@ Our results on a chaotic time-series prediction benchmark suggest that LSTMs, wh
 Reservoir Computing~(RC) is a strategy for training RNNs, that simplifies the optimization problem by keeping the recurrent weights fixed.
 That is, only the static ``readout'' weights to a linear output layer are modified, while the recurrent weights are left untrained, thus sidestepping the issues in BPTT.
 This is referred to as an Echo State Network~\citep[ESN;][]{jaeger2001echo}, or Liquid State Machine~\citep[LSM;][]{maass2002real}, depending on whether the neural nonlinearities are static or spiking models, respectively.
-The intuition is that randomized feedback, when initialized in an appropriate manner, causes traces of the input to dynamically reverberate, or ``echo'', throughout the state of the network; a common metaphor is to compare the neural activity to throwing rocks into a pool of water and observing the ripples interact through time.\footnote{To demonstrate the relevance of this metaphor, \citet{fernando2003pattern} went so far as to actually implement an LSM using a bucket of water.}
+The intuition is that randomized feedback, when initialized in an appropriate manner, causes traces of the input to dynamically reverberate, or ``echo,'' throughout the state of the network; a common metaphor is to compare the neural activity to throwing rocks into a pool of water and observing the ripples interact through time.\footnote{To demonstrate the relevance of this metaphor, \citet{fernando2003pattern} went so far as to actually implement an LSM using a bucket of water.}
 These traces can then be decoded to reconstruct the output signal in a manner that approximates a nonlinear transfer function of the input signal.
 Details are provided in section~\ref{sec:relationships} after introducing the NEF.
 
@@ -204,7 +208,7 @@ In this section, we provide a detailed overview of the Neural Engineering Framew
 
 The NEF proposes a general approach to model dynamical systems in artificial networks of spiking neurons.
 It does so by leveraging neural nonlinearities and weighted synaptic filters as computational resources.
-The NEF has been used to construct a wide variety of neural models, including a functioning 6.6~million neuron model of the human brain, dubbed ``Spaun'', that is capable of performing perceptual, motor, and cognitive tasks~\citep{eliasmith2012, choo2018}.
+The NEF has been used to construct a wide variety of neural models, including a functioning 6.6~million neuron model of the human brain, dubbed ``Spaun,'' that is capable of performing perceptual, motor, and cognitive tasks~\citep{eliasmith2012, choo2018}.
 This model incorporates many kinds of observed neural dynamics, including self-generated oscillations, sustained activity, and point attractor dynamics.
 
 As well, the flexibility of the NEF has lead to it being deployed on mixed-analog-digital neuromorphic chips~\citep{choudhary2012silicon, corradi2014, voelker2017iscas, voelker2017neuromorphic, braindrop2019} and digital architectures~\citep{bekolay2014, wang2014compact, mundy2015, knight2016, berzish2016, wang2017neuromorphic, blouw2018a, fischl2018}.

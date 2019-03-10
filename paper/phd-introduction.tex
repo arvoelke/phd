@@ -41,7 +41,8 @@ Analogous to how a single compiler can translate the same C++ code
 to dozens of physically distinct digital architectures, we strive to systematically describe
 how the same dynamical computations can be flexibly mapped onto distinct spiking neuromorphic architectures.
 
-The primary goal of this thesis is to explore the above characterization of neuromorphics and in doing so elucidate a general recipe for implementing efficient dynamical computations on neuromorphic hardware, empower theorists and practitioners with deeper insights into subtle relationships between network configuration and function, and finally validate this approach with practical results that include a set of novel spiking algorithms deployed on state-of-the-art neuromorphic chips: Braindrop~\citep{braindrop2019} and Loihi~\citep{davies2018loihi}.
+The primary goal of this thesis is to explore the above characterization of neuromorphics.
+In doing so, we elucidate a general recipe for implementing efficient dynamical computations on neuromorphic hardware, empower theorists and practitioners with deeper insights into subtle relationships between network configuration and function, and demonstrate these methods on state-of-the-art neuromorphic chips: Braindrop~\citep{braindrop2019} and Loihi~\citep{davies2018loihi}.
 Ultimately, this unveils a class of computations where neuromorphic hardware excels, and further automates the process of engineering algorithms for such hardware.
 
 Researchers have already learned a great deal through the co-design of neuromorphic hardware and spiking algorithms.
@@ -57,7 +58,7 @@ humans can perform, while running on neuromorphic hardware consuming several ord
 Significant progress has been made in this direction over the past three decades.
 Although we still have a long ways to go, this thesis aims to highlight a promising path for neuromorphics.
 
-When confronted with the ambitious goal of artificially reproducing human intelligence, computer scientists will most often point towards
+When confronted with the ambitious goal of artificially reproducing human intelligence, computer scientists will often point towards
 the popularity of deep learning~\citep{lecun2015deep} and its recent successes such as AlphaGo~\citep{gibney2016google}.
 First and foremost, we seek to embrace the methods of deep learning, by incorporating its architectures and training methodologies into our toolbox.
 This is in fact the mandate of Nengo DL~\citep{rasmussen2018nengodl}, a Python package that combines Nengo and TensorFlow into a hybridized framework that automates backpropagation across spiking, non-spiking, and NEF-style recurrent neural networks -- broadly referred to as the class of Artificial Neural Networks~(ANNs).
@@ -75,7 +76,7 @@ For instance, convolutional ANNs are most often deployed in video processing tas
 sampled at some discrete interval, and independently from one another.
 Recurrently connected networks are an exception that we embrace, but they come with many challenges that we will discuss.
 In general, most methods do not respect time as being a physical dimension that underpins the dynamics of the system's input, output, or processing units;
-in typical ANNs, time is not a variable in the neuron models, synapse models, or any of the computational elements.
+in typical ANNs, time is not a variable in the neuron models, synapse models, nor any of the computational elements.
 % Consequently, training these networks becomes an art-form than a science, 
 % This pattern is beginning to reverse, with examples such as deep LSTMs and qRNNs for machine translation and speech synthesis.
 % However, we argue that we can do even better, by arming ourselves with tools for better understanding the role of time, and being able to engineer specific dynamic computations into RNNs.
@@ -119,7 +120,7 @@ If our aim is to build artificial systems that are as useful, robust, capable, a
 The approach we take considers time as a fundamental starting point, and thus situates dynamics front-and-center; we bridge the time-scales of the entire system, down from the levels of spikes and postsynaptic currents, up to the levels of human reaction times and behaviours. 
 This involves developing an extensible theoretical framework that links together the mechanisms of an SNN, its parameters, and some desired class of computations.
 We validate this model of computation by deploying these SNNs on low-power neuromorphic hardware designed to emulate key biological principles.
-Based on these same principles, we develop theory connecting the mathematical contributions of Henri Pad\'e and Adrien-Marie Legendre, to reveal a new recurrent architecture that can predict chaotic time-series with greater memory capacity and performance surpassing state-of-the-art recurrent neural networks, including Long Short-Term Memory~(LSTM), Reservoir Computing~(RC), and ``FORCE'' networks.
+Based on these same principles, we develop theory connecting the mathematical work of Henri Pad\'e and Adrien-Marie Legendre, to reveal a novel recurrent architecture that can predict chaotic time-series with greater memory capacity and performance surpassing state-of-the-art recurrent neural networks, including Long Short-Term Memory~(LSTM), Reservoir Computing~(RC), and ``FORCE'' networks.
 % There is no arithmetic logic unit, random-access memory, or instruction set.
 
 %Another significant motivating factor for this work is the recent surge in neuromorphic computing architectures such as SpiNNaker~\citep{mundy2015efficient}, Neurogrid~\citep{choudhary2012silicon}, Brainstorm~\citep{brainstorm}, and IBM's TrueNorth~\citep{merolla2014million}.
