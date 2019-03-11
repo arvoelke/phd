@@ -45,6 +45,11 @@
 \usepackage{pbox} % for pbox
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 
+% https://tex.stackexchange.com/questions/83509/hfill-in-math-mode
+\makeatletter
+\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
+\makeatother
+
 % Set figure directories
 \graphicspath{{../figures/}}
 

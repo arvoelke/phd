@@ -3,7 +3,7 @@
 
 In this chapter, we provide a thorough examination of the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a} that is not currently published elsewhere.
 The goals are two-fold: (1)~explore the consequences of its computational principles at a theoretical level, and in doing so challenge some common myths that have become associated with the NEF since its inception, and (2)~assess its suitability as a framework for deploying SNNs on neuromorphic hardware by proving its correctness, scalability, completeness, robustness, and extensibility.\footnote{%
-To help delineate separate considerations, some sub-sections may be significantly shorter than others.
+To help delineate separate considerations, some sub-sections are significantly shorter than others.
 }
 % This involves a proof of equation~\ref{eq:rate-approximation} thatextends and improves the discussion of \citet[][pp.~132--136]{eliasmith2003a} to provide a sufficient criteria for the correctness of the first two principles of the NEF at the level of individual spikes.
 % The correctness of the third principle is proven in \citet[][pp.~221--225]{eliasmith2003a} and is extended by various proofs in section~\ref{sec:synaptic-extensions}.
@@ -11,23 +11,23 @@ To help delineate separate considerations, some sub-sections may be significantl
 \section{Computational Sub-Principles}
 \label{sec:sub-principles}
 
-In this section, we focus primarily on the third principle of the NEF, and elucidate some high-level observations, or ``sub-principles'', that follow from its adoption.
-In doing so, we expose some new insights, including the chaotic nature of NEF networks, its strategy for encoding, and a relationship between the energy of synaptic transmission and the bandwidth of the signal.
+In this section, we focus primarily on the third principle of the NEF, and elucidate some high-level observations, or ``sub-principles,'' that follow from its adoption.
+In doing so, we expose some important insights, including the effects of structuring deep RNNs, a framework to understand the roles of dynamical primitives, the observation of chaos in simple NEF networks, its strategy for neural encoding, and a relationship between the energy of synaptic events and signal bandwidth.
 
 \subsection{Reducibility to a single layer}
 
 In section~\ref{sec:nef}, we focused primarily on a single recurrently connected population of neurons.
-However, any multi-layer NEF network, where each layer may be recurrent, and feed-forward connections and feedback connections may also be included between distant layers -- may be rewritten as a single recurrently connected population.
+However, any multi-layer NEF network, where each layer may be recurrent, with feed-forward connections and feedback connections optionally included between any two layers -- may be rewritten as a single recurrently connected population.
 Indeed, even for models as complex as Spaun~\citep{eliasmith2012, choo2018}, the Nengo builder strips away the model specification, and leaves only channels that transmit spikes, and transfer functions that operate on these spikes~\citep{bekolay2014, gosmann2017automatic}.
-The topology of the network encodes spatial and organizational structure (e.g.,~hierarchies), which may be used to constrain and inform the design of biological models, and to aid in understanding function.
-The mechanisms underneath are mere signals and operators, all coupled to one another to compute some dynamical system.
+The topology of the network reflects spatial and organizational structure (e.g.,~hierarchies), which may be used to constrain and inform the design of biologically-grounded models and to aid in understanding function.
+The mechanisms underneath are mere signals and operators, all coupled to one another to implement some dynamical system.
 
-To examine some of the consequences of this observation, we assume without loss of generality that there are $m$ layers, and each of the layers uses $n$ neurons to represent a $q$-dimensional state-vector.
+To examine some of the consequences of this observation, we assume without loss of generality that there are $m$ layers, and that each layer uses $n$ neurons to represent a $q$-dimensional state-vector.
 The procedure for rewriting the network is as follows:
 \begin{enumerate}
 \item Stack all of the populations together into a single layer that consists of $nm$ neurons. 
 \item Stack all of the state-vectors together into one vector, $\V{x}(t) \in \mathbb{R}^{qm}$, to represent the global state-space.
-\item Construct the encoding matrix, $E \in \mathbb{R}^{nm \times qm}$, by inserting the $i^\text{th}$ encoding matrix into the $(i\text{,} i)^\text{th}$ block, such that $E$ is in block-diagonal form (note: there are $m \times m$ blocks and each is $n \times q$).
+\item Construct the encoding matrix, $E \in \mathbb{R}^{nm \times qm}$, by inserting the encoding matrix from the $i^\text{th}$ population into the $(i\text{,} i)^\text{th}$ block, such that $E$ is in block-diagonal form (note: there are $m \times m$ blocks and each is $n \times q$).
 \item Construct the decoding matrix, $D^\V{f} \in \mathbb{R}^{nm \times qm}$, by inserting each decoding matrix $D^{\V{f}_{i\text{,}j}}$ into the $(i\text{,} j)^\text{th}$ block, where $\V{f}_{i\text{,}j}$ is the function computed between the $i^\text{th}$ presynaptic population and the $j^\text{th}$ postsynaptic population.
 \end{enumerate}
 Then Principles~1--3 apply in the same way to this single population, while being functionally equivalent to the original network.
@@ -49,32 +49,31 @@ These dynamical systems, each of which can be thought of as a \emph{primitive} f
 A central insight from deep learning is that a variety\footnote{%
 The variety of nonlinear responses comes from the distribution of weights and biases, analogous to the heterogeneity obtained in equation~\ref{eq:encoding} via encoding vectors, gains, and biases.}
 of static nonlinear functions, when structurally composed, enhance the \emph{spatial complexity} of network function.
-An analogous insight in the above context is that a variety of transfer functions, when temporally composed, enhance the \emph{dynamical complexity} of network function.
-In particular, the time-constants of synapses, neuron leakages, and recurrent network dynamics -- all act along different time-scales.
+An analogous insight in the above context is that a variety of transfer functions, when temporally composed, enhance the \emph{temporal complexity} of network function.
+In particular, the time-constants of synaptic currents, membrane leakages, and recurrent network dynamics -- all act along different time-scales.
 In effect, NEF networks compose rich temporal functions by leveraging dynamical primitives that are heterogeneous in time.
-A compelling example is provided in section~\ref{sec:delay-lstm} that applies BPTT to a deep recurrent NEF network to predict a chaotic time-series.
+A compelling example is provided in section~\ref{sec:delay-lstm}, where we apply BPTT to a deep recurrent NEF network to predict a chaotic time-series.
 
 \subsection{Duality of macroscopic and microscopic dynamics}
 
 As a corollary to the previous observation,
 once all primitive operations are expressed in the same language (i.e.,~differential equations), they become both \emph{composable} and \emph{interchangeable}.
 To the point of interchangeability, one can implement a lowpass filter by using a single synapse, or by training a population to emulate the same dynamical system via Principle~3.\footnote{%
-As inconsequential as this point might sound, a potent example is when one student, who had been working with Nengo for many years, used a network containing hundreds of neurons to implement the same computation as a single alpha synapse. This was due to not having them described in the same language, thus highlighting the utility in the point that we make here.}
+As inconsequential as this point might sound, a potent example is when one student, who had been working with Nengo for many years, used a network containing hundreds of neurons to implement the same computation as a single alpha synapse. This was due to not having them described in the same language.}
 To the point of composability, one can substitute the transfer function of a single synapse with that of an entire recurrent network.
 
-We illustrate this with a specific example by considering the following architecture:
+We illustrate both points with a specific example by considering the following architecture:
 $$A \rightarrow (B \rightarrow B) \rightarrow A \text{,}$$
 where $A$ and $B$ are separate neural ensembles and ``$\rightarrow$'' denotes a synaptic weight matrix.
 That is, $B$ is locally-recurrent, and $A$ is globally-recurrent via the outer loop through $B$.
-We may encapsulate $H = B \rightarrow B$ as a dynamical primitive, and then \emph{re-interpret} the whole system as:
+We may encapsulate $H = B \rightarrow B$ as a dynamical primitive, and then re-interpret the whole system as:
 $$A \rightarrow_H A \text{,}$$
-where ``$\rightarrow_H$'' denotes some weight matrix where the synapse model has been replaced by $H$ --
+where ``$\rightarrow_H$'' denotes some weight matrix where the \emph{synapse} model has been replaced by $H$ --
 akin to a ``virtual'' synapse, whose dynamics are implemented by $B$ under the hood.
-This is simply a mathematical ``trick''.
-But the practical point is that we can use the same theory and the same tools to understand the composition and substitution of these systems.
+This is simply a mathematical ``trick,'' but the practical consequence is that we may use the same theory and the same tools to understand the composition and substitution of these systems.
 This is made possible since we employ a common language and framework for describing and leveraging dynamical systems.
 
-In section~\ref{sec:linear-extensions}, this idea forms the basis of our proofs that extend Principle~3.
+In section~\ref{sec:linear-extensions}, this idea forms the core idea for our proofs that extend Principle~3.
 In section~\ref{sec:pure_delay}, we demonstrate a method of systematically harnessing miniature delays in axonal spike-transmission to improve the accuracy of longer network-level delays.
 
 \TODO{example application in section~\ref{sec:applications} -- if $B \rightarrow B$ is a delay network, we can then use what we know about amplifying axonal spike delays to make an even longer delay out of the entire system}
@@ -86,7 +85,7 @@ An apparent misconception associated with NEF networks is that we already ``unde
 But just because a network's function can be written down using equations, does not mean that its effects are fully understood ahead of time.
 For example, the NEF has been used to construct chaotic systems, such as the Lorenz strange attractor~\citep{eliasmith2005b}.
 This \emph{deterministic} system is fully described by a three-dimensional nonlinear dynamical system.
-However, due to the nature of such chaotic systems, arbitrarily small perturbations in state-space diverge exponentially quickly over time up to the diameter of the attractor~\citep[][pp.~328--330]{strogatz2000nonlinear}.
+However, due to the nature of such chaotic systems, arbitrarily small perturbations in state-space diverge exponentially over time up to the diameter of the attractor~\citep[][pp.~328--330]{strogatz2000nonlinear}.
 This leads to a fundamental inability to predict the trajectory of any physical instantiation of the system; the time-horizon that can be predicted, within some given tolerance, scales only logarithmically with the precision of the observer.
 
 More to the point, this accusation is theoretically equivalent to suggesting the same of any algorithm or computer program for that matter.
@@ -150,9 +149,9 @@ It is also important to consider both for neuromorphic hardware.
 A long-standing debate in neuroscience has traditionally revolved around the question of whether biological neurons transmit information using a ``rate code'' in which the information is encoded by the firing rates of individual neurons~\citep{adrian1928basis}, or a ``spike-timing code'' in which information is encoded by the precise temporal patterns of spike trains~\citep{rieke1999spikes} or likewise their temporal order in relation to one another~\citep{thorpe1998rank}.
 However, there is historically little consensus between neuroscientists as to what exactly constitutes a rate code~\citep[][pp.~89--91]{eliasmith2003a}.
 
-\citet{gerstner1999spiking} observes that there are at least three different ways to define a rate code, and that in many important ways they are consistent with that of a timing-based code.
-\citet{fairhall2001efficiency} examines the adaptive dynamics of neurons in a fly's visual system and concludes that the principles of its code depend on the time-scales of interest.
-\citet{brette2015philosophy} argues that the question about which code the brain uses is irrelevant, and should be replaced by one that instead addresses the causal role of neural activity.
+\citet{gerstner1999spiking} reviews at least three different ways to define a rate code, and notes that in many important ways they are consistent with that of a timing-based code.
+\citet{fairhall2001efficiency} models the adaptive dynamics of neurons in the fly visual system and concludes that principles of its code depend on the time-scale of interest.
+\citet{brette2015philosophy} argues that which code the brain uses is irrelevant, and that we ought to instead consider questions that address the causal role of neural activity.
 \citet{eliasmith2003a} likewise proposes that we should focus on the physical instantiation, and functional consequences therein, of any given approach to neural coding, rather than resorting to semantic labels that are ultimately irrelevant. 
 
 \fig{spike-time-coding}{1}{Spike-time coding in the Neural Engineering Framework.}{
@@ -170,7 +169,7 @@ Specifically, this mischaracterization has lead to the misapplication of many cr
 We find this important to clarify because it leads to imprudent conclusions or ``myths'' about the NEF such as those claimed by \citet{lagorce2015stick} and \citet{frady2019robust}:
 \begin{enumerate}
 \item The NEF does not exhibit precise sequences of action-potentials.
-\item The NEF does not support high speed neural computation.
+\item The NEF does not support high-speed neural computation.
 \item The NEF does not display rhythmic activity.
 \item The NEF requires very large numbers of neurons to compute simple functions.
 \end{enumerate}
@@ -186,22 +185,22 @@ We omit the first $1.2$ seconds of simulation to avoid initial transients.
 See Figure~\ref{fig:spike-time-coding}~inset.
 When comparing the spike-trains between two separate oscillations at the same phase, not only is the order of spiking consistent, as in rank order coding~\citep{thorpe1998rank}, but also the precise spike-timing ($\pm$ a couple milliseconds).
 
-\paragraph{2. The NEF readily supports high speed neural information processing.}
+\paragraph{2. The NEF readily supports high-speed neural information processing.}
 
 In our example, neurons respond quickly to encode the rapidly-fluctuating oscillatory state, and do so without any system-level ``delay'' or undesired filtering.\footnote{%
-The postsynaptic filter that is applied is leveraged to participate in the required computation (see Principle~3; section~\ref{sec:principle3}).
+The postsynaptic filters are leveraged to participate in the required computation (see Principle~3; section~\ref{sec:principle3}).
 There is no unwanted phase-shift.
 }
 As will be explained in section~\ref{sec:spike-coding}, the precision of a feed-forward network scales as $\bigoh{\tau \sqrt{n}}$.
 Thus, one is free to set the synaptic time-constant arbitrarily small, so long as the number of neurons are increased in proportion.
 We have verified this both theoretically and numerically in section~\ref{sec:poisson-spiking}.
-This enables arbitrarily fast transmission of information throughout the network assuming the criteria of Theorem~\ref{thm:correctness} is met (see also Figure~\ref{fig:poisson-frequency-scaling}).
+This enables arbitrarily fast transmission of information throughout the network assuming the criteria of Theorem~\ref{thm:correctness} is met (also see Figure~\ref{fig:poisson-frequency-scaling}).
 Yet, even when constrained to longer time-constants, section~\ref{sec:deep-delay-networks} demonstrates a novel deep NEF network that is capable of \emph{instantaneously} propagating low-frequency stimuli through 8 layers of synaptic filters ($\tau = 0.1$\,s).
 
 \paragraph{3. The NEF examples that invoke Principle~3 all display rhythmic activity.}
 
 The NEF was designed as a toolkit for modelling dynamic rhythmic activity~\citep{eliasmith1999developing} such as the central pattern generator driving lamprey locomotion~\citep{eliasmith2000b}.
-Indeed, Figure~\ref{fig:spike-time-coding} clearly displays rhythmic activity at both the population level~(see left) and activity level~(see right).
+Indeed, Figure~\ref{fig:spike-time-coding} clearly displays rhythmic activity at both the population level~(see left) and the activity level~(see right).
 The properties of these rhythms can be understood as arising from the dynamics of the postsynaptic currents, in response to the neural encoding of the state-vector governed by some underlying set of differential equations.
 
 \paragraph{4. The NEF can compute difficult functions with any number of neurons.}
@@ -257,7 +256,7 @@ Such representations are known to be ubiquitous in biological systems~\citep{pul
 The NEF provides a basic theoretical explanation for this observation from the perspective of energy-minimization.
 
 As discussed in the previous section, and described by equation~\ref{eq:psc-code}, the state-vector $\V{x}(t)$ is projected onto postsynaptic currents.
-To analyze the frequency content of this code, we apply the Laplace transform to both sides of equation~\ref{eq:psc-code}, and substitute in the synapse model from equation~\ref{eq:lowpass-laplace}:
+To analyze the frequency content of this code, we apply the Laplace transform to both sides of equation~\ref{eq:psc-code}, and substitute the synapse model from equation~\ref{eq:lowpass-laplace}:
 \begin{equation} \label{eq:psc-code-laplace}
 \begin{aligned}
 \alpha_i \left\langle \V{e}_i\text{,}\, \laplace{ \V{x}(t) }(s) \right\rangle + \beta_i &\approx \sum_{j=1}^n \sum_m \omega_{ij} \laplace{ h \left( t - t_{j\text{,}m} \right) }(s) \\
@@ -309,7 +308,7 @@ In the original formulation of the NEF~\citep{eliasmith2003a}, there exists thre
 \item ``spiking noise'' arising from the use of discontinuous spikes; that is, the substitution of a continuous non-spiking model with a spiking model that produces variable PSCs, and
 \item ``state discrepancy'' arising from the substitution of a stateless model with a stateful model.
 \end{enumerate}
-The first two sources of error have already been studied extensively throughout \citet{eliasmith2003a} and the software implementation, Nengo.
+The first two sources of error have already been studied extensively throughout \citet{eliasmith2003a} and \citet{bekolay2014}.
 We review these findings below.
 However, as far as we know, the third has not received formal attention.
 A proof is found in \citet[][pp.~132--136, appendix~C.1]{eliasmith2003a} that addresses the same issue from the perspective of including noise within the neuron model, and the contents herein may be viewed as an updated treatment of that study.
@@ -433,7 +432,7 @@ Although here we are looking at just a constant input for ease of visualization,
 This is surprising since the definition of state discrepancy does not invoke any usage of decoders, spikes, or filters in its construction; it merely describes how different the distribution of relative ISI positions are from that of a uniform distribution.
 
 We now prove that our definition of state discrepancy is indeed the correct one, and in doing so provide a sufficient criteria for scaling away this source of error.
-Specifically, this remaining source of error---state discrepancy---is tamed by minimizing the difference (KS-statistic) between a uniform distribution and the actual neuron's ``readiness to spike'', as characterized by its ISIP~(e.g.,~equation~\ref{eq:lif-isip} for the case of a LIF model).
+Specifically, this remaining source of error---state discrepancy---is tamed by minimizing the difference (KS-statistic) between a uniform distribution and the actual neuron's ``readiness to spike,'' as characterized by its ISIP~(e.g.,~equation~\ref{eq:lif-isip} for the case of a LIF model).
 
 \vspace{1em}
 
@@ -523,8 +522,8 @@ We apply the law of the unconscious statistician~(LOTUS) to $\tilde{Y}_i(t)$:
 \label{eq:a_expectation}
 \expect{\tilde{Y}_i(t)} &= \int_D \tilde{y}_i(t; t_i) f_{T_i}(t_i) \,dt_i, \quad \text{where $D$ is the domain of $T_i$} \nonumber\\
           &= \int_D \frac{c_i^{e_i(t; t_i)} - c_i^{r_i \cdot (t - t_i) + 1}}{\tau(1 - c_i)} f_{T_i}(t_i) \,dt_i, \quad \text{by equation~\ref{eq:neuron}} \nonumber\\
-          &= \frac{1}{\tau(1 - c_i)} \left( \int_0^{1} c_i^{e_i(t; t_i)} \,de_i(t; t_i) - \int_0^{1/r_i} c_i^{r_i \cdot (t - t_i) + 1} (r_i) \,dt_i \right) \nonumber\\
-          &= \frac{1}{\tau(1 - c_i)} \left( (-r_i \tau) e^{-e_i(t; t_i)/(r_i \tau)} \bigg|_{e_i(t; t_i) = 0}^{1} - (r_i \tau) c_i^{r_i \cdot (t - t_i) + 1} \bigg|_{t_i = 0}^{1/r_i} \right) \nonumber\\
+          &= \frac{1}{\tau(1 - c_i)} \left( \int_0^{1} c_i^{e_i(t; t_i)} \,de_i(t; t_i) - \int_0^{r_i^{-1}} c_i^{r_i \cdot (t - t_i) + 1} (r_i) \,dt_i \right) \nonumber\\
+          &= \frac{1}{\tau(1 - c_i)} \left( (-r_i \tau) e^{-e_i(t; t_i)/(r_i \tau)} \bigg|_{e_i(t; t_i) = 0}^{1} - (r_i \tau) c_i^{r_i \cdot (t - t_i) + 1} \bigg|_{t_i = 0}^{r_i^{-1}} \right) \nonumber\\
           &= \frac{r_i}{(1 - c_i)} \left(  (1 - c_i) - \left( c_i^{r_i t} - c_i^{r_i t + 1} \right)  \right) \nonumber\\
           &= r_i \cdot (1 - e^{-t/\tau}) \text{.}
 \end{align}
@@ -566,13 +565,13 @@ Applying LOTUS to each of these random variables gives:
 To compute the remaining expectation, we require further insight into $e_i(t; T_i) = r_i \cdot (t - t_i) - \floor{r_i \cdot (t - t_i)}$.
 Define $k_i(t) = \floor{r_i t}$ as the spike index of $t$.  %Then the $i^{th}$ neuron has spiked $k_i(t - t_i) + 1 = \floor{r_i \cdot (t - t_i) + 1}$ times at time $t$. More importantly, 
 Recall that $t$ is fixed in this discussion.
-The congruence relation \mbox{$t_i = t - k_i(t)/r_i \equiv t \ (\text{mod}\ 1/r_i)$} is also a discontinuity in $e_i(t; t_i)$ with respect to $t_i$; that is when the spike becomes aligned with $t$ in the current interval.
-Namely, if $0 \le t_i \le t - k_i(t)/r_i$, then $\floor{r_i \cdot (t - t_i) + 1} = \floor{k_i(t) + 1} = k_i(t) + 1$. Likewise, if $t - k_i(t)/r_i < t_i \le 1/r_i$, then $\floor{r_i \cdot (t - t_i) + 1} = k_i(t)$.
+The congruence relation \mbox{$t_i = t - k_i(t)/r_i \equiv t \ (\text{mod}\ r_i^{-1})$} is also a discontinuity in $e_i(t; t_i)$ with respect to $t_i$; that is when the spike becomes aligned with $t$ in the current interval.
+Namely, if $0 \le t_i \le t - k_i(t)/r_i$, then $\floor{r_i \cdot (t - t_i) + 1} = \floor{k_i(t) + 1} = k_i(t) + 1$. Likewise, if $t - k_i(t)/r_i < t_i \le r_i^{-1}$, then $\floor{r_i \cdot (t - t_i) + 1} = k_i(t)$.
 We now apply LOTUS once more, along with the above facts to split up the integral.
 \begin{align*}
-\expect{ c_i^{e_i(t; T_i) + r_i \cdot (t - T_i) + 1} } &= \int_0^{1/r_i} c_i^{2(r_i \cdot (t - t_i) + 1) - \floor{r_i \cdot (t - t_i) + 1}} (r_i) \, dt_i \\
-&= r_i \left( \int_0^{t - k_i(t)/r_i} c_i ^ {(2r_i t - k_i(t) + 1) - (2r_i t_i)} \, dt_i + \int_{t - k_i(t)/r_i}^{1/r_i} c_i^{(2r_i t - k_i(t) + 2) - (2r_i t_i)} \, dt_i \right) \\
-&= r_i c_i^{2r_i t - k_i(t) + 1} (\tau / 2) \left( e^{2t_i / \tau} \bigg|_{t_i=0}^{t - k_i(t)/r_i} + c_i e^{2t_i / \tau} \bigg|_{t_i=t - k_i(t)/r_i}^{1/r_i} \right) \\
+\expect{ c_i^{e_i(t; T_i) + r_i \cdot (t - T_i) + 1} } &= \int_0^{r_i^{-1}} c_i^{2(r_i \cdot (t - t_i) + 1) - \floor{r_i \cdot (t - t_i) + 1}} (r_i) \, dt_i \\
+&= r_i \left( \int_0^{t - k_i(t)/r_i} c_i ^ {(2r_i t - k_i(t) + 1) - (2r_i t_i)} \, dt_i + \int_{t - k_i(t)/r_i}^{r_i^{-1}} c_i^{(2r_i t - k_i(t) + 2) - (2r_i t_i)} \, dt_i \right) \\
+&= r_i c_i^{2r_i t - k_i(t) + 1} (\tau / 2) \left( e^{2t_i / \tau} \bigg|_{t_i=0}^{t - k_i(t)/r_i} + c_i e^{2t_i / \tau} \bigg|_{t_i=t - k_i(t)/r_i}^{r_i^{-1}} \right) \\
 &= r_i c_i^{2r_i t - k_i(t) + 1} (\tau / 2) \left( c_i^{-2 r_i \cdot (t - k_i(t)/r_i)} - 1 + c_i^{-1} - c_i^{-2r_i \cdot (t - k_i(t)/r_i) + 1} \right) \\
 &= r_i \tau (1 - c_i) \left(c_i^{k_i(t) + 1} + c_i^{2r_i t - k_i(t)} \right) / 2
 \end{align*}
@@ -583,18 +582,15 @@ Substituting all of these expectations into the initial formula yields:
 Asymptotic analysis reveals that this scales as $\bigoh{\tau^{-2}}$ as $t \rightarrow 0^+$.
 As well, we use the fact that regularized least-squares finds
 $\V{d}_i^\V{f}$ that are independently distributed according to $\mathcal{N}(0, \sigma^2)$ where $\sigma = \bigoh{n^{-1}}$ -- i.e., variance scales as $\bigoh{n^{-2}}$.
-Finally we use equation~\ref{eq:a_expectation} in the second step below, which lets us leverage the property that for any two uncorrelated \emph{zero-mean} variables, $A$ and $B$, we have $\variance{AB} = \variance{A}\variance{B}$.
+Finally we use equation~\ref{eq:a_expectation} in the second step below, and then leverage the property that for any two uncorrelated \emph{zero-mean} variables, $A$ and $B$, we have $\variance{AB} = \variance{A}\variance{B}$.
 Therefore,
-\begin{equation}
-\begin{aligned}
+\begin{align*}
 \sqrt{ \variance{ \V{\mu}(t) } } &= \sqrt{ \variance{\sum_{i=1}^n \left(a_i \ast h \right)(t) \V{d}^\V{f}_i- \sum_{i=1}^n \left( r_i \ast h \right)(t) \V{d}^\V{f}_i} } \\
 &= \sqrt{ \variance{\sum_{i=1}^n \left( \tilde{Y}_i(t) - \expect{ \tilde{Y}_i(t) } \right) \V{d}^\V{f}_i } } \\
 &= \sqrt{ n \variance{\tilde{Y}_\cdot(t)} \variance{\V{d}^\V{f}_\cdot}} \\
-&= \sqrt{ n \left(\tau^{-2}\right) \left(n^{-2}\right) } \\
-&= \bigoh{ \frac{1}{\tau \sqrt{n}} } \text{.}
-\end{aligned}
-\end{equation}
-This completes our proof of the second and final statement. $\hfill \qed$
+&= \sqrt{ n \bigoh{ \tau^{-2} } \bigoh{ n^{-2} } } \\
+&= \bigoh{ \frac{1}{\tau \sqrt{n}} } \text{.} &\pushright{\qed}
+\end{align*}
 
 \subsubsection{Satisfying the uniform ISIP criteria}
 
@@ -607,7 +603,7 @@ This ensures that the NEF, and its postsynaptic current coding scheme (see secti
 We summarize many of these scaling properties in section~\ref{sec:scalability}.
 
 \fig{frequency-ks-test}{1}{Linear correlation between neural states and error.}{
-  Relationship between \emph{state discrepancy}~(KS-statistic; definition~\ref{def:state-discrepancy}) and representational error induced by filtered spikes~(RMSE), for sinusoidal stimuli of varying frequencies.
+  Relationship between state discrepancy~(KS-statistic; definition~\ref{def:state-discrepancy}) and representational error induced by filtered spikes~(RMSE), for sinusoidal stimuli of varying frequencies.
   (Left)~Empirical distribution of ISI positions (equation~\ref{eq:lif-isip}) is compared to the ideal uniform distribution using the KS-statistic ($p$-values~$< \numprint{e-6}$).
   % In the ideal case, the spiking LIF model is equal to its non-spiking counterpart in the sense of expectation.
   (Right)~The RMSE is highly correlated with the KS-statistic, with a Pearson correlation coefficient of $R = 0.90$ ($p$-value~$< \numprint{e-6}$).
@@ -631,9 +627,9 @@ We do so in many of our experiments (including Figure~\ref{fig:frequency-ks-test
 Given a constant representation, the neural states naturally remain mixed due to heterogeneity in the encoding.
 However, this does not guarantee invariance over time for time-varying stimuli; leakage in the model as well as rapid inhibition can skew the ISIPs back towards zero.
 
-\item The neuron model is replaced by a spiking rectified linear (ReLU) unit, also known as a (non-leaky) integrate-and-fire neuron that rectifies its input current, such that its state can only evolve in one direction.
-This can also be achieved by setting the $\tau_\text{RC}$ to be sufficiently large, and preventing the neuron's voltage floor from being hit, as in \citet{boerlin2013predictive}.
-Incidentally, \citet[][pp.~238--239]{eliasmith2003a} discovered that performance was improved by increasing $\tau_\text{RC}$, but attributed this improvement to static distortion being minimized by linear tuning curves, instead of having reduced the overall state discrepancy~\citep[also see][appendix~F.1]{eliasmith2003a}.
+\item The neuron model is replaced by a spiking rectified linear (ReLU) unit, also known as a (non-leaky) integrate-and-fire neuron. This model rectifies its input current, such that its state only evolves in one direction.
+This can also be achieved by setting $\tau_\text{RC}$ to be sufficiently large and lowering the neuron's voltage floor, as in \citet{boerlin2013predictive}.
+Incidentally, \citet[][pp.~238--239]{eliasmith2003a} discovered that an integrator's performance was improved by increasing $\tau_\text{RC}$, but attributed this improvement to static distortion being minimized by linear tuning curves, instead of having reduced the overall state discrepancy~\citep[also see][appendix~F.1]{eliasmith2003a}.
 
 \item Noise is introduced to the neuron model, to maintain a uniform subthreshold state~\citep[][pp.~132--133]{eliasmith2003a}.
 Indeed, this is the same assumption made by \citet[][p.~134]{eliasmith2003a} in their assessment of the quality of spiking neural representation.
@@ -689,7 +685,7 @@ In theory, and in practice, the relative time-scales are what end up being impor
 For example, if one were to slow down all of the time-constants in the network ($\tau$, $\tau_\text{RC}$, $\tau_\text{ref}$, $\dt{}$) by a factor of $10$, while increasing all of the rates in the network by the same factor, this would automatically be equivalent to speeding up the stimulus' frequency (reciprocal of time) by a factor of $10$ in the original network.
 Nothing else needs to be changed in order to compress or expand our perspective of time; weights, neuron counts, and decoded quantities are all unitless.
 This simply follows from dimensional analysis and consistent usage of time-constants and frequencies throughout, which highlights the importance of taking physical dimensions into consideration throughout each level of analysis.
-In theory, this means these trade-offs can be applied to any time-scale, although in practice biological and hardware constraints often choose relevant time-scales for us.
+In theory, this means these trade-offs can be applied to any time-scale, although in practice biological and hardware constraints often determine the relevant time-scales.
 
 \iffalse
 \TODO{Discuss all of the scaling.}
@@ -701,6 +697,9 @@ That is, the dimensionality should not be able to scale faster than the neuron c
 If it could, then each neuron would represent $\omega(1)$ dimensions, which seems physically implausible given access to only $\bigoh{1}$ state variables.
 This limitation could be broken by dendritic computation, for instance if each neuron had access to $\bigoh{n}$ variables distributed along the dendritic tree.
 \fi
+
+\newpage
+\TODO{Check that newpage here is the right thing to do for aesthetics}
 
 \subsection{Completeness}
 \label{sec:nef-turing}
@@ -715,9 +714,7 @@ The same can be said for continuous-time RNNs and other SNN models~\citep{funaha
 In theory, this means that these methods have the potential to implement arbitrary algorithms in distributed networks of computing elements.
 
 In some ways, the universality of continuous-time dynamical computations should not come as a surprise, as 
-a Turing machine is nothing more than a discrete-time dynamical system with an unbounded\footnote{%
-Not to be confused with infinite. Unbounded means resources can be made finite for decidable tasks.}
-number of state-variables~\citep{turing1938computable}.
+a Turing machine is nothing more than a discrete-time dynamical system with an unbounded (but finite for decidable tasks) number of state-variables~\citep{turing1938computable}.
 Early work by \citet{voelker2014controlling} provided a constructive proof of Turing-completeness in the NEF, by using the Semantic Pointer Architecture~\citep[SPA;][]{eliasmith2013build} to process the instructions of algorithms encoded into graphs that were sufficiently powerful to emulate multiple pushdown automata.
 % However, we have since moved away from this line of work, towards developing a systematic understanding of leveraging neuromorphic models of computation towards NEF-based computations.
 
@@ -738,10 +735,10 @@ The NEF uses variable spikes to encode information, and heterogeneous basis func
 This enables the network's function to remain robust to randomly dropped or delayed spikes, weights that are quantized, perturbed, or sparsified, the removal of neurons, intrinsic noise, and similar sources of variability.
 
 But in addition, there is a distinctly different kind of robustness that, to our knowledge, has not been discussed in the literature.
-As demonstrated in section~\ref{sec:chaos}, \emph{every} non-trivial recurrent NEF network is naturally chaotic at the level of individual neurons.
+As demonstrated in section~\ref{sec:chaos}, every non-trivial recurrent NEF network is naturally chaotic at the level of individual neurons.
 Yet, in spite of this chaos, the network functions correctly at the level of its state-space representation.
 Robustness to chaos has an important practical consequence: small measurement errors in the state of individual neurons---arising either from mechanisms in the system that rely on noisy observations, or through modelling errors of the mechanisms themselves---may be tamed at the population level. 
-For example, an NEF integrator can be supplied a white noise process, of sufficiently small amplitude (relative to the radius of its stable point), and it will remain within the strange attractor corresponding to its fixed point indefinitely. 
+For example, an NEF integrator can be supplied a white noise process, of sufficiently small amplitude (relative to the radius of its stable point), and it will remain within the strange attractor corresponding to its fixed point, indefinitely. 
 This enables a working memory that can persist states for long periods of time even in the presence of noise~\citep{singh2004}.
 
 In contrast, the methods of \citet{boerlin2013predictive} are not robust to such noise models, since they treat any noise as being a part of the signal.
@@ -764,12 +761,12 @@ Braindrop~\citep{braindrop2019},
 Loihi~\citep{nengoloihi},
 TrueNorth~\citep{fischl2018},
 a VLSI prototype~\citep{corradi2014},
-several FPGA implementations~\citep{naylor2013managing, wang2014compact, berzish2016, wang2017neuromorphic, nengofpga}.
+several FPGA implementations~\citep{naylor2013managing, wang2014compact, berzish2016, wang2017neuromorphic, nengofpga},
 and several GPUs~\citep{bekolay2014, rasmussen2018nengodl, blouw2018a}.
-This would not have been possible if not for the extensibility of the framework, that is, its flexibility in accounting for various non-idealities~\citep[e.g.,~][]{voelker2017iscas}.
+This would not have been possible if not for the extensibility of the NEF -- that is, its flexibility in accounting for various non-idealities~\citep[e.g.,~][]{voelker2017iscas}.
 
 Our work in this direction is the topic of chapter~\ref{chapt:nef-extensions}.
 Of particular focus are the higher-order synapses with variable time-constants on Braindrop, and the configurably-delayed axons on Loihi.
 Our extensions can successfully leverage both to improve network-level computation.
 The focus of chapter~\ref{chapt:results} is then to showcase several recurrent SNNs deployed on both architectures, while using the same high-level model description for each network.
-The machinery of the NEF and Nengo, together with the extensions in this thesis, take care of compiling the model description onto the hardware while respecting its constraints and leveraging the properties of its dynamical primitives~\citep{braindrop2019}.
+The machinery of the NEF and Nengo, together with the extensions in this thesis, take care of compiling the model description onto the hardware while respecting its constraints and leveraging its dynamical primitives~\citep{braindrop2019}.
