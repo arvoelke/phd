@@ -62,7 +62,7 @@ We therefore use the integrator, implemented by a pool of spiking neurons using 
 In Figure~\ref{fig:integrator-neuromorphic}, we instantiate a one-dimensional integrator ($\theta = 1$\,s) on both Braindrop (1024 neurons) and Loihi (256 neurons).
 %\footnote{%
 %We use four times fewer neurons on Loihi versus Braindrop, as increasing the pool size leads to a bug in the \texttt{nengo-loihi}~v0.4.0 software.}
-In both cases, the input signal is a white-noise test signal, band-limited to $1$\,Hz.
+In both cases, the input signal is a white noise test signal, band-limited to $1$\,Hz.
 Both the ideal and the spiking activity are filtered with a lowpass ($\tau = 200$\,ms).
 We report the mean output's 95\% confidence intervals, bootstrapped from $200$ trials lasting $10$ seconds each.
 We run a large number of trials with random configurations of the network on the same input, in order to assess overall robustness, and to reveal any systemic biases in the error or drift.
@@ -163,7 +163,7 @@ In addition, the state-space realization is balanced and normalized (see section
 
 \TODO{Grab and plot the distribution from the calibration data using the mapped xy coordinates for the 3 ensembles.}
 
-To implement the DN, three pools, each containing $128$ spiking LIF neurons, are recurrently coupled to each other (and to themselves), and trained to optimally buffer a white-noise test signal---band-limited to $3$\,Hz---across a $100$\,ms sliding time-window.
+To implement the DN, three pools, each containing $128$ spiking LIF neurons, are recurrently coupled to each other (and to themselves), and trained to optimally buffer a white noise test signal---band-limited to $3$\,Hz---across a $100$\,ms sliding time-window.
 Output spikes are filtered using a lowpass synapse with $\tau = 20$\,ms, and weighted to decode both the state-vector and the window of history via $\mathcal{P}_{i, 3}(\cdot)$. % using equation~\ref{eq:delay-readouts}.
 
 For this experiment, we use identical Nengo model code for both neuromorphic backends.

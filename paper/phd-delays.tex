@@ -28,7 +28,7 @@ y(t) = (u \ast \delta_{\theta})(t) = u(t - \theta)\text{,} \quad \theta > 0 \tex
 \end{align}
 where $\delta_{\theta}$ denotes the Dirac delta shifted forwards in time by $\theta$.
 This system takes a time-varying scalar signal, $u(t)$, and outputs a purely delayed version, $u(t - \theta)$.
-The task of computing this function both accurately and efficiently in a biologically plausible, spiking, dynamical network, is a significant theoretical challenge, that, to our knowledge, has previously remained unsolved.
+The task of computing this function both accurately and efficiently in a biologically-plausible, spiking, dynamical network, is a significant theoretical challenge, that, to our knowledge, has previously remained unsolved.
 
 The continuous-time delay is worthy of detailed consideration for several reasons.
 First, it is non-trivial to implement using continuous-time spiking dynamical primitives.
@@ -826,7 +826,7 @@ Figure~\ref{fig:lstm-capacity}~(b) displays the NRMSE on the test data as a func
 We see that the DN architecture achieves nearly uniform accuracy across the delay interval, while the equivalently-sized LSTM cell architecture approaches $100$\% error rates towards the end of the window.
 This illustrates that the stacked LSTM struggles to memorize low-frequency signals (relative to the time-step) across long intervals of time.
 In contrast, this task is natural for the stacked DN, as its state represents a $q$-degree polynomial expansion of input history (see Figure~\ref{fig:basis-functions}).
-We now proceed to demonstrate that backpropagation enables the stacked DN cells to outperform the stacked LSTMs even on tasks that are not readily supported by the initial configuration of the network.
+We now proceed to demonstrate that backpropagation enables stacked DNs to outperform stacked LSTMs even on tasks that are not readily supported by the initial configuration of the network.
 
 \subsubsection{Predicting chaotic time-series}
 
