@@ -816,6 +816,7 @@ However, since Loihi does not support the use of factored weight matrices at the
 As a way to resolve this at the software level, Nengo currently creates intermediate populations to represent latent variables explicitly in spikes, which has the adverse effects of amplifying representational error, increasing the number of neurons, and introducing additional rounds of filtering between layers.
 Alternatively, weight matrices can be left unfactored and fully-connected, but this misses out on potentially dramatic savings.
 \TODO{Cite nengo-loihi github and forward reference methodology section with more details (similar to braindrop).}
+\TODO{Cite https://arxiv.org/pdf/1903.02504.pdf}
 
 Nengo~DL~\citep{rasmussen2018nengodl} has been used to implement a fully-connected deep network performing keyword spotting, on Loihi, while outperforming state-of-the-art hardware in energy cost per inference~\citep{blouw2018a}.
 After extensive review of the literature, we have found this to be the first, and currently only published example, outside of Intel's demonstration of sparse pattern representation~\citep{tang2017sparse, davies2018loihi}, to deploy an SNN on the actual chip.
