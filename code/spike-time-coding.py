@@ -1,6 +1,6 @@
 from phd import *
 
-frequency = 20  # here we're not properly accounting for a few things
+frequency = 20  # radians
 tau = 0.1
 dt = 0.001
 T = 5.0
