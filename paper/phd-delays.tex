@@ -386,6 +386,19 @@ This is proven by applying a state-space transformation to the polynomials of eq
 \emph{Cuius rei demonstrationem mirabilem sane detexi hanc marginis exiguitas non caperet.}~\textasciitilde~Pierre de Fermat}
 In summary, equation~\ref{eq:legendre-delay} has an identical transfer function to that of equation~\ref{eq:ss-delay}---namely, the Pad\'e approximants of a pure delay---while providing a state-space that reconstructs the previous $\theta$ seconds of input via the Legendre polynomials up to order $q$.
 
+\fig{legendre-circuit-diagram}{1.0}{Scalable circuit diagram representation of the Legendre Delay Network.}{
+    Circuit diagram that represents an efficient implementation of the Legendre realization of the Delay Network ($q = 6$).  %, discretized using Euler's method.
+    Large circles correspond to each dimension of $\V{x}$. 
+    Small circles are elements that add (arrow head) or subtract (circular head) their inputs.
+    The $i^\text{th}$ dimension scales its input (triangular head) by $\dt{} (2i + 1) \theta^{-1}$, for $i = 0 \ldots q - 1$.
+    Recurrent self-loops, from each dimension back to itself, are omitted for simplicity.
+}
+
+Figure~\ref{fig:legendre-circuit-diagram} illustrates equation~\ref{eq:legendre-delay}, discretized using Euler's method, with $q = 6$ dimensions.
+This design exploits the alternation of signs, and reuses the intermediate computations within the upper and lower triangles of $A$, by decomposing them into two separate cascading chains of summations that are then combined by a feedback loop.
+These same computations are also reused to implement $Bu$ by supplying $u$ to the appropriate intermediate nodes.
+This circuit requires $\bigoh{q}$ wires, adders, and state-variables, thus making it linearly scalable in both space and time (see section~\ref{sec:delay-scalability}).
+
 \subsection{Nonlinear characterization}
 \label{sec:delay-nonlinear}
 
@@ -499,7 +512,16 @@ As $\theta s$ increase further, the error contains input frequencies that are si
 Lastly, as revealed by equation~\ref{eq:basis-functions}, and as shown in Figure~\ref{fig:basis-functions}, the basis functions are also dimensionless, in the sense that they are defined over the range $r \in [0, 1]$ which maps onto the time-interval $(t - \theta') \in [t - \theta, t]$, where $\theta' = r \theta$, for any $\theta > 0$.
 This has numerous consequences that are intertwined: (1) the relationship between the input signal and its state-vector is scale-invariant; scaling the input length by some factor, and the delay length by the same factor, results in the exact same state-vector corresponding to a rescaled input history, (2) we can perform computations on the representation of the DN, independently of scale; see section~\ref{sec:periodicity} for an example, and (3) we can reinterpret the same state-vector with respect to any time-scale without changing the state-vector.
 
-Taking neural constraints into consideration, we do need to separate out $\theta s$ into its dimensional quantities.
+\fig{legendre-delay}{1.0}{\numprint{10240}-dimensional simulation of the Delay Network.}{
+    Scaling the Delay Network to $q = \numprint{10240}$ dimensions, simulated for $\numprint{1024000000}$ time-steps ($\theta = \numprint{5120}$\,s, $\dt{} = \numprint{e-5}$\,s).
+    The input signal is $u(t) = 1$, and so $y(t) \approx u(t - \theta)$ is the Heavide step function centered at $t = \theta$.
+    Each state-variable approximates the integral of a Legendre polynomial, and $y(t) = \sum_i x_i(t)$ sums across all dimensions at each moment in time.
+}
+
+Figure~\ref{fig:legendre-delay} demonstrates that the delay network scales to over $\numprint{e4}$ dimensions to efficiently maintain information across a simulation lasting more than $\numprint{e9}$ time-steps.
+This is accomplished by implementing the design from Figure~\ref{fig:legendre-circuit-diagram} in C++, which takes $\bigoh{q}$ time and memory per simulated time-step using a traditional CPU.
+
+Taking neural constraints into consideration, we do need to factor $\theta s$ into its dimensional quantities.
 As shown in section~\ref{sec:poisson-spiking}, the frequency of the state-vector being represented can matter.
 This concern is resolved by the use of Poisson spiking, integrate-and-fire neurons, or any other solution to state discrepancy (section~\ref{sec:spike-coding}).
 As well, longer values of $\theta$ are more susceptible to the integration of spiking noise, in the form of ``drift.''
