@@ -223,7 +223,7 @@ Likewise, the postsynaptic impulse response that results from a single spike, de
 In general neither the average rates, inter-spike intervals, nor spike times tell the entire story.
 
 But then how does equation~\ref{eq:rate-approximation} hold if each neuron is not spiking at its intended rate?
-Our proposal to resolve this seemingly paradoxical situation is to first establish a new label: ``postsynaptic current code''.
+Our proposal to resolve this seemingly paradoxical situation is to first establish a new label: ``postsynaptic current code.''
 This code does not care about the spike-rates of individual neurons; it is only sensitive to how well the weighted and synaptically-filtered spikes, \emph{when pooled across the entire population}, approximate some desired set of postsynaptic currents~\citep[corresponding to an affine transformation of the required state-vector;][]{tripp2006neural}.
 This is summarized by taking the encoding equation~\ref{eq:encoding} and decoding equation~\ref{eq:trans-decode} which fold into the weight equation~\ref{eq:factored-weights} -- and combining them in a similar manner to \citet{stoeckel2018}:
 \begin{equation} \label{eq:psc-code}
@@ -317,7 +317,7 @@ Figure~\ref{fig:nef-error-types} illustrates all three types of error within a s
 The network is a one-dimensional communication channel ($f(x) = x$, $n = 100$, $\tau = 50$\,ms, $\dt{} = \numprint{e-5}$\,s, $\tau_\text{RC} = 20$\,ms, $\tau_\text{ref} = 2$\,ms) with maximum firing rates of $10$--$20$\,Hz and intercepts uniformly distributed across $[-1, -0.5)$.
 Low firing rates are needed to expose the third source of error, which is normally masked by the other two at high firing rates for reasons that will become clear.
 The population, initially at rest, encodes a constant input signal of $u(t) = 1$, that is directly mapped onto the PSCs without additional filtering.
-We also duplicate the population, using the same decoders, but replacing its neuron model with the corresponding continuous-valued rate model given by equation~\ref{eq:lif-rate}.
+We also duplicate the population, use the same decoders, but replace its neuron model with the corresponding continuous-valued rate model given by equation~\ref{eq:lif-rate}.
 For notational simplicity, $\transpose{\V{d}}a$ refers to the filtered and decoded spike-trains (i.e.,~the spiking solution), $\hat{x}$ denotes the filtered and decoded rate model (i.e.,~the non-spiking solution), and $x = u \ast h$ is the ideally filtered input signal (i.e.,~the desired output).
 We now describe each source of error in greater detail.
 

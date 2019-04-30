@@ -6,12 +6,12 @@ Among these considerations, are issues involving:
 discretization (in time), quantization (truncation of both neural states and weight matrices), connectivity constraints, memory constraints, volume of spike traffic, external input-output bandwidth and delays, thermal variability, transistor mismatch, conversion of analog signals to digital pulses, and the introduction of higher-order dynamics throughout.
 The NEF already solves many of these problems in theory with varying degrees of success in practice.
 The focus of this chapter is to expose our novel contributions to solving these problems in the context of extending the scope of Principle~3.
-The intent is to bolster up the NEF with a variety of additional methods and techniques for analyzing and leveraging spiking dynamical computations.
+The goal is to bolster up the NEF with a variety of additional methods and techniques for analyzing and leveraging spiking dynamical computations.
 
 \section{Synapses}
 \label{sec:synaptic-extensions}
 
-This section has been adapted from the works of \citet[][patent pending]{dynamicspatent}, \citet{voelker2017iscas}, \citet{voelker2017neuromorphic}, and \citet{voelker2018}.
+This section has been adapted from the works of \citet[][patent pending]{dynamicspatent}, \citet{voelker2017iscas}, \citet{voelker2017neuromorphic}, \citet{voelker2018}, and \citet[][patent pending]{thesispatent}.
 Here, we focus on a dynamical primitive of SNNs known as the synapse model, $h(t)$, and address many of the differences that emerge between the idealization made by the NEF and the realities imposed by neuromorphic hardware (and often too, the brain).
 This leads to several high-level results that exploit their higher-order dynamics, account for time-constant mismatch, leverage their heterogeneity, and solve for optimal filters.
 
@@ -864,7 +864,7 @@ The time-constants of $h(t)$ are equal to $-p_i^{-1}$ where $p_i$ is the $i^\tex
 This results in a regularization matrix with block-structure, with one block imposing the usual diagonal L2-regularization on the entries corresponding to the $d_i$ parameters, and the other imposing some correlation structure on the $c_i$ parameters given the chosen prior on the unknown time-constants of $h(t)$.
 
 This same method also applies to the discrete-time domain to solve for the optimal digital filter (not shown).
-In general, this provides a way of rolling an unknown set of synapse models, $H(s)$ or $H(z)$, into the NEF's least-squares optimization problem -- rather than assuming just a single synapse is fixed \emph{apriori}.
+In general, this provides a way of rolling an unknown set of synapse models, $H(s)$ or $H(z)$, into the NEF's least-squares optimization problem -- rather than assuming just a single synapse is fixed \emph{a priori}.
 
 
 \section{Neurons}
@@ -873,9 +873,9 @@ In general, this provides a way of rolling an unknown set of synapse models, $H(
 Although the majority of this chapter has focused on extending the NEF to a variety of synapse models,
 we acknowledge the importance of embracing intrinsic neural dynamics as a useful computational resource as well.
 On the one hand, \citet[][appendix~F.1]{eliasmith2003a} argue that synaptic dynamics dominate that of LIF dynamics at the network level.
-But on the other hand, there is significant evidence that intracellular dynamics in more sophisticated neuron models play an important functional role in reducing signal-to-noise~\citep[][chapter~4]{eliasmith2003a} and in supporting network-level computations~\citep{izhikevich2007dynamical}.
+But on the other hand, there is significant evidence that intracellular dynamics in more sophisticated neuron models play an important functional role in improving signal-to-noise~\citep[][chapter~4]{eliasmith2003a} and in supporting network-level computations~\citep{izhikevich2007dynamical}.
 As stated in section~\ref{sec:relationships}, and demonstrated in section~\ref{sec:temporal-heterogeneity}, one can explicitly simulate the spike-generation and solve for the decoders over time, thus allowing the optimization to exploit any relevant correlation structures in spike-timing across neurons and any information carried by the individual spike-timing of each neuron.
-However, such black box approaches do not assist the modeller, \emph{apriori}, in picking the optimal neuron model for some useful function, configuring its parameters, and so forth.
+However, such black box approaches do not assist the modeller, \emph{a priori}, in picking the optimal neuron model for some useful function, configuring its parameters, and so forth.
 Rather, it becomes something of an art; making intuitive judgements about which neurons are doing what, and sweeping over various combinations of models and parameter settings with evolutionary search algorithms or similar.
 Work that considers the use of teaching signals to train recurrent networks of biophysically-detailed neurons to implement integration, is a topic of active exploration~\citep{duggins2017incorporating, duggins2017b}.
 Making progress within a mathematical framework proves to be challenging, due to the intractability of nonlinear dynamical systems in general.
@@ -958,7 +958,7 @@ The input is a sinusoid with frequency $f$\,Hz.
 % Both the ideal sinusoid and the decoded spike trains are filtered by $\tau = 0.01 f^{-1}$\,s to compute the RMSE.
 %The number of neurons is set to $50 f$ in order to scale the total number of spikes with the input frequency, and the maximum firing rate of each neuron is uniformly distributed over $20-40$\,Hz.
 %We give the LIF neurons an advantage by washing out the initial transient induced by an initial voltage of $v(0) = 0$.
-Due to the memoryless property of the Poisson process, and the uniformity of ReLU, both outperform LIF with constant precision as $f \rightarrow \infty$ (Theorem~\ref{thm:correctness}), assuming $n$ and $\tau$ are scaled appropriately with frequency (see text for details).
+Due to the memoryless property of the Poisson process, and the uniformity of non-leaky LIF, both outperform regular LIF with constant precision as $f \rightarrow \infty$ (Theorem~\ref{thm:correctness}), assuming $n$ and $\tau$ are scaled appropriately with frequency (see text for details).
 }
 
 \vspace{1em}

@@ -18,7 +18,7 @@ The simulations in this thesis make extensive use of the following Python softwa
 \item Seaborn~\citep{michael_waskom_2015_19108}; to generate figures, which depends on Matplotlib and Pandas for plotting and formatting data, respectively.
 \end{itemize}
 We do not take credit for any of the above software.
-However, we have created the Python package, NengoLib 0.5.0~\citep[][patent~pending]{dynamicspatent, nengolib}, open-sourced on GitHub, to make the contributions of this thesis publicly available.
+However, we have created the Python package, NengoLib 0.5.1~\citep[][patent~pending]{dynamicspatent, nengolib, thesispatent}, open-sourced on GitHub, to make the contributions of this thesis publicly available.
 % which also depends on SciPy for many routines ported from MatLab
 Code, \LaTeX{}, and instructions for reproducing figures, are located at: \url{https://github.com/arvoelke/phd/}.
 Unless stated otherwise, all simulations use a time-step of $\dt{} = 1$\,ms, and assume the input signal is held constant across each time-step, also known as the ``zero-order hold''~(ZOH) assumption.
@@ -29,7 +29,7 @@ Experiments that implement the methods of \citet{boerlin2013predictive} in Nengo
 
 NengoLib includes the core code for most of the extensions discussed in chapter~\ref{chapt:nef-extensions} and the networks discussed in chapter~\ref{chapt:delays}.
 It has been used by publications including
-\citet{knight2016}, \citet{voelker2016a}, \citet{voelker2017iscas}, \citet{voelker2017neuromorphic}, and \citet{voelker2018}.
+\citet{knight2016}, \citet{voelker2016a}, \citet{voelker2017iscas}, \citet{voelker2017neuromorphic}, \citet{voelker2018}, and \citet{neckar2018braindrop}.
 In addition, we use it to construct RC, FORCE, full-FORCE, and Nengo networks---each in spiking and non-spiking mode, and in an analogous manner to one another---in order to facilitate meaningful comparisons between these architectures.
 A core feature of this software is a toolkit for constructing and analyzing linear time-invariant systems, in a number of representations (state-space, transfer function, zero-pole-gain), while being compatible with the synapses of Nengo.
 This unifies the language used to build, describe, and analyze LTI networks, synapses, and subthreshold neural dynamics.
@@ -162,7 +162,7 @@ However, these memories are constructed using an offline optimization method tha
 
 We describe a method for building large-scale networks for online learning of associations using spiking neurons.
 Connection weights can be arrived at through a biologically-plausible, online learning process featuring a novel synaptic learning rule inspired in part by the well-known Oja learning rule~\citep{oja1989neural}.
-We call this rule the \emph{voja} learning rule (for ``vector Oja'').
+We call this rule the \emph{Voja} learning rule (for ``vector Oja'').
 Although the network itself is feed-forward, the dynamics that carry out the important computations are embedded within the learning rules that modify its synaptic weights online.
 We now describe the learning rule.
 
@@ -175,6 +175,7 @@ This gives $a_i(t) \V{x} = a_i(t) \V{e}_i$, and thus, for a particular $\V{x}$, 
 \begin{align} \label{stability}
     [\Delta{\V{e}_i} = 0]  \iff  [a_i(t) > 0  \implies  \V{e}_i = \V{x}] \text{.}
 \end{align}
+This defines an attractor landscape whose set of fixed points correspond to the set of inputs presented over time.
 In plain words, the encoding vectors of the neurons that become active will, over time, become more active and store the input within its encoder.
 The effect of this rule is to self-organize a sparse representation, such that a subset of neurons fire only when $\V{x}$, or a similar enough (i.e.,~noisy) version of it, is presented (see Figures~\ref{fig:voja-spinnaker} and~\ref{fig:voja-encoders}).
 The preferred direction vectors of each neuron are embedded within the synaptic weights projecting from the previous layer.
@@ -270,7 +271,7 @@ Finally, we conclude by discussing some implications for learning spiking dynami
 Consider a network containing a population of $n$ spiking neurons, encoding the constant scalar input $x$.
 Let $\V{a} \in \mathbb{R}^n$ be the average (i.e.,~rate) activity of each neuron in response to this encoding.\footnote{Here on, we assume that $\V{a} \ne \V{0}$, otherwise PES will have no effect.}
 This vector is determined by the first principle of the NEF, and remains fixed for constant $x$.
-The \emph{decoders} $\V{d}(t) \in \mathbb{R}^n$ determine the scalar output $y(t)$ via the dot-product:
+The \emph{decoders} $\V{d}(t) \in \mathbb{R}^n$ determine the scalar output $y(t)$ via the dot product:
 \begin{equation}
 \label{eq:decoding}
 y(t) = \transpose{\V{a}} \V{d}(t)  \text{.}

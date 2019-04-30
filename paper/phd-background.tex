@@ -100,14 +100,14 @@ These networks are named Spiking Neural Networks~(SNNs), and are the subject mat
 The issue in this context is that spikes (i.e.,~Dirac impulses) are non-differentiable with respect to time.
 But recently, many research groups have independently demonstrated that SNNs can also be trained with backpropagation by softening the gradient in a variety of creative ways~\citep{esser2015backpropagation, hunsberger2015spiking, hunsberger2016training, lee2016training, marblestone2016toward, neftci2017neuromorphic, bellec2018long, hunsberger2018, huh2018gradient, severa2018whetstone, rasmussen2018nengodl, shrestha2018slayer, neftci2019surrogate}\footnote{%
 Many of these are feed-forward examples, but recurrent spiking networks may be unrolled to support backpropagation in the same way.}
-although there are challenges in realizing biologically-plausible implementations that carry this out online~\citep[][submitted]{hunsberger2018, stockel2019align}.
-Reviews that focus on feed-forward architectures are given by \citet{pfeiffer2018deep, tavanaei2018deep}, while examples applied to RNNs are demonstrated by \citet{diehl2016conversion, huh2018gradient}.
+although there are challenges in realizing biologically-plausible implementations that carry this out online~\citep[][submitted]{hunsberger2018}.
+Reviews that focus on feed-forward architectures are given by \citet{pfeiffer2018deep, tavanaei2018deep}, while examples applied to RNNs are demonstrated by \citet{diehl2016conversion, huh2018gradient, kim2019simple}.
 It was also recently shown by \citet{chen2018neural} that both RNNs and backpropagation may be extended to continuous-time (i.e.,~taking the limit of infinitesimally small time-steps), consistent with the the NEF and Principle~3~(see section~\ref{sec:principle3}).
  
 While these approaches are theoretically sound, BPTT encounters many problems in practice~\citep{bengio1994learning}.
 Chief among these are the so-called ``vanishing and exploding gradient problems,'' in which gradients shrink or grow unboundedly as they are propagated backwards in time.
 These problems are intimately related to the ``credit-assignment problem,'' in which a learner witnesses a combinatorial explosion of points in time to assign credit to for the current error; in the case of storing a single bit of information over time, this causes the gradient to be inherently unstable~\citep{bengio1994credit}.
-This is further connected to the existence of nonlinear chaos in the dynamics of three (or more) recurrently coupled neurons; any correction to the trajectory of the network's state is exponentially magnified over time~\citep{strogatz2000nonlinear}.
+This is further connected to the existence of nonlinear chaos in the dynamics of three (or more) recurrently coupled neurons; any correction to the trajectory of such networks are exponentially magnified over time~\citep{strogatz2000nonlinear}.
 Thus, a standard RNN trained by BPTT will often fail to learn tasks that require a long-term memory -- a serious problem for the use-cases that RNNs promise to address.
 Solutions proposed by \citet{pascanu2013difficulty} that involve clipping and constraining the gradients alleviate these problems to some extent, but the issue still appears in classical architectures for tasks that we know the brain is capable of solving~\citep{lillicrap2019backpropagation}.
 Alternatives to BPTT include extended Kalman filter-based learning, second-order Hessian-based optimization methods, Hessian-free optimization, and evolutionary algorithms~\citep{salehinejad2017recent} -- but none have been found to be as consistently useful in practice as backpropagation.
@@ -133,7 +133,7 @@ The structure of LSTM cells have also been compared to that of cortical microcir
 
 This success has prompted many variants of LSTMs, including the bidirectional LSTM~\citep{graves2005framewise}, hierarchical S-LSTM~\citep{zhu2015long}, grid LSTM~\citep{kalchbrenner2015grid}, phased LSTM~\citep{neil2016phased}, and others~\citep{salehinejad2017recent}.
 At the same time, this has inspired several related architectures that augment an RNN with differentiable memory cells to facilitate long-range temporal interactions, including the gated recurrent unit~\citep[GRU;][]{cho2014properties, chung2014empirical}, neural Turing machine~\citep{graves2014neural}, memory network~\citep{weston2014memory}, and orthogonal GRU~\citep{jing2018gated}.
-The work of \citet{jozefowicz2015empirical} explored \numprint{10000} related architectures and \numprint{23000} hyperparameter configurations via evolutionary mutations to the LSTM's computational graph and found none to be consistently better than LSTMs.
+The work of \citet{jozefowicz2015empirical} explored \numprint{10000} related architectures and \numprint{230000} hyperparameter configurations via evolutionary mutations to the LSTM's computational graph and found none to be consistently better than LSTMs.
 
 In section~\ref{sec:delay-lstm}, we propose a fundamentally new type of memory cell based on our work, the Delay Network~(DN), and compare its performance in terms of memory capacity to LSTMs.
 We find that stacked LSTMs are unable to compress continuous-time windows of history.
@@ -157,7 +157,7 @@ In particular, section~\ref{sec:delay-rc} compares the performance of RC to the 
 
 A unique set of approaches to training RNNs is rooted in the application of engineering and control-theoretic methods to modelling neurobiological systems~\citep{eliasmith1999developing}.
 We call these top-down methods ``engineered approaches''.
-These methods all assume that some model of the system's desired dynamics (i.e.,~$\V{x}$ in equation~\ref{eq:discrete-dynamical-system}) are known \emph{apriori}.
+These methods all assume that some model of the system's desired dynamics (i.e.,~$\V{x}$ in equation~\ref{eq:discrete-dynamical-system}) are known \emph{a priori}.
 That is, rather than suppose our only knowledge is raw input-output data, many real-world scenarios provide opportunities to model the dynamical system that actually generated the data.
 In practice, this might be some physical model of the dynamical system under consideration, an approximate model that has been identified~\citep{nelles2013nonlinear}, or even some partial observation of the dynamical state.
 Often, the dynamical system is simply a description of a particular computation that we know to be useful, such as a controller for a robotic arm, or the examples provided in section~\ref{sec:dynamics-language}.
@@ -257,7 +257,7 @@ a_i(t) &= G_i \left[ s_i(t) \right] \\
 &= \sum_m \delta \left(t - t_{i\text{,}m} \right) \text{,}
 \end{aligned}
 \end{equation}
-where $s_i(t)$ is the input current to the $i^\text{th}$ neuron, $\left\langle \cdot , \cdot \right\rangle$ denotes a dot-product,
+where $s_i(t)$ is the input current to the $i^\text{th}$ neuron, $\left\langle \cdot , \cdot \right\rangle$ denotes a dot product,
 $a_i(t)$ is the neural activity generated by the $i^{\text{th}}$ neuron encoding the vector $\V{x}(t)$ at time $t$, $G_i \left[ \cdot \right]$ is the nonlinear transfer function modelling the spike-generation of a single neuron,
 $\delta(\cdot)$ is the Dirac delta, and $\left\{ t \right\}_{i\text{,}m}$ is the sequence of spike-times generated by the neuron model in response to the input current.
 
@@ -275,11 +275,11 @@ Nevertheless, a modelling competition centered around fitting biological recordi
 
 The heterogeneous parameters that define the encoding, $\left\{ \left(\V{e}_i, \alpha_i, \beta_i\right) \,:\, i = 1 \ldots n \right\}$, determine the variety of nonlinear responses from the population.
 Typically the length of each encoder, $\| \V{e}_i \|_2$, is fixed to $1$, while $\alpha_i > 0$ controls its length.
-Then $\V{e}_i$ may be interpreted geometrically as a ``preferred direction'' vector, such that its dot-product similarity with $\V{x}(t)$ determines the relative magnitude of $s_i(t)$.
+Then $\V{e}_i$ may be interpreted geometrically as a ``preferred direction'' vector, such that its dot product similarity with $\V{x}(t)$ determines the relative magnitude of $s_i(t)$.
 The bias terms $\beta_i$ effectively determine the sparsity of representation (i.e.,~which neurons are active for a given $\V{x}(t)$), while the gain terms $\alpha_i$ determine the density of spikes relative to $\tau_\text{ref}$ (i.e.,~how many spikes are generated by an active neuron).
 These parameters can be randomly sampled from distributions constrained by the domain of $\V{x}(t)$ and the dynamic range of $G_i \left[ \cdot \right]$, fit from neuroanatomical data (e.g.,~known tuning curves, preferred directions, firing rates, sparsity, etc.; see for instance~\citet{voelker2016a}), predetermined using prior knowledge of the desired transformation~\citep{jgosmann2015}, or trained via backpropagation through time~\citep{rasmussen2018nengodl}.
 By default, we select these parameters such that the neural responses are uniformly distributed with respect to $\V{x}$ across the $q$-dimensional hyperball~\citep[][pp.~51--65]{gosmann2018}.
-In essence, equation~\ref{eq:encoding} defines a high-dimensional nonlinear projection of the vector $\V{x}(t)$, by taking its dot-product with an encoding matrix $E$, and injecting the result into $n$ heterogeneous spike-generators.
+In essence, equation~\ref{eq:encoding} defines a high-dimensional nonlinear projection of the vector $\V{x}(t)$, by taking its dot product with an encoding matrix $E$, and injecting the result into $n$ heterogeneous spike-generators.
 
 Having defined an encoding, we introduce a postsynaptic filter, $h(t)$, which behaves as a model for the synapse by describing the dynamics of a receiving neuron's current.
 Specifically, this filter models the postsynaptic current~(PSC) triggered by action potentials arriving at the synaptic cleft.
@@ -389,14 +389,14 @@ W = E \transpose{\left(D^\V{f}\right)} \text{.}
 \end{equation}
 To project activities from one population to another (or back to itself), they are decoded from an $n$-dimensional neuron space into the $q$-dimensional state-space, and then encoded back into the $n$-dimensional neuron space.
 %where $E$ are the encoders of the postsynaptic population from equation~\ref{eq:encoding}, and $D$ are the decoders of the presynaptic population solved by equation~\ref{eq:decoder_solution}.
-Thus, by linearity, the process of decoding (equation~\ref{eq:trans-decode}) and then encoding (equation~\ref{eq:encoding}), is equivalent to taking the dot-product of the weight matrix $W$ with a vector of neural activations.
+Thus, by linearity, the process of decoding (equation~\ref{eq:trans-decode}) and then encoding (equation~\ref{eq:encoding}), is equivalent to taking the dot product of the weight matrix $W$ with a vector of neural activations.
 Consequently, the matrices $E$ and $D^\V{f}$ are a low-rank factorization of $W$.
 % Intuitively, structure is imposed by the choice of representing $\V{x}(t)$, which in turn becomes latent within the weight matrix.
 Moreover, we remark that by linearity, the addition of multiple connections has the effect of adding together their transformations in state-space. Similarly, any linear transformation of the nonlinear function $T\V{f}(\V{x})$, $T \in \mathbb{R}^{q \times q}$, may be implemented by the decoders $D^\V{f}T$ or by the encoders $ET$---both are optimal and equivalent to one another---without needing to solve for a new set of weights.
 Although this assumes linear synapses, the computations of nonlinear conductance-based synapses may be exploited by the NEF to encode nonlinear functions of the decoded variables across multiple pre-populations~\citep{stoeckel2018}.
 
 This factorization has additional consequences for the computational efficiency of neural simulations.
-The crucial difference between the factorized and non-factorized forms is that it takes $\bigoh{q n}$ operations per simulation time-step to implement this dot-product in the factored form of equation~\ref{eq:factored-weights}, as opposed to $\bigoh{ n^2 }$ operations for a full weight matrix.
+The crucial difference between the factorized and non-factorized forms is that it takes $\bigoh{q n}$ operations per simulation time-step to implement this dot product in the factored form of equation~\ref{eq:factored-weights}, as opposed to $\bigoh{ n^2 }$ operations for a full weight matrix.
 Since $q$ is typically held constant, this yields a factor $\bigoh{ n }$ improvement in simulation time.
 Similarly, this factorizations yields an $\bigoh{ n }$ reduction in memory, which significantly improves the scaling of neuromorphics~\citep{mundy2015}.
 % including those in RC.
@@ -535,7 +535,7 @@ In all of these cases, however, random feedback ultimately leads to an inefficie
 That is, if we know the dynamics of the system that we would like to implement, then the NEF already does just that.
 Many have argued that dynamics in biological systems are unions of low-dimensional attractor manifolds~\citep{sussillo2013opening, cunningham2014dimensionality, waernberg2017low}.
 The NEF imposes such a low-dimensional structure on the weight matrices themselves.
-Learning these dynamics is a somewhat separate matter; the NEF does not \emph{limit} itself to situations where the dynamics are known \emph{apriori}.
+Learning these dynamics is a somewhat separate matter; the NEF does not \emph{limit} itself to situations where the dynamics are known \emph{a priori}.
 Techniques from system identification~\citep{nelles2013nonlinear}, optimization in the time-domain using a teacher signal~\citep{duggins2017incorporating}, and backpropagation through time~\citep{rasmussen2018nengodl}, may all be applied to learn the dynamics from raw data.
 Likewise, Nengo supports the use of random feedback and online RLS learning with full weight matrices, with or without spikes, thus reducing the NEF network to a full-FORCE network.
 The NEF is compatible with all such methods, but makes a preference for those that are amenable to theoretical analysis while being scalable and efficient in time and space.
@@ -752,8 +752,9 @@ PyNN has also been ported over to SpiNNaker, further highlighting the flexibilit
 Several other applications of SpiNNaker are reviewed by \citet{rhodes2018spynnaker}, independently of Nengo.
 
 The next generation of SpiNNaker, dubbed SpiNNaker~2, is currently in development with a prototype chip available for testing~\citep{liu2018memory}.
-The hardware promises to improve upon the speed- and power-efficiency of the first generation by use of improved fabrication processes, advanced per-core power management techniques, and specialized hardware acceleration for the exponential function~\citep{partzsch2017fixed}.
+The hardware promises to improve upon the speed- and power-efficiency of the first generation by use of improved fabrication processes, advanced per-core power management techniques~\citep{hoeppner2019dynamic}, and specialized hardware acceleration for the exponential function~\citep{partzsch2017fixed}.
 \citet{liu2018memory} deploys a deep neural network on the prototype SpiNNaker~2 test chip, realizing power improvements on the order of \numprint{e2} versus a traditional X86 CPU implementation.
+\citet{yan2019efficient} demonstrates a structural plasticity learning rule on the same prototype to validate its power management and hardware acceleration.
 Nengo may be supported at the same time as the actual chip~[personal communication].
 
 \subsection{Braindrop}
@@ -819,7 +820,8 @@ Alternatively, weight matrices can be left unfactored and fully-connected, but t
 \TODO{Cite https://arxiv.org/pdf/1903.02504.pdf}
 
 Nengo~DL~\citep{rasmussen2018nengodl} has been used to implement a fully-connected deep network performing keyword spotting, on Loihi, while outperforming state-of-the-art hardware in energy cost per inference~\citep{blouw2018a}.
-After extensive review of the literature, we have found this to be the first, and currently only published example, outside of Intel's demonstration of sparse pattern representation~\citep{tang2017sparse, davies2018loihi}, to deploy an SNN on the actual chip.
+\citet{tang2019spiking} implemented a simultaneous localization and mapping~(SLAM) algorithm for robotic navigation on Loihi.
+After extensive review of the literature, we have found these two papers to be the only currently published examples, outside of Intel's demonstration of sparse pattern representation~\citep{tang2017sparse, davies2018loihi}, to deploy an SNN on the physical chip.
 
 It is currently unclear how important or useful each of Loihi's features are relative to one another, and especially in the context of target applications.
 We believe that an important avenue of research, and the role of Nengo and the NEF in this context, is to facilitate such exploration, by systematically harnessing relevant features for useful computation, which can then feed back into the co-design of future iterations (as was the case for Neurogrid and Braindrop).

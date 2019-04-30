@@ -1,7 +1,7 @@
 \chapter{Delay Networks}
 \label{chapt:delays}
 
-This chapter has been adapted from, while significantly extending, the work of \citet[][patent pending]{voelker2015computing, dynamicspatent, voelker2018}.
+This chapter has been adapted from, while significantly extending, the work of \citet[][patent pending]{voelker2015computing, dynamicspatent, voelker2018, thesispatent}.
 
 A particularly important dynamical system that has not been discussed before in the NEF literature is the pure \emph{continuous-time delay} line.
 In order to implement such a system, one must represent a \emph{rolling window} of input history, or, in other words, one must \emph{buffer} the input signal into a memory that continuously slides alongside the current input.
@@ -111,8 +111,7 @@ and then map this system onto the synapse using Principle~3.
 However, na\"ively applying this conversion leads to numerical issues in the representation (i.e.,~dimensions that grow exponentially in magnitude), due in part to the factorials in equation~\ref{eq:pade}.
 
 To overcome this problem, we derive an equivalent yet normalized state-space model that we have not encountered elsewhere.
-We do so for the case of $p = q - 1$, since this provides the best approximation to the step-response. We symbolically transform equation~\ref{eq:pade} into a normalized state-space model that avoids the need to compute any factorials.
-We first do so for the special case of $p = q - 1$, since this provides the best approximation to the step-response~\citep{vajta2000some}.
+We do so for the case of $p = q - 1$, since this provides the best approximation to the step-response~\citep{vajta2000some}. We symbolically transform equation~\ref{eq:pade} into a normalized state-space model that avoids the need to compute any factorials.
 We begin by expanding equation~\ref{eq:pade}:
 \begin{align*}
 [q-1/q]e^{-\theta s} &= \frac{\sum_{i=0}^{q-1} \begin{pmatrix}{q-1} \\ i\end{pmatrix} (2q - 1 - i)! (-1)^i \theta^i s^i}{\sum_{i=0}^q \begin{pmatrix}q \\ i\end{pmatrix} (2q - 1 - i)! \theta^i s^i} \\
@@ -131,8 +130,8 @@ This transfer function is readily converted into a state-space model in controll
         \end{alignedat}
     \end{alignedat}
 \end{equation*}
-To eliminate the factorials in $d_i$ and $c_i$, we scale the $i^{\text{th}}$ dimension of the state-vector by $d_{q-1-i}$, for all $i = 0 \ldots q - 1$.
-This is achieved without changing the transfer function by scaling each $(B)_j$ by $d_{q-1-j}$, each $(C)_i$ by $1 / d_{q-1-i}$, and each $(A)_{ij}$ by $d_{q-1-i} / d_{q-1-j}$, which yields the equivalent state-space model:
+To eliminate the factorials in $d_i$ and $c_i$, we scale the $i^{\text{th}}$ dimension of the state-vector by $d_{q-1-i}$, for all $i = 0 \ldots q - 1$, which is equivalent to transforming the system using a diagonal state-space transformation.
+This is achieved without altering the transfer function by scaling each $(B)_j$ by $d_{q-1-j}$, each $(C)_i$ by $1 / d_{q-1-i}$, and each $(A)_{ij}$ by $d_{q-1-i} / d_{q-1-j}$, which yields the equivalent state-space model:
 \begin{equation}
     \begin{alignedat}{2}
         A &= \begin{pmatrix} -v_0 & -v_0 & \cdots & -v_0 \\ v_1 & 0 & \cdots & 0 \\ 0 & \ddots & \ddots & \vdots \\ 0 & 0 & v_{q-1} & 0\end{pmatrix} \text{,} & & \quad\quad \begin{alignedat}{1}
@@ -436,9 +435,11 @@ where $\V{k} = \transpose{\left[ k_0\text{,}\, \ldots \text{,}\, k_{q-1} \right]
 Hence, any integral transform is simply a dot product with $\V{x}(t)$.
 Similarly, one may obtain Taylor expansions by taking dot products with vectors derived by repeatedly differentiating both sides of equation~\ref{eq:basis-interpretation} with respect to $\theta'$ (not shown).
 Analogous statements hold for the Legendre realization from the previous section, whose set of polynomials are shown in Figure~\ref{fig:legendre-basis}.
+
 Crucially, such dot products are precisely what the encoders $\V{e}_i$ compute in equation~\ref{eq:encoding}.
-This implies that the PSC of any neuron, by itself, necessarily represents a particular convolution across the window.\footnote{%
+This implies that the PSC of any neuron, by itself, necessarily represents a particular convolution\footnote{%
 There are infinitely many, since the system is overcomplete when working backwards from $\V{k} \mapsto k(\cdot)$, but we can enforce uniqueness by imposing L2-regularization, for instance.}
+across the window, equivalent to the heterogeneous encoding filters proposed in section~\ref{sec:temporal-heterogeneity}.
 The nonlinearity of each neuron thus provides a nonlinear function of some finite-width filter (Principle~1).
 %Yet, as shown below, this does not restrict our ability to also perform nonlinear computations across the window.
 More generally, the state $\V{x}(t)$ is \emph{encoded} by a heterogeneous population of neurons, which allows for arbitrary nonlinear functions across the window,
@@ -501,7 +502,7 @@ This has numerous consequences that are intertwined: (1) the relationship betwee
 Taking neural constraints into consideration, we do need to separate out $\theta s$ into its dimensional quantities.
 As shown in section~\ref{sec:poisson-spiking}, the frequency of the state-vector being represented can matter.
 This concern is resolved by the use of Poisson spiking, integrate-and-fire neurons, or any other solution to state discrepancy (section~\ref{sec:spike-coding}).
-As well, longer values of $\theta$ are more susceptible to the integration of spiking noise, in the form of ``drift''.
+As well, longer values of $\theta$ are more susceptible to the integration of spiking noise, in the form of ``drift.''
 Lastly, when using a balanced realization, larger values of $q$ require denser interconnectivity ($q \times q$ transform matrices) between all $q$ dimensions, leading to $\bigoh{q^2}$ increase in time and memory requirements.
 Such considerations are addressed in section~\ref{sec:deep-delay-networks} by stacking multiple DNs together to form a Deep Delay Network~(DDN).
 
@@ -944,7 +945,7 @@ Note that $e^0 = I$, and so the oldest segment ($i=0$) is not shifted.
 More generally, $k^{-1} \left( I + e^{A \gamma} + \ldots + e^{A (k-1) \gamma} \right)$ linearly transforms the state-vector to correspond to an input signal where the oldest segment is the average of all segments.
 
 Next, we must ``zoom in'' on the oldest segment.  
-This zooming operation can be done by yet another linear transformation.
+This zooming operation can be accomplished by yet another linear transformation.
 In particular, $Z_k$ is a linear transformation that takes us from a state-vector representing the entire interval of length $\theta$ to a state-vector representing the oldest sub-interval of length $\gamma$.
 This is derived by observing that $B(1 - 1/k, 1)$ maps $\V{x}(t)$ onto the window of input history across the sub-interval $[t - \theta, t - \theta + \gamma]$---sampled along $m$ points---by construction.
 Then $B(0, 1)^+$ reinterprets this sampled signal as a state-vector in the context of the full interval $[t - \theta, t]$.

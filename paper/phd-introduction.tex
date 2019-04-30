@@ -65,7 +65,7 @@ This is in fact the mandate of Nengo DL~\citep{rasmussen2018nengodl}, a Python p
 Deep learning methods have found enormous success, due in part to the black-box nature of the training procedure, which requires a programmer to have virtually no knowledge of the underlying problem being solved.
 However, we do not believe that deeper networks, better training heuristics, nor larger datasets, will be enough to achieve our aforementioned goal.
 Some concerns for conventional deep learning approaches include: the amount of power required to scale traditional ANNs to the size of the human brain~\citep{furber2012build}, the difficulties tuning hyperparameters at scale~\citep{bergstra2015hyperopt}, and the abundance of adversarial attacks on networks trained via backpropagation~\citep{su2019one}.
-More generally, the ``no free lunch theorem'' informs us that a black-box learning algorithm, on its own, will never be enough~\citep{wolpert1996lack}; inevitably, it becomes necessary to incorporate \emph{apriori} knowledge into the structure of ANNs in a manner that biases the training procedure towards the problems being solved.
+More generally, the ``no free lunch theorem'' informs us that a black-box learning algorithm, on its own, will never be enough~\citep{wolpert1996lack}; inevitably, it becomes necessary to incorporate \emph{a priori} knowledge into the structure of ANNs in a manner that biases the solution space of the training procedure towards the problems being solved.
 % Currently this prior knowledge is incorporated into deep learning through a variety of architectures, and the ability to tweak hyperparameters, but we can do better.
 
 But even more fundamentally, the majority of ANNs in use today, including AlphaGo, are applied to \emph{static} inputs to produce \emph{static} outputs.
@@ -89,7 +89,7 @@ Rather, we have evolved to interact with objects in continuously changing enviro
 From a very young age, children can intuitively infer the physics of moving objects, and learn how to interact with those objects to achieve desired outcomes.
 This continues through adulthood, up to the level of socially coordinating our thoughts and behaviours, sculpted by our cumulative experience with the world.
 % Everything that we connect with helps to shape our brains to conceptualize these changes.
-This occurs so naturally that we often take it for granted, but at a very basic basic level, our brains are necessarily constructing explicit and implicit dynamical models of reality, and applying these models
+This occurs so naturally that we often take it for granted, but at a very basic level, our brains are necessarily constructing explicit and implicit dynamical models of reality, and applying these models
 to perform behaviourally relevant computations in real-time.
 
 Consider a real-world example such as driving a car. We must constantly integrate new information with our existing understanding of where we are, where we are headed, and what might happen along the way.
