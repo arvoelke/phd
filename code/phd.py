@@ -24,8 +24,8 @@ datadir = os.path.join(
     '../data')
 
 
-def savefig(name):
-    plt.savefig(os.path.join(figdir, name), dpi=600, bbox_inches='tight')
+def savefig(name, dpi=600):
+    plt.savefig(os.path.join(figdir, name), dpi=dpi, bbox_inches='tight')
 
 
 def datapath(name):
