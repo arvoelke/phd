@@ -714,7 +714,7 @@ These results are consistent with that of the linear benchmark, except for the a
 This is because, as explained previously, the ESN's memory capacity requires linear tuning, which is at odds with the nonlinearities required by functions such as autocorrelation.
 LSMs were again unable to perform the task.
 
-\TODO{We should be able to dramatically improve this spiking result...}
+% \TODO{We should be able to dramatically improve this spiking result...}
 
 \subsection{Force learning}
 \label{sec:force-comparison}
@@ -794,12 +794,8 @@ Backpropagation through time is carried out using the Adam optimizer~\citep{king
 Training is parallelized using Keras and TensorFlow~\citep{abadi2016tensorflow} across four Nvidia Titan Xp GPUs (12\,GB each).\footnote{%
 This took approximately 14 hours in our largest experiment, in stark contrast to the sub-second time that it takes to train a spiking delay network using Nengo.}
 
-\TODO{Show shorter delay experiment.}
-
 We found that, for a time-step of $\dt{} = 2$\,ms, backpropagation could find adequate parameters to solve this task -- that is, the LSTM could in fact accurately represent the entire delay interval consisting of $\bar{\theta} = 100$ time-steps with an NRMSE of about 10\% (not shown).
 However, after decreasing the time-step, by an order of magnitude, to $\dt{} = 200$\,$\mu$s---while increasing the length of data by the same factor so that the data still represents the exact same $1$\,s signals---the performance collapses; accuracy exponentially decays as a function of delay length across the $\bar{\theta} = \numprint{1000}$ time-step window (see Figure~\ref{fig:lstm-capacity}~(b)).
-
-\TODO{Run again with linear units on the output layer. Move the tanh in the DN cell to the input rather than output.}
 
 We then took the exact same code and network specification -- but replaced each LSTM cell with a ``Delay Network~(DN) cell'', defined as follows.
 We consider the $q$-dimensional LTI system described by equation~\ref{eq:delay-system}, with a balanced state-space (section~\ref{sec:software}), and discretized using Euler's method:
@@ -839,9 +835,6 @@ Backpropagation then refines the values of $\bar{\theta}$ and learns to mix weig
     See text for details.
   }
 \end{figure}
-
-\TODO{Show experiment with longer time-step.}
-\TODO{Fit line to (b)-LSTM.}
 
 Running the exact same code and analysis, on the exact same training, validation, and testing data, reveals a dramatic difference in training time between the two approaches.
 We found that the stacked DN takes $52.5$\,s per epoch to train, compared to $102.6$\,s per epoch for the stacked LSTM.
@@ -1072,8 +1065,6 @@ To solve this problem, we are free to scale $\tau$ arbitrarily small, so long as
 Alternatively, if $\tau$ is fixed, then one can use Principle~3 to implement a lowpass filter $\left(\theta s + 1\right)^{-1}$ with arbitrarily small $\theta$, which likewise requires $\bigoh{\theta^{-2}}$ neurons (see Table~\ref{tab:scalability}).
 Our solution can be viewed as a generalization of the latter.
 
-\TODO{verify}
-
 A natural solution falls out of the DN, given by equation~\ref{eq:basis-interpretation}: the current value of $u(t)$ is represented by the population that encodes $\V{x}(t)$.
 It is not obvious that this should be the case, as $u(t)$ has been filtered by the synapse model (e.g.,~a lowpass filter) to produce a filtered version (e.g.,~phase-shifted) of its input.
 Nevertheless, the state-vector is reconstructing an unfiltered version of the window of input history, which includes the current moment in time.
@@ -1216,8 +1207,6 @@ The simulation is started at $t = -1$\,s and stopped at $t = 5$\,s.
     Reproduced from \citet[][Figure~10]{voelker2018}.
   }
 \end{figure}
-
-\TODO{Obtain copyright permission for figure reproduction.}
 
 We also note a qualitative fit between the length-curve for $q=6$ in Figure~\ref{fig:pca} and the peak response-times in Figure~\ref{fig:time-cells}.
 Specifically, Figure~\ref{fig:pca}~(Bottom) models the non-uniform distribution of the peak response-time of the cells as the length of the trajectory of $\V{x}(t)$ through time.

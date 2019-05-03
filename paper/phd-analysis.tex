@@ -76,8 +76,6 @@ This is made possible since we employ a common language and framework for descri
 In section~\ref{sec:linear-extensions}, this idea forms the core idea for our proofs that extend Principle~3.
 In section~\ref{sec:pure_delay}, we demonstrate a method of systematically harnessing miniature delays in axonal spike-transmission to improve the accuracy of longer network-level delays.
 
-\TODO{example application in section~\ref{sec:applications} -- if $B \rightarrow B$ is a delay network, we can then use what we know about amplifying axonal spike delays to make an even longer delay out of the entire system}
-
 \subsection{Unpredictability, chaos, and strange attractors}
 \label{sec:chaos}
 
@@ -387,8 +385,6 @@ The $\sqrt{n}^{-1}$ term follows from the convergence rate of the central limit 
 Under these assumptions, the spike noise asymptotically dominates the static distortion, and the SNN's feed-forward precision scales as $\bigoh{\tau \sqrt{n}}$.
 However, in the context of Principle 3, the transformations of the signals are scaled by $\tau \theta^{-1}$, where $\theta$ is the time-constant of integration for the desired dynamical system, which results in a cancellation and the recurrent SNN having precision that scales as $\bigoh{\theta \sqrt{n}}$.
 
-\TODO{Verify that this makes sense.}
-
 Figure~\ref{fig:nef-error-types}~(c) visualizes a kernel density estimate~\citep[KDE;][]{michael_waskom_2015_19108} of this error ($t > 0.15$\,s).
 A Kolmogorov-Smirnov~(KS) test of $\transpose{\V{d}}a - \hat{x}$, versus a zero-mean Gaussian distribution with equal variance, produces a KS-statistic of $\approx 0.034$ ($p$-value~$< \numprint{e-6}$).
 The KS-statistic is defined as the maximal discrepancy between the empirical cumulative density function~(CDF) and the model CDF~\citep[i.e.,~the supremum of their absolute difference;][]{massey1951kolmogorov}.
@@ -687,19 +683,7 @@ Nothing else needs to be changed in order to compress or expand our perspective 
 This simply follows from dimensional analysis and consistent usage of time-constants and frequencies throughout, which highlights the importance of taking physical dimensions into consideration throughout each level of analysis.
 In theory, this means these trade-offs can be applied to any time-scale, although in practice biological and hardware constraints often determine the relevant time-scales.
 
-\iffalse
-\TODO{Discuss all of the scaling.}
-We usually set $n$ to about $50 \times q$, as this has been found to provide tolerable performance in practice~\citep{braindrop2019}. 
-More neurons may be required depending on the difficulty of the function and the frequency of the inputs.
-For a fixed amount of noise in a representation implemented by an ensemble of $n$ neurons, the current best-known lower-bound predicts the dimensionality $d$ scales as $\Omega \left( n^{\frac{2}{3}} \right)$ for $n$ neurons~citep[][p.~60]{jgosmann2018}.
-Although we don't know the upper-bound, we conjecture that it is $\bigoh{n}$.
-That is, the dimensionality should not be able to scale faster than the neuron count.
-If it could, then each neuron would represent $\omega(1)$ dimensions, which seems physically implausible given access to only $\bigoh{1}$ state variables.
-This limitation could be broken by dendritic computation, for instance if each neuron had access to $\bigoh{n}$ variables distributed along the dendritic tree.
-\fi
-
 \newpage
-\TODO{Check that newpage here is the right thing to do for aesthetics}
 
 \subsection{Completeness}
 \label{sec:nef-turing}

@@ -167,9 +167,6 @@ Reviews of many of these methods are given by \citet{deneve2016efficient}, \cite
 In all cases, these methods provide a procedure for taking a description of some desired dynamical state-vector, and then training a recurrent network of spiking or non-spiking neurons, with varying constraints on the target models' level of biological detail, to represent that state.
 We discuss some of the critical differences below.
 
-\TODO{Also talk about STICK: Spike Time Interval Computational Kernel, a Framework for General Purpose Computation Using Neurons, Precise Timing, Delays, and Synchrony.
-And ``Dynamic Neural Fields as a Step Towards Cognitive Neuromorphic Architectures.''? somewhere?}
-
 It is important to preface our discussion with a reminder that, although all of these approaches are engineered from a top-down modelling perspective, one can still apply BPTT (or any other optimization method) to fine-tune the resulting RNN end-to-end from example input-output pairs -- a hybrid approach that is embraced by the NEF, its software implementation Nengo, and related libraries~\citep{rasmussen2018nengodl, hazan2018bindsnet}.
 In this context, the purpose of these engineered approaches is as follows: incorporate prior knowledge of tasks to dramatically simplify the optimization procedure, provide guarantees regarding scalability and precision, and place appropriate constraints on the initial configuration of the RNN to assist in future rounds of optimization.
 At the same time, this provides greater transparency into the relationships between network parameters, configuration, and function.
@@ -182,8 +179,6 @@ The methods of \citet{thalmeier2016learning} may be viewed as a means of realizi
 Likewise, \citet{jaeger2014controlling} may be viewed as an extension of RC that is essentially an offline variant of FORCE, or a non-spiking NEF network~\citep{aubin2017}.
 In section~\ref{sec:force-comparison}, we find that the NEF % and RC
  outperforms FORCE on a continuous-time memory benchmark, suggesting that FORCE learning may be insufficient for a large class of memory-based tasks.
-
-\TODO{Do we show that RC outperforms FORCE too?}
 
 Balanced spiking networks also share many commonalities with the NEF, primarily a procedure for mapping a dynamical state-vector onto a population of spiking neurons using a low-rank weight matrix that accounts for the dynamics of the neurons and synapses.
 The main benefit of the balanced network approach is that precision scales as $\bigoh{n}$, compared to $\bigoh{\sqrt{n}}$ for the NEF, where $n$ is the number of neurons, by carefully coordinating the variance in spike-timing~\citep[][Figure~11]{boahen2017neuromorph}.
@@ -553,8 +548,6 @@ We find the approach of introducing random high-dimensional feedback to be ineff
   }
 \end{figure}
 
-\TODO{Remove $s$ and replace $J$ with $W$ in figure.}
-
 We now consider the architectural relationships in considerable detail, focusing on the one-dimensional input-output case for notational convenience.
 In the case of RC networks (see Figure~\ref{fig:architectures}a), they make a conceptual separation between a fixed {\it reservoir} of randomly-connected neural units, and a learned {\it readout}.
 The reservoir is driven by encoding the input signal, $u(t) \in \mathbb{R}$, using a random vector, $\V{e}^\text{in} \in \mathbb{R}^n$.
@@ -586,8 +579,6 @@ However, this is not always the case.
 In section~\ref{sec:force-comparison}, we show that this method of re-encoding the output signal does not always improve task performance.  % is sometimes not only suboptimal, but can actually reduce accuracy compared to an equivalent reservoir computer (i.e.,~without the additional FORCE-learned feedback).
 %The NEF provides a theoretical explanation for why this can sometimes be the case.
 This discussion extends to the full-FORCE method~\citep{depasquale2018full}, which learns a full-rank matrix that encodes the same state as in FORCE, but using additional degrees of freedom, similar to \citet{tripp2006neural}.
-
-\TODO{Do we show that RC outperforms FORCE -- mention again here if so}
 
 The Neural Engineering Framework~\citep[NEF;][]{eliasmith1999developing,eliasmith2003a} provides an alternative method for building dynamical neural networks (see Figure~\ref{fig:architectures}c).
 Rather than relying on random feedback, or always re-encoding the output (in the case of FORCE), the NEF optimizes the recurrent weights to represent the desired dynamical state.
@@ -783,10 +774,6 @@ Detailed models have been studied at the circuit level~\citep{benjamintemp2019} 
 In chapter~\ref{chapt:nef-extensions}, we expose a few of these extensions at a theoretical level.
 In chapter~\ref{chapt:results}, we provide applications that demonstrate robust dynamical computation on Braindrop.
 
-\TODO{Mention some details about how the NEF is realized, or point forward to the methods section and say stuff there, while acknowledging Terry again and not taking credit myself.}
-
-% Multicast tree router \citep{merolla2014multicast}
-
 \subsection{Loihi}
 
 Loihi~\citep{davies2018loihi} is Intel's fully digital, barrier-synchronized, neuromorphic architecture, that promotes significant flexibility in its SNN feature set, while being optimized for low power consumption.
@@ -816,8 +803,6 @@ ABR has ported Nengo over to Loihi and used the NEF to simulate a nonlinear adap
 However, since Loihi does not support the use of factored weight matrices at the hardware level, a substantial benefit of the NEF---namely, a linear reduction in the number of multiplies and memory accesses per time-step---is not leveraged at the hardware level.
 As a way to resolve this at the software level, Nengo currently creates intermediate populations to represent latent variables explicitly in spikes, which has the adverse effects of amplifying representational error, increasing the number of neurons, and introducing additional rounds of filtering between layers.
 Alternatively, weight matrices can be left unfactored and fully-connected, but this misses out on potentially dramatic savings.
-\TODO{Cite nengo-loihi github and forward reference methodology section with more details (similar to braindrop).}
-\TODO{Cite https://arxiv.org/pdf/1903.02504.pdf}
 
 Nengo~DL~\citep{rasmussen2018nengodl} has been used to implement a fully-connected deep network performing keyword spotting, on Loihi, while outperforming state-of-the-art hardware in energy cost per inference~\citep{blouw2018a}.
 \citet{tang2019spiking} implemented a simultaneous localization and mapping~(SLAM) algorithm for robotic navigation on Loihi.
@@ -851,10 +836,6 @@ COLAMN~\citep{wijekoon2012vlsi},
 STPU~\citep{smith2017novel},
 DANNA~\citep{daffron2016extensions, mitchell2018danna},
 and many other related prototypes~\citep[e.g.,][]{glackin2009hardware, moradi2011vlsi, brink2013computing, moradi2014event, park201465k, azghadi2015programmable, binas2016precise, kim2018efficient, chen20184096, zheng2018low, larras2018fully}.
-
-\TODO{Analog computing in a modern context: A linear algebra accelerator case study?}
-% A digital neurosynaptic core using embedded crossbar memory with 45 pJ per spike in 45 nm, (GoldenGate SyNAPSE IBM)
-\TODO{Missing ASIC results for deep learning?}
 
 Among these systems, a number support the compilation of NEF networks, including a VLSI prototype~\citep{corradi2014}, several FPGA implementations~\citep{naylor2013managing, wang2014compact, berzish2016, wang2017neuromorphic} including ABR's own FPGA backend~\citep{nengofpga}, several GPUs~\citep{bekolay2014, rasmussen2018nengodl, blouw2018a}, and most recently, TrueNorth~\citep{fischl2018}.
 
