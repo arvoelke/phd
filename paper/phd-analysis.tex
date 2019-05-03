@@ -104,7 +104,7 @@ Notably, this saturation effect is exploited to overload working memory with seq
       An autonomous scalar integrator---the simplest possible recurrent SNN, built using the NEF---exhibiting chaotic neural dynamics.
       (Left)~Two deterministic simulations of the exact same network.
           One is initialized to $x_1(0) = 0$, and the other to $x_2(0) = \numprint{e-15}$.
-          Both simulations fall into the same strange attractor, close to zero.
+          Both simulations fall into the same apparent strange attractor, close to zero.
       (Right)~Plotting the difference in representational states~($\Delta$) and neural states~($\delta$) on a logarithmic scale.
           The neural states diverge exponentially quickly---leaping 30 orders of magnitude in 3 seconds---according to $\| \delta(t) \| \approx \bigoh{e^{\lambda t}}$.
           The representational difference $\Delta$ is essentially zero until $\delta$ hits the diameter of the attractor.
@@ -127,8 +127,8 @@ Now let:
 \end{align*}
 be the difference in representational state and neural state, respectively.
 We find that $\Delta$ remains bounded above by the accuracy of neural representation, as expected.
-However, $\delta$ diverges exponentially over time, indicating that the neural states are within a strange attractor (the Lyapunov exponent $\lambda \approx 8.9$\,s${}^{-1}$ gives the exponential rate of divergence); the voltage vectors are tracing out a fractal manifold embedded within an $n$-dimensional space that cannot be predicted beyond a time-horizon on the order of $\bigoh{\lambda^{-1}} \approx 0.1$\,s.
-Despite this, the NEF is capable of taming the chaos at the neural level and providing a robust estimate at the population level, due to the correspondence between each strange attractor and a stable point in representational space~\citep[][p.~237]{eliasmith2003a}.
+However, $\delta$ diverges exponentially over time, consistent with the neural states being within a strange attractor (the Lyapunov exponent $\lambda \approx 8.9$\,s${}^{-1}$ gives the exponential rate of divergence); the voltage vectors are tracing out a fractal manifold embedded within an $n$-dimensional space that cannot be predicted beyond a time-horizon on the order of $\bigoh{\lambda^{-1}} \approx 0.1$\,s.
+Despite this, the NEF is capable of taming the chaos at the neural level and providing a robust estimate at the population level, due to the correspondence between each apparent strange attractor and a stable point in representational space~\citep[][p.~237]{eliasmith2003a}.
 In section~\ref{sec:nef-robustness}, we remark that this leads to the NEF being robust to a distinctly different type of error.
 
 At a high level, the NEF may be used to implement arbitrary algorithms encoded as dynamical systems (see section~\ref{sec:nef-turing}), which implies that it is not exempt from computability theory. 
@@ -551,7 +551,7 @@ To compute $\variance{\tilde{Y}_i(t)} = \expect{\tilde{Y}_i(t)^2} - \expect{\til
 and then separately determine each expectation.
 The PDFs of $c_i^{e_i(t; T_i)}$ and $c_i^{r_i \cdot (t - T_i) + 1}$ are both $r_i \tau / x$ over their respective domains. This can be seen directly:
 \begin{align*}
-\frac{\partial}{\partial x} P \left( c_i^{e_i(t; T_i)} \le x \right) &= \frac{\partial}{\partial x} P \left( e_i(t; T_i) \le -r_i \tau \ln x \right) \\
+\frac{\partial}{\partial x} P \left( c_i^{e_i(t; T_i)} \le x \right) &= \frac{\partial}{\partial x} P \left( e_i(t; T_i) \ge -r_i \tau \ln x \right) \\
 &= \frac{\partial}{\partial x} \left( 1 - (-r_i \tau \ln x) \right) \\
 &= r_i \tau / x .
 \end{align*}
@@ -579,7 +579,7 @@ Substituting all of these expectations into the initial formula yields:
 \begin{align*}
 \variance{\tilde{Y}_i(t)} = r_i \left( \frac{\left(1 - c_i^2 \right)\left(1 + c_i^{2r_i t}\right)}{2\tau \left(1 - c_i \right)^2} - \frac{\left( c_i^{k_i(t) + 1} + c_i^{2r_i t - k_i(t)} \right)}{\tau(1 - c_i)} - r_i \cdot \left(1 - c_i^{r_i t} \right)^2 \right) 
 \end{align*}
-Asymptotic analysis reveals that this scales as $\bigoh{\tau^{-2}}$ as $t \rightarrow 0^+$.
+Asymptotic analysis reveals that this scales as $\bigoh{\tau^{-2}}$ as $\tau \rightarrow 0^+$.
 As well, we use the fact that regularized least-squares finds
 $\V{d}_i^\V{f}$ that are independently distributed according to $\mathcal{N}(0, \sigma^2)$ where $\sigma = \bigoh{n^{-1}}$ -- i.e., variance scales as $\bigoh{n^{-2}}$.
 Finally we use equation~\ref{eq:a_expectation} in the second step below, and then leverage the property that for any two uncorrelated \emph{zero-mean} variables, $A$ and $B$, we have $\variance{AB} = \variance{A}\variance{B}$.
