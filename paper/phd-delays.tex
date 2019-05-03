@@ -378,6 +378,7 @@ B = \begin{pmatrix*}[r] 1 \\ -3 \\ 5 \\ -7 \\ 9 \\ -11\end{pmatrix*} \text{.}
 % C = \begin{pmatrix} 1 & 1 & 1 & 1 & 1 & 1 \end{pmatrix} 
 \end{equation}
 For the special case of $q = 1$, this reduces to the first-order lowpass $\theta \dot{x}(t) + x(t) = u(t)$, as in equation~\ref{eq:lowpass-laplace} ($\tau \leftarrow \theta$).
+For $q > 1$, the $q^\text{th}$ dimension recursively extends the system for $q - 1$ to represent a $q^\text{th}$-order polynomial of history.
 In general, the crucial result is that the state-space of this LTI system optimally reconstructs its input history via the shifted Legendre polynomials:
 \begin{equation} 
 \boxed{ u(t - \theta') \approx \sum_{i=0}^{q-1} \tilde{\mathcal{P}}_{i} \left(\frac{\theta'}{\theta} \right) \, x_{i}(t) \text{,} \quad 0 \le \theta' \le \theta \text{.} }
@@ -389,7 +390,7 @@ In summary, equation~\ref{eq:legendre-delay} has an identical transfer function 
 \fig{legendre-circuit-diagram}{1.0}{Scalable circuit diagram representation of the Legendre Delay Network.}{
     Circuit diagram that represents an efficient implementation of the Legendre realization of the Delay Network ($q = 6$).  %, discretized using Euler's method.
     Large circles correspond to each dimension of $\V{x}$. 
-    Small circles are elements that add (arrow head) or subtract (circular head) their inputs.
+    Small circles indicate elements that add (arrow head) or subtract (circular head) their inputs.
     The $i^\text{th}$ dimension scales its input (triangular head) by $\dt{} (2i + 1) \theta^{-1}$, for $i = 0 \ldots q - 1$.
     Recurrent self-loops, from each dimension back to itself, are omitted for simplicity.
 }
@@ -397,7 +398,8 @@ In summary, equation~\ref{eq:legendre-delay} has an identical transfer function 
 Figure~\ref{fig:legendre-circuit-diagram} illustrates equation~\ref{eq:legendre-delay}, discretized using Euler's method, with $q = 6$ dimensions.
 This design exploits the alternation of signs, and reuses the intermediate computations within the upper and lower triangles of $A$, by decomposing them into two separate cascading chains of summations that are then combined by a feedback loop.
 These same computations are also reused to implement $Bu$ by supplying $u$ to the appropriate intermediate nodes.
-This circuit requires $\bigoh{q}$ wires, adders, and state-variables, thus making it linearly scalable in both space and time (see section~\ref{sec:delay-scalability}).
+Increasing the dimensionality of the system by one requires appending $\bigoh{1}$ wires, adders, and state-variables, to the existing circuitry.
+In total, this circuit requires $\bigoh{q}$ wires, adders, and state-variables, thus making it linearly scalable in both space and time (see section~\ref{sec:delay-scalability}).
 
 \subsection{Nonlinear characterization}
 \label{sec:delay-nonlinear}
@@ -518,8 +520,8 @@ This has numerous consequences that are intertwined: (1) the relationship betwee
     Each state-variable approximates the integral of a Legendre polynomial, and $y(t) = \sum_i x_i(t)$ sums across all dimensions at each moment in time.
 }
 
-Figure~\ref{fig:legendre-delay} demonstrates that the delay network scales to over $\numprint{e4}$ dimensions to efficiently maintain information across a simulation lasting more than $\numprint{e9}$ time-steps.
-This is accomplished by implementing the design from Figure~\ref{fig:legendre-circuit-diagram} in C++, which takes $\bigoh{q}$ time and memory per simulated time-step using a traditional CPU.
+Figure~\ref{fig:legendre-delay} reveals that the delay network scales to over $\numprint{e4}$ dimensions to efficiently maintain information across a simulation lasting more than $\numprint{e9}$ time-steps.
+This is demonstrated by implementing the design from Figure~\ref{fig:legendre-circuit-diagram} in C++, which takes $\bigoh{q}$ time and memory per simulated time-step using a traditional CPU.
 
 Taking neural constraints into consideration, we do need to factor $\theta s$ into its dimensional quantities.
 As shown in section~\ref{sec:poisson-spiking}, the frequency of the state-vector being represented can matter.
