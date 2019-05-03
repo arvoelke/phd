@@ -527,7 +527,7 @@ Taking neural constraints into consideration, we do need to factor $\theta s$ in
 As shown in section~\ref{sec:poisson-spiking}, the frequency of the state-vector being represented can matter.
 This concern is resolved by the use of Poisson spiking, integrate-and-fire neurons, or any other solution to state discrepancy (section~\ref{sec:spike-coding}).
 As well, longer values of $\theta$ are more susceptible to the integration of spiking noise, in the form of ``drift.''
-Lastly, when using a balanced realization, larger values of $q$ require denser interconnectivity ($q \times q$ transform matrices) between all $q$ dimensions, leading to $\bigoh{q^2}$ increase in time and memory requirements.
+Lastly, when discretizing the system in time (e.g.,~ZOH) or using a non-canonical realization (e.g.,~balanced), larger values of $q$ require denser interconnectivity ($q \times q$ transform matrices) between all $q$ dimensions, leading to $\bigoh{q^2}$ time and memory requirements.
 Such considerations are addressed in section~\ref{sec:deep-delay-networks} by stacking multiple DNs together to form a Deep Delay Network~(DDN).
 
 To summarize, the properties of scaling $\theta$ are physically coupled to considerations of which input frequencies need to be delayed, and to what degree of precision.
@@ -566,6 +566,7 @@ As well, $95\%$ confidence intervals were bootstrapped and plotted using Seaborn
 We ported a Python implementation of the ESN from \cite{lukovsevivcius2009reservoir} to Nengo, and implemented it analogously to the DN.
 Nengo allows us to consider populations of either spiking LIF neurons or non-spiking neurons with various rate curves, without any additional changes to the model specification.
 In particular, LSMs were implemented by replacing the $\tanh$ units with LIF spiking neurons, making them comparable to our NEF networks but with full-rank weight matrices.
+
 The hyperparameters of each method were optimized using $200$ iterations of Hyperopt~\citep{bergstra2013making} with $3$ trials per iteration, to maximize the validation error for $200$\,ms delays (see Table~\ref{tab:hyperopt}).
 Hyperparameters include an overall gain on the recurrent feedback matrix (gain), a normalization factor for the input (radius), time-constants on both the readout and recurrent filters ($\tau_\text{readout}$, $\tau_\text{recurrent}$), L2-regularization parameters for applicable least-squares problems ($\sigma^2_\text{readout}$, $\sigma^2_\text{recurrent}$), and the dimensionality of the delay network ($q$).\footnote{%
 Hyperopt was used to the benefit of LSMs and ESNs. All hyperparameters (apart from $q$) had minimal effect on the DN's performance compared to the usual defaults in Nengo.}
@@ -595,8 +596,11 @@ Hyperopt was used to the benefit of LSMs and ESNs. All hyperparameters (apart fr
 In all cases, we construct a reservoir of $\numprint{1500}$ neurons, and then train separate linear readouts to approximate various delays ranging from $100$--$200$\,ms ($\dt{} = 1$\,ms).
 For the NEF case, the prescribed dynamical system is a $\theta = 200$\,ms delay, implemented by mapping equation~\ref{eq:ss-delay} onto a discretized lowpass (see equation~\ref{eq:discrete-p3}).
 In section~\ref{sec:delay-lstm} we show that the delay length can be trained from raw data.
+
+\newpage % \TODO{Check that this improves aesthetics.}
+
 Importantly, the same networks are used to compute all of the different delays reported.
-We thus conceptualize the DN as an optimized ``low-dimensional reservoir''.
+We thus conceptualize the DN as an optimized ``low-dimensional reservoir.''
 %The input to each network is randomly sampled $25$\,Hz band-limited white noise.
 Compiling all of the equations of this network, for clarity (see Figure~\ref{fig:delay-architecture}):
 \begin{equation} \label{eq:delay-compiled}
@@ -611,7 +615,7 @@ a &= e^{-\frac{\dt{}}{\tau}} \\
 \bar{B}^H &= \frac{1}{1-a}\bar{B} \text{.}
 \end{aligned}
 \end{equation}
-We remind the reader that $A$ and $B$ may be transformed by any of the state-space realizations from section~\ref{sec:software} before proceeding with the remaining numerical machinery.
+We remind the reader that $A$ and $B$ may be transformed by any of the state-space realizations from section~\ref{sec:software}, or starting with the Legendre realization from section~\ref{sec:legendre-basis}, before proceeding with the remaining numerical machinery.
 The final matrices $(\bar{A}^H\text{,}\, \bar{B}^H)$ determine the transformations to be implemented using Principles~1 and~2 of the NEF, which in turn will nonlinearly encode $\V{x}[t]$ by our extensions to Principle~3.
 
 \begin{figure}
