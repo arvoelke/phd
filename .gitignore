@@ -1,0 +1,51 @@
+# For LaTeX
+*.aux
+*.glo
+*.idx
+*.log
+*.toc
+*.ist
+*.acn
+*.acr
+*.alg
+*.bbl
+*.blg
+*.dvi
+*.glg
+*.gls
+*.ilg
+*.ind
+*.lof
+*.lot
+*.maf
+*.mtc
+*.mtc1
+*.out
+*.tdo
+*.loe
+*.synctex.gz
+
+# For latexmk
+*.fdb_latexmk
+*.fls
+
+# For Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# For doit
+.doit.db
+
+# For vim
+*.swp
+*.swo
+
+# Outputs
+paper/phd.pdf
+figures/*-eps-converted-to.pdf
+*scratch*
+
+# Jupyter stuff
+.ipynb_checkpoints/
+

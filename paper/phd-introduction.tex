@@ -1,0 +1,140 @@
+% https://tex.stackexchange.com/questions/32208/footnote-runs-onto-second-page
+\interfootnotelinepenalty=10000
+
+\chapter{Introduction}
+
+Computation cannot be physically realized without time.
+Whether we consider the discrete switching of voltages across transistors in a
+digital computer,
+or the continuous flow of charges across ion channels within the brain -- 
+all physical systems, that we currently know of, make progress on their computations
+by changing over time.
+Digital computers pipeline their computations through multiple cores with energetically-expensive access to distant memory, while our brains consume only twenty watts of power by harnessing the dynamics of a biophysical substrate.
+A leitmotif of this thesis is a computational paradigm
+in between these two extremes: neuromorphic computing.
+Here, researchers draw inspiration from how the
+brain dynamically performs computations
+to engineer low-power digital and analog circuits that emulate its fundamental principles.
+
+The emerging field of neuromorphic computing has already
+witnessed many successes backed by large companies, small start-ups, and new research
+programs being established at various institutions all around the world.
+Applied Brain Research (ABR), Intel, IBM, and many others~\citep{marketreport2018}, are establishing themselves as key players in the field, while a collaborative landscape is being fostered across a diverse set of academic communities attempting to use neuromorphic hardware, including the Telluride Neuromorphic Cognition Engineering Workshop~\citep{cohen2001report}, Capo Caccia Cognitive Neuromorphic Engineering Workshop, Nengo Summer School~(ABR's ``Brain Camp''), and Intel's Neuromorphic Research Community~(INRC).
+
+Despite growing excitement, there exist many challenges when it comes to using
+neuromorphic hardware to perform some desired task.
+Generally speaking, neuromorphic programming forces us to rethink our traditional,
+\citet{von1958}, understanding of computation, and redesign our algorithms to leverage distributed networks of noisy, heterogeneous units, that locally process their inputs and communicate via spikes -- also known as Spiking Neural Networks~(SNNs).
+These networks serve as powerful models of neural computation, capable in theory of everything that we can do, while consuming extraordinarily low amounts of energy.
+Biological nervous systems already leverage the computational power of SNNs quite successfully.
+Thus, our approach is to borrow existing
+principles and models from neuroscience, exploit their properties using tools from mathematics and engineering,
+and use software methods to synthesize the resulting networks \emph{in silico}.
+Moreover, the frameworks and methods that we use to accomplish this should be extensible---able to incorporate increasingly-sophisticated levels of biological detail---so long as such details are computationally useful at a functional level, or shown to benefit some resource-power-accuracy trade-off.
+
+To what end?
+By virtue of emulating core principles of brain function, we hope to realize algorithms that consume far less power, and scale more readily to massively-parallelized computing architectures running in real-time.
+But such algorithms must also be practically useful.
+To flip this on its head: we require frameworks that describe what some hardware is doing at the lowest level,
+so we may systematically harness its capabilities to perform useful computations at the highest level.
+Analogous to how a single compiler can translate the same C++ code
+to dozens of physically distinct digital architectures, we strive to systematically describe
+how the same dynamical computations can be flexibly mapped onto distinct spiking neuromorphic architectures.
+
+The primary goal of this thesis is to explore the above characterization of neuromorphics.
+In doing so, we elucidate a general recipe for implementing efficient dynamical computations on neuromorphic hardware, empower theorists and practitioners with deeper insights into subtle relationships between network configuration and function, and demonstrate these methods on state-of-the-art neuromorphic chips: Braindrop~\citep{braindrop2019} and Loihi~\citep{davies2018loihi}.
+Ultimately, this unveils a class of computations where neuromorphic hardware excels, and further automates the process of engineering algorithms for such hardware.
+
+Researchers have already learned a great deal through the co-design of neuromorphic hardware and spiking algorithms.
+Theoretical frameworks help guide design decisions, while hardware constraints demand relevant extensions to theoretical frameworks and software tools; both processes give-and-take in a dynamic feedback loop.
+The general approach taken by this thesis adopts a software stack and nonlinear dynamical systems framework
+for describing computations within vector spaces.
+This approach is known as the Neural Engineering Framework~\citep[NEF;][]{eliasmith2003a}.
+The general-purpose neural simulator, Nengo~\citep{bekolay2014}, natively supports NEF networks and a variety of neuromorphic backends.
+This software is extended by the methods described in this thesis.
+The ultimate goal of this approach is to develop a unified set of tools for constructing
+artificially intelligent agents, that scale to the same kinds of tasks that
+humans can perform, while running on neuromorphic hardware consuming several orders of magnitude less power than a traditional computer.
+Significant progress has been made in this direction over the past three decades.
+Although we still have a long ways to go, this thesis aims to highlight a promising path for neuromorphics.
+
+When confronted with the ambitious goal of artificially reproducing human intelligence, computer scientists will often point towards
+the popularity of deep learning~\citep{lecun2015deep} and its recent successes such as AlphaGo~\citep{gibney2016google}.
+First and foremost, we seek to embrace the methods of deep learning, by incorporating its architectures and training methodologies into our toolbox.
+This is in fact the mandate of Nengo DL~\citep{rasmussen2018nengodl}, a Python package that combines Nengo and TensorFlow into a hybridized framework that automates backpropagation across spiking, non-spiking, and NEF-style recurrent neural networks -- broadly referred to as the class of Artificial Neural Networks~(ANNs).
+Deep learning methods have found enormous success, due in part to the black-box nature of the training procedure, which requires a programmer to have virtually no knowledge of the underlying problem being solved.
+However, we do not believe that deeper networks, better training heuristics, nor larger datasets, will be enough to achieve our aforementioned goal.
+Some concerns for conventional deep learning approaches include: the amount of power required to scale traditional ANNs to the size of the human brain~\citep{furber2012build}, the difficulties tuning hyperparameters at scale~\citep{bergstra2015hyperopt}, and the abundance of adversarial attacks on networks trained via backpropagation~\citep{su2019one}.
+More generally, the ``no free lunch theorem'' informs us that a black-box learning algorithm, on its own, will never be enough~\citep{wolpert1996lack}; inevitably, it becomes necessary to incorporate \emph{a priori} knowledge into the structure of ANNs in a manner that biases the solution space of the training procedure towards the problems being solved.
+% Currently this prior knowledge is incorporated into deep learning through a variety of architectures, and the ability to tweak hyperparameters, but we can do better.
+
+But even more fundamentally, the majority of ANNs in use today, including AlphaGo, are applied to \emph{static} inputs to produce \emph{static} outputs.
+For a board game such as Go, this is forgivable, as the entire state of the game is encapsulated by the current state of the board itself, and so there is technically no need to consider any history in order to optimize across future states.\footnote{%
+Practically speaking, there could still be a benefit, for a sub-optimal player, to knowing the history of the game in order to better predict the opponent's strategy.}
+Nevertheless, this points towards a thematic concern: time is not being treated as a continuous dimension of computation in many of the most successful methods, which may limit their applicability to many real-world problems.
+For instance, convolutional ANNs are most often deployed in video processing tasks by classifying objects in single frames,  %, without internal knowledge of how these objects might move or behave.
+sampled at some discrete interval, and independently from one another.
+Recurrently connected networks are an exception that we embrace, but they come with many challenges that we will discuss.
+In general, most methods do not respect time as being a physical dimension that underpins the dynamics of the system's input, output, or processing units;
+in typical ANNs, time is not a variable in the neuron models, synapse models, nor any of the computational elements.
+% Consequently, training these networks becomes an art-form than a science, 
+% This pattern is beginning to reverse, with examples such as deep LSTMs and qRNNs for machine translation and speech synthesis.
+% However, we argue that we can do even better, by arming ourselves with tools for better understanding the role of time, and being able to engineer specific dynamic computations into RNNs.
+
+In contrast, the human brain is a physical system that continuously processes information over time.
+This is crucial for a cognitive agent embodied in a dynamic environment wherein all interactions depend on internally and externally evolving states.
+The brain naturally learns from interacting with its environment over many different time-scales. 
+For instance, our brains are not programmed to recognize static objects at discrete moments in time.
+Rather, we have evolved to interact with objects in continuously changing environments, from which the perception of object recognition emerges.
+From a very young age, children can intuitively infer the physics of moving objects, and learn how to interact with those objects to achieve desired outcomes.
+This continues through adulthood, up to the level of socially coordinating our thoughts and behaviours, sculpted by our cumulative experience with the world.
+% Everything that we connect with helps to shape our brains to conceptualize these changes.
+This occurs so naturally that we often take it for granted, but at a very basic level, our brains are necessarily constructing explicit and implicit dynamical models of reality, and applying these models
+to perform behaviourally relevant computations in real-time.
+
+Consider a real-world example such as driving a car. We must constantly integrate new information with our existing understanding of where we are, where we are headed, and what might happen along the way.
+This requires not only an intuitive understanding of the physics of the car, but models of how other drivers behave on the road in the context of changing traffic lights and road conditions, all of which play out in parallel while we flexibly plan and coordinate our actions.
+Likewise, consider any actively engaging task or hobby that you enjoy.
+I speculate this activity requires some degree of mentally or physically coordinated interaction with the world, on a similar level of dynamic complexity as in the driving example, such as: playing a video game, participating in a sport, engaging with some form of media, playing music, drawing, dancing, and so forth.
+Besides such activities being meaningful, fun, and beautiful, they all share the common motif of recruiting a variety of systems in a dynamically coordinated fashion.
+% Abstractly, we would like to conceptualize this as a compression hierarchy and decompression hierarchy whose two outside ends are coupled in time. Inside is ones own personal representation of the activity (see Fig. ???). At the core, the system strives to create the stable representation of an `illusion' that all of this takes place at once.
+% If one is having fun, then this internal representation will try its best to encompass both ends.
+
+To help appreciate how extraordinary such tasks are for the human brain, we should recognize that the mechanisms involved do not have a perfect memory of past inputs.
+Each neuron locally processes some signal by continuously encoding it into spike trains.
+These action potentials evoke postsynaptic currents~(PSCs) that decay exponentially on the order of milliseconds.
+Memories emerge from these dynamics, as changes to activation patterns, adaptive states, and synaptic weights, all reflect the histories of representations along a myriad of time-scales.
+The time-scales over which these mechanisms interface with the world, and interact with each other, determines, and constrains, all of our perceptions, thoughts, and actions.
+Remarkably, this is all accomplished by a collection of approximately one-hundred billion neurons, connected by over one-hundred trillion\footnote{%
+It is difficult to comprehend the sheer magnitude of this number; one-hundred trillion is more than the available estimates of the number of galaxies in the observable universe, trees on the earth, fish in the ocean, and digits of $\pi$ that have been computed -- all combined (at time of writing).
+}
+synapses, processing these signals sparsely across space and time, while consuming only twenty watts~\citep{koch2014} -- about the same energy as a typical household CFL bulb.
+
+This ``signal processing view'' of computation is fundamentally different from conventional views of computation targeted for conventional computers.
+In the former view, time is intrinsic to the state of all physical ``devices'' performing the computation~(i.e.,~neurons and synapses), which are themselves necessarily tied to the timing and dynamics of the overall function as a consequence of actually implementing the function themselves.
+However, in the conventional view, the time that a computation takes is an implementation detail that is mostly decoupled from the input-output relation.
+As such, there is currently an important distinction between the computational approaches taken by the neuromorphic community and by those who program traditional digital computers.
+This is not simply a matter of biological detail, but more crucially a matter of thinking about the system that is actually solving these tasks as a collection of signal processors whose dynamics are coupled to the task at hand by the physics of time.
+If our aim is to build artificial systems that are as useful, robust, capable, and scalable as the human brain, then we should strive to understand computation in such terms.
+
+The approach we take considers time as a fundamental starting point, and thus situates dynamics front-and-center; we bridge the time-scales of the entire system, down from the levels of spikes and postsynaptic currents, up to the levels of reaction times and behaviours. 
+This involves developing an extensible theoretical framework that links together the mechanisms of an SNN, its parameters, and some desired class of computations.
+We validate this model of computation by deploying these SNNs on low-power neuromorphic hardware designed to emulate key biological principles.
+Based on these same principles, we develop theory connecting the mathematics of Pad\'e and Legendre, to reveal a novel recurrent architecture that can predict chaotic time-series with greater memory capacity and performance surpassing state-of-the-art recurrent neural networks, including Long Short-Term Memory~(LSTM), Reservoir Computing~(RC), and ``FORCE'' networks.
+% There is no arithmetic logic unit, random-access memory, or instruction set.
+
+%Another significant motivating factor for this work is the recent surge in neuromorphic computing architectures such as SpiNNaker~\citep{mundy2015efficient}, Neurogrid~\citep{choudhary2012silicon}, Brainstorm~\citep{brainstorm}, and IBM's TrueNorth~\citep{merolla2014million}.
+%These platforms are massively-parallel low-power analog and/or digital systems that are designed specifically to simulate large-scale SNNs rivalling the complexity of the human brain.
+%Despite the growing excitement surrounding these platforms, the community is struggling to fully unlock the computational power of this hardware.
+%We believe this is primarily the result of peoples' inability to reconcile their discrete {\it von Neumann}-like understanding of conventional algorithms with the continuous brain-like processing of neuromorphic hardware.
+%To take full advantage of such hardware, our `compilers' must account for the effects of simulated neuron models and synaptic models at the system level, and moreover exploit these effects in useful ways whenever possible.
+%This has forced us to come full circle; once again we must understand computation in terms of the brain's processing units.
+
+%The remainder of this thesis will be organized as follows.
+%We will first survey existing methods of building RNNs (both spiking and non-spiking) and recent neuromorphic hardware architectures.
+%We will then review the main ideas and tools that we use from control theory, linear systems theory, nonlinear dynamics, and systems design.
+%Therefore, this thesis will theoretically explore ideas and to solve problems that arise from taking the above view of how the brain processes information. This will be supplemented by numerical simulations which validate theories, specific examples which demonstrate applicability, and connections to experimental studies which support or constrain our models when appropriate.
+%Many of these problems are driven by current unpublished challenges within the neuromorphic community.
+%A secondary goal is to demonstrate that these methods are practically useful by surpassing state-of-the-art results in machine learning, although we will not consider it a failure if this is not achieved within the remaining time span of the thesis, since there is still much ground to cover in theoretical foundations.
+%Overall we aim to reveal new insights and make new methods widely available, that we hope will prove useful to engineers, theorists, and practitioners alike.
+

@@ -1,0 +1,53 @@
+% https://tex.stackexchange.com/questions/65544/how-to-link-table-of-contents-in-thesis-pdf
+\cleardoublepage
+\renewcommand\contentsname{Table of Contents}
+\tableofcontents
+\cleardoublepage
+\phantomsection
+
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+\cleardoublepage
+\phantomsection
+
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+\cleardoublepage
+\phantomsection
+
+\addcontentsline{toc}{chapter}{List of Theorems}
+\listoftheorems[ignoreall,show={theorem,lemma}]
+\cleardoublepage
+\phantomsection
+
+\chapter*{Mathematical Conventions}
+\addcontentsline{toc}{chapter}{Mathematical Conventions}
+\label{typography}
+
+This thesis follows standard mathematical conventions of using lower-case italic variables~($u(t)$) to represent scalar quantities, lower-case bold variables~($\V{x}(t)$) to represent vector quantities, upper-case italic variables~($A$) to represent matrices, and Greek letters~($\tau$, $\theta$) to represent quantities with a unit of time.
+Bars are included above variables ($\bar{A}$) to indicate discretization in time.
+Depending on context, $F(s)$ or $F(z)$ are used to represent complex values in the Laplace $s$-domain, or digital $z$-domain, respectively.
+Big~$\bigoh{\cdot}$ notation is used informally to denote the growth rate of functions.
+
+\cleardoublepage
+\phantomsection
+
+\begin{figure}
+\centering
+\vspace*{\fill}
+\begingroup
+\includegraphics[width=0.6\columnwidth]{yang-peng-telluride-back-2018.png}
+\endgroup
+
+\vspace{1em} 
+
+\caption*{{\tiny \emph{You would say to God, ``How did you make the mountains?'' and he would say... ``Well, you're asking me to describe in words how I made the mountains, and there are no words which can do this. Words cannot tell you how I made the mountains any more than I can drink the ocean with a fork... It would take millions of years, and you would be bored with my description, long before I got through it... because I didn't create the mountains with words, I just did it. Like you open and close your hand. You know how you do this, but can you describe in words how you do it? ... You're conscious, aren't you. Don't you know how you manage to be conscious?''}~\textasciitilde~Alan Watts}}
+
+\vspace*{\fill}
+\end{figure}
+
+\cleardoublepage
+\phantomsection
+
+% Change page numbering back to Arabic numerals
+\pagenumbering{arabic}

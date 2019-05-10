@@ -1,0 +1,103 @@
+% suppress the page number and headers/footers.
+\pagestyle{empty}
+\pagenumbering{roman}
+
+\begin{titlepage}
+  \begin{center}
+    \vspace*{1.0cm}
+
+    \Huge
+    {\bf Dynamical Systems in Spiking Neuromorphic Hardware}
+
+    \vspace*{1.0cm}
+
+    \normalsize
+    by \\
+
+    \vspace*{1.0cm}
+
+    \Large
+    Aaron Russell Voelker \\
+
+    \vspace*{3.0cm}
+
+    \normalsize
+    A thesis \\
+    presented to the University of Waterloo \\
+    in fulfillment of the \\
+    thesis requirement for the degree of \\
+    Doctor of Philosophy \\
+    in \\
+    Computer Science \\
+
+    \vspace*{2.0cm}
+
+    Waterloo, Ontario, Canada, 2019 \\
+
+    \vspace*{1.0cm}
+
+    \copyright\ Aaron Russell Voelker 2019 \\
+  \end{center}
+\end{titlepage}
+
+% no headers, but yes page numbers (starting from ii.)
+\pagestyle{plain}
+\setcounter{page}{2}
+
+\cleardoublepage
+
+\begin{center}\textbf{Examining Committee Membership}\end{center}
+
+\noindent
+The following served on the Examining Committee for this thesis.
+The decision of the Examining Committee is by majority vote.
+
+\noindent\begin{tabular}{@{}ll}\\
+    External Examiner & Adrienne Fairhall \\ & \pbox{20cm}{
+        Professor, \\
+        Department of Physiology and Biophysics, \\
+        University of Washington} \\ \\
+    Supervisor & Chris Eliasmith \\ & \pbox{20cm}{
+        Professor, \\
+        Department of Philosophy and \\
+        Department of Systems Design Engineering, \\
+        University of Waterloo} \\ \\
+    Internal Member & Jeff Orchard \\ & \pbox{20cm}{
+        Associate Professor, \\
+        David R. Cheriton School of Computer Science, \\
+        University of Waterloo} \\ \\
+    Internal Member & Ali Ghodsi \\ & \pbox{20cm}{
+        Professor, \\
+        Department of Statistics and Actuarial Science and \\
+        David R. Cheriton School of Computer Science, \\
+        University of Waterloo} \\ \\
+    Internal-External Member & Sue Ann Campbell \\ & \pbox{20cm}{
+        Professor, \\
+        Department of Applied Mathematics, \\
+        University of Waterloo}
+\end{tabular}
+
+\cleardoublepage
+
+\begin{center}\textbf{Author's Declaration}\end{center}
+
+\noindent
+This thesis consists of material all of which I authored or co-authored: see Statement of Contributions included in the thesis. This is a true copy of the thesis, including any required final revisions, as accepted by my examiners.
+
+\bigskip
+
+\noindent
+I understand that my thesis may be made electronically available to
+the public.
+
+\cleardoublepage
+
+\begin{center}\textbf{Statement of Contributions}\end{center}
+
+\noindent
+Yang Voelker provided the artwork for Figure~\ref{fig:architectures} as well as the brain illustration at the end of this front matter (the winning T-shirt design for the 2018 Telluride Neuromorphic Workshop).
+Figure~\ref{fig:touch-network} was designed in collaboration with Ken E. Friedl.
+Derivations from Lemma~\ref{lemma:coord-transform}, equation~\ref{eq:pulse-extended-double-exp}, and section~\ref{sec:mismatch}, extend work in collaboration with my co-authors, Kwabena Boahen and Terrence C. Stewart, both of whom provided important steps in accounting for pulse-extended double-exponential synapses with time-constant mismatch.
+My advisor, Chris Eliasmith, helped author and edit several publications that have been adapted and extended throughout; references are included at the top of each applicable section.
+
+\cleardoublepage

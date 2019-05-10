@@ -1,0 +1,104 @@
+\chapter{Conclusions}
+\label{chapt:conclusions}
+
+We have discussed a number of theoretical and practical results involving the synthesis of dynamical systems, their implementation in spiking neural networks, and deployment on neuromorphic hardware.
+We now summarize our main contributions.
+
+First, section~\ref{sec:sub-principles} observes a number of computational ``sub-principles'' that follow from the adoption of the NEF's three principles.
+Arbitrary network topologies reduce to a single recurrently connected layer with sparse encoders, decoders with block structure isomorphic to the original graph structure, and a partitioning of time-constants.
+Heterogeneous dynamical primitives form the basis for neural computation, and may be expressed within a unified language to facilitate mathematical analyses that leverage the interchangeability and composability of such primitives.
+Chaotic strange attractors emerge from even the simplest spiking implementations of such dynamical systems.
+The NEF represents state-vectors by linearly projecting them onto the postsynaptic currents of neurons,  independent of any considerations of what it means to use a ``rate code'' or a ``spike-time code.''
+Likewise, these state-vectors represent frequency content that grows linearly with the relative amount of energy required to drive the synapses of each postsynaptic neuron, for a fixed level of precision.
+
+Second, section~\ref{sec:nef-suitability} addresses the suitability of the NEF as a framework for compiling SNNs onto neuromorphic hardware.
+Correctness is guaranteed by Theorem~\ref{thm:correctness}, which teases apart three sources of error in the NEF, and provides a novel proof of the NEF's precision, conditioned upon a specific criteria that characterizes the distribution of neural states.
+Scalability is guaranteed by the previous theorem, in conjunction with a number of prior observations made about time, space, and energy requirements that carefully consider the physical dimensions of relevant quantities (Table~\ref{tab:scalability}).
+Completeness is provisioned by the Turing-completeness of dynamical systems, which justifies our assertion that spiking neural networks---trained with the NEF to obey some dynamics---represent powerful models of computation.
+Robustness is ensured by a volume of prior work, together with our observation that the NEF is robust to white noise bounded by the diameter of its neural basin of attraction.
+Extensibility is demonstrated by a large number of Nengo backends supporting a variety of seemingly disparate architectures, in addition to the extensions summarized in point four below.
+
+Third, section~\ref{sec:dynamics-language} provides a number of novel perspectives on various algorithms realized by dynamical systems, in contexts that do not traditionally take a dynamical systems-based approach at the state-space level.
+In particular, winner-take-all networks may be given their inputs sequentially, in which case the ideal solution becomes a nonlinear dynamical system -- as does the case when all inputs are provided simultaneously.
+Unsupervised learning of encoders is a dynamical system, local to each synapse, that can be used to learn fixed-points memorizing its encoded vectors. 
+Supervised learning of decoders is likewise a dynamical system, that can be unified with system-level dynamics, and subsequently exploited to implement higher-order transfer functions with only a single spiking neuron (see Lemma~\ref{lemma:pes-dynamics} and Theorem~\ref{thm:pes-filtered}).
+Both dynamical systems are simultaneously realized in a SpiNNaker simulation to learn a heteroassociative memory in a network of $\numprint{100000}$ neurons, while running $150$ times faster than a CPU.
+Lastly, we observe that a large variety of important routines in linear algebra and gradient-based optimization problems may be cast as dynamical systems that resolve the correct solution over time.
+
+Fourth, section~\ref{sec:synaptic-extensions} exposes several theoretical extensions to the third principle of the Neural Engineering Framework, thus enabling spiking networks to leverage the computations of higher-order synapses in both continuous- and discrete-time domains.
+We thoroughly characterize linear dynamical systems using the transfer function representation, which allows for axonal spike-delays, such as those in Loihi, to be harnessed, while appealing to Lemma~\ref{lemma:coord-transform} to prove the most general case in Theorem~\ref{thm:general-linear}.
+Nonlinear extensions are supported by Theorems~\ref{thm:p3cont-nonlinear} and~\ref{thm:p3disc-nonlinear}, and culminate in an application that exploits heterogeneous mixed-signal synapses in Braindrop.
+We then demonstrate that heterogeneous dynamical primitives may in principle be exploited to accurately classify surface textures using a tactile robotic fingertip.
+And finally we extend the NEF's optimization problem to simultaneously solve for decoding weights and the optimal linear filter in the context of Principle~3.
+
+Fifth, section~\ref{sec:neurons} considers the challenges in extending the NEF to various neuron models, while reviewing the work done thus far.
+In particular, the role of adaptive neurons and biophysical neurons may be characterized as decomposing a nonlinear transfer function into increasingly-sophisticated model representations.
+In doing so, we observe that adaptive LIF neurons are isomorphic to an $n$-dimensional expansion of the dynamical state vector, and we provide a conceptual roadmap for how progress can be made to harness such models systematically within the NEF.
+Poisson-spiking models are compared to regular-spiking and adaptive neuron models in the context of Principle~1, which validates our proof of Theorem~\ref{thm:correctness} -- namely, that uniform neural states guarantee the scaling of precision, even at arbitrarily high representational frequencies.
+This validates our theory, and recommends that Nengo should consider the role of neural-state distributions very carefully in its abstractions.
+
+Sixth, section~\ref{sec:derivations} derives a solution to a difficult task for spiking neural networks: maintaining a sliding window of input history.
+We derive from first-principles an optimal low-frequency approximation of dimension $q$ to a continuous-time delay, and realize this efficiently using a spiking neural network.
+This solution is called the Delay Network~(DN).
+We show that the DN supports a decoding of the entire window, with weights given by the shifted Legendre polynomials up to order $q$.
+Next, the neural encoding implements a nonlinear kernel convolution of the time window, thus enabling the population of neurons within the delay network to compute arbitrary nonlinear functions across the input's $q$-degree projection over time.
+This leads into a discussion on the scalability of the network, in particular highlighting the importance of the relationship between each physical quantity: time and frequency.
+
+Seventh, section~\ref{sec:delay-applications} exploits the DN in a number of very different contexts.
+We find that none of Reservoir Computing, FORCE computing, nor stacked LSTMs can match the performance of the Delay Network given a low-frequency signal relative to the time-step.
+Furthermore, LSTM cells can be substituted with DN cells, which results in a stacked DN that recovers performance, while being able to predict chaotic time-series data with improved accuracy and reduced training times.
+We see that the detection of periodic patterns within an input stimulus reduces to taking the L2-norm of a linear transformation of the DN.
+And, we theoretically justify the utility in stacking Deep Delay Networks~(DDNs) by analyzing the error's transfer function and discovering that deep structures provide the better trade-off when controlling for the number of connection weights.
+Likewise, we show that DDNs can instantaneously propagate signals through multiple layers with relatively long synaptic time-constants.
+We exploit our earlier extensions to improve the accuracy of discrete-time simulations of continuous neural dynamics.
+We also demonstrate more accurate implementations of delay networks with a variety of synapse models, thus allowing systematic exploration of the relationship between synapse- and network-level dynamics.
+Finally we suggest that these methods provide new insights into the observed temporal properties of individual neurons; biological time cell responses during a delay task are well-approximated by a delay network constructed using these methods.
+
+Eighth, sections~\ref{sec:integrator} and~\ref{sec:neuromorphic-dn} utilize many of the aforementioned extensions together with Nengo to deploy dynamical systems onto state-of-the-art neuromorphic hardware: Braindrop and Loihi.
+We find that, by applying a few compensatory techniques, both Braindrop and Loihi may be used to implement an integrator with little systematic drift averaged over $10$\,s trials.
+When combined with nonlinear feedback, this system serves as the basic building block for arbitrary dynamical systems.
+Braindrop has higher variability due to analog and temperature-induced variability, but consumes orders of magnitude less power.
+Next, a small-scale instantiation of the DN is compiled onto both architectures, using identical Nengo code, and $128$ neurons per dimension -- obtaining nearly equal performance to one another.
+
+Among these contributions, we would like to draw final attention to the following overarching narrative.
+Recurrent neural networks, especially their spiking instantiations, are notoriously difficult to train.
+Backpropagation has little to say about: discovering what computational structures are useful to consider; imposing prior knowledge on the initial configuration of the network; harnessing the dimension of time within the dynamics of the computational primitives themselves; and appropriately setting all of the hyperparameters.
+Sidestepping these matters inevitably poses a challenge to deep learning when placed next to the extraordinary scale of the human brain: \numprint{e14} connections, capturing temporal dependencies spanning continuous time-scales on the order of seconds to years, while using only $20$\,W of power.
+Thus, we view mathematical theories and frameworks as paramount to the future success of deep learning and artificial intelligence, assuming it is ever to become embodied in a similar form to that of biological intelligence.
+This motivates our careful exploration into the Neural Engineering Framework and its methods of harnessing dynamical systems to realize useful computations latent within the distributed activity of biologically-plausible recurrent spiking neural networks.
+We extend this framework, and derive a class of useful dynamical systems that have been largely ignored in the past: delay networks.
+The linear dynamics of these systems optimally project its input history onto a low-dimensional state-space that becomes nonlinearly encoded into the high-dimensional activity spaces of neurons.
+This approach outperforms equivalently-sized and trained state-of-the-art recurrent neural networks, including stacked LSTMs, in basic measures of continuous-time information processing capacity, prediction of a chaotic time-series, and training time.
+Finally, this same system is implemented on the neuromorphic hardware architectures of Braindrop and Loihi, with plenty of room to grow.
+
+%In the future, we hope to see the following developments on the software side.
+%The Nengo backends are new and can be improved, and should be scaled up to support the mapping of much larger systems while carefully assessing every source of error in a range of difficult conditions.
+%To move in this direction, many of the extensions summarized above can be integrated at a much lower level into the software framework itself, rather than existing in helper routines that run somewhat parallel to, or become imposed on top of, the model specification.
+% One suggestion is for Nengo to have an immutable intermediate model representation and expose hooks into its compilation of these representations.
+% Likewise incremental model building.
+% Ideally this would enable advanced users to rapidly iterate and deploy improvements involving the exploitation of low-level hardware features.
+
+%On the theoretical side,
+%many important questions still remain concerning the interactions between Principles~1,~2, and~3.
+
+%Delay network to store and replay episode memories (temporal semantic pointer)
+
+%Venn diagram showing intersection between biology, hardware, and what is useful?
+
+%Make useful: dendritic computation, adaptation.
+
+%Encode general temporal features (e.g., extending delay network to other basis functions).
+
+%More principled energy-minimizing network construction methods
+
+%``Differential encoding'' (adaptation)?
+
+%Spike-thinning (accumulator on BrainDrop)
+
+%Improving scaling by spreading out the spikes (inspired by Den\`eve)
+%i.e., spike delays for minimizing PSC variability
+
+%Interneurons on Loihi
+
+%Other ideas: attentional routing (inhibition to the source). Dynamically adjusting firing rates from feedback error. Better automated selection of tuning curves (e.g., finding thresholds latent within the decomposition of functions)
+

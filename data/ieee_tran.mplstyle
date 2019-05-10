@@ -1,0 +1,54 @@
+# Figure
+figure.figsize  : 3.5, 3.5
+
+# Axes
+axes.edgecolor  : 000000
+axes.facecolor  : ffffff
+axes.labelcolor : 000000
+axes.formatter.limits           : -3, 3
+axes.formatter.useoffset        : True
+axes.formatter.offset_threshold : 4
+axes.formatter.use_mathtext     : False
+axes.unicode_minus              : False
+axes.labelpad   : 3.0
+# limit could be 'data' or 'round_number'
+axes.autolimit_mode             : data
+axes.xmargin    : 0.05
+axes.ymargin    : 0.05
+axes.linewidth  : 0.2
+#axes.prop_cycle : cycler('color', ['525252', '969696', 'cccccc', 'f7f7f7'])
+#axes.prop_cycle : cycler('color', ['252525', '636363', '969696', 'cccccc'])
+#axes.prop_cycle : cycler('color', ['000000', '525252', '969696', 'd9d9d9'])
+#axes.prop_cycle : cycler('color', ['000000', '737373', 'bdbdbd', 'f0f0f0'])
+axes.prop_cycle : cycler('color', ['000000', '525252', '969696', 'cccccc', 'f7f7f7'])
+
+# Grid
+grid.color      : 000000
+grid.linestyle  : :
+grid.linewidth  : 0.2
+grid.alpha      : 1.0
+
+# Lines
+lines.scale_dashes              : False
+lines.linewidth                 : 0.5
+lines.markersize                : 5
+
+# Ticks
+ytick.color     : 000000
+xtick.color     : 000000
+xtick.major.width               : 0.2
+ytick.major.width               : 0.2
+xtick.minor.width               : 0.2
+ytick.minor.width               : 0.2
+
+# Use TeX
+text.usetex     : True
+
+# Font
+text.color      : 000000
+font.family     : serif, monospace, sans\-serif
+font.serif      : Times New Roman
+font.monospace  : TeX Gyre Cursor
+font.sans-serif : Helvetica
+font.size       : 10.0
+mathtext.fontset: cm
